@@ -1,0 +1,110 @@
+﻿/* Font của toàn trang */
+body {
+    font-family: 'Poppins', sans-serif; /* Font trẻ trung */
+    background-color: #f0fdfa; /* Màu nền tổng thể */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header styles */
+header {
+    background-color: #006d77; /* Màu xanh vintage */
+    color: #edf6f9; /* Màu nền chữ sáng */
+    padding: 15px 0;
+    text-align: center;
+    font-size: 1.7rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+    header a {
+        color: #83c5be; /* Màu xanh nhạt */
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        header a:hover {
+            color: #ffddd2; /* Màu hồng nhẹ khi hover */
+            text-decoration: underline;
+        }
+
+/* Navbar styles */
+.navbar {
+    background-color: #006d77; /* Màu xanh vintage */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    .navbar .navbar-brand,
+    .navbar .nav-link {
+        color: #edf6f9 !important; /* Màu chữ sáng */
+        font-weight: 500;
+        transition: color 0.3s ease-in-out;
+    }
+
+        .navbar .nav-link:hover {
+            color: #ffddd2 !important; /* Màu hồng nhạt */
+            text-decoration: underline;
+        }
+
+.navbar-toggler {
+    border-color: #83c5be; /* Màu xanh nhạt */
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='%23edf6f9' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Footer styles */
+footer {
+    background-color: #006d77; /* Màu xanh vintage */
+    color: #edf6f9; /* Màu chữ sáng */
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+    footer a {
+        color: #ffddd2; /* Màu hồng nhạt */
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        footer a:hover {
+            color: #83c5be; /* Màu xanh nhạt */
+            text-decoration: underline;
+        }
+
+/* Main content styles */
+main {
+    padding: 20px;
+    background-color: #edf6f9; /* Màu nền sáng */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 60px; /* Đảm bảo footer không che nội dung */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Đảm bảo nội dung chính chiếm tối đa chiều cao */
+body > main {
+    flex: 1;
+}
+
+/* Link hover effect */
+a.nav-link {
+    transition: color 0.3s ease-in-out;
+}
+
+/* Các phần tử ở dưới cùng trang sẽ không bị tràn */
+body > footer {
+    margin-top: auto; /* Đảm bảo footer luôn ở dưới cùng */
+}
