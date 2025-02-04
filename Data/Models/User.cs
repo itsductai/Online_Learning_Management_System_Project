@@ -21,5 +21,7 @@ namespace Data.Models
         public string Role { get; set; } = "Student";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày tạo tài khoản
+
+        public bool IsActive { get; set; } = true; //  Thêm thuộc tính IsActive
     }
 }
