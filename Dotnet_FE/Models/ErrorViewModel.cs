@@ -1,4 +1,4 @@
-namespace Basic.Models
+namespace Dotnet_FE.Models
 {
     public class ErrorViewModel
     {

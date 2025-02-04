@@ -1,10 +1,11 @@
-using Basic.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using Data;
+using Dotnet_FE.Models;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Text.Json.Serialization;
 
-namespace Basic.Controllers
+namespace Dotnet_FE.Controllers
 {
     public class HomeController : Controller
     {
@@ -22,7 +23,6 @@ namespace Basic.Controllers
             var res = await data.Content.ReadAsStringAsync();
 
             var dataJson = JsonConvert.DeserializeObject<IEnumerable<WeatherForecast>>(res);
-
             return View(dataJson);
         }
 

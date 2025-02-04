@@ -1,13 +1,12 @@
 ﻿@model IEnumerable<Data.WeatherForecast>;
-@if(Model != null)
-{
+
+@if(Model != null){
     <p>
         @Model.FirstOrDefault().Summary
     </p>
 }
-else
-{
-    <p>
-        Khong co du lieu
-    </p>
+else{
+<p>
+    Khong co du lieu
+</p>
 }
