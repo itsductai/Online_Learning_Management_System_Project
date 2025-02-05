@@ -18,8 +18,9 @@ export default function LoginPage() {
       const res = await loginAPI(email, password);
       login(res.data);
       console.log("User Data:", res.data);
-      if (res.data.Role === "Admin") {
+      if (res.data.role === "Admin") {
         navigate("/dashboard");
+        console.log("Chuyen den das")
       } else {
         navigate("/");
       }

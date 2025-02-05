@@ -8,18 +8,20 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
-  return user ? <HomePage /> : <Navigate to="/login" />;
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  return user.role === "Admin" ? <Dashboard /> : <HomePage />;
 };
+
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Nếu chưa đăng nhập, chuyển hướng từ "/" đến "/login" */}
           <Route path="/" element={<DefaultRoute />} />
           <Route path="/login" element={<LoginPage />} />
-          {/* Bảo vệ route admin */}
           <Route path="/dashboard" element={<ProtectedRoute role="Admin"><Dashboard /></ProtectedRoute>} />
         </Routes>
       </Router>

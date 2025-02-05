@@ -6,7 +6,7 @@ const HomePage = () => {
 
   useEffect(() => {
     if (user) {
-      console.log("User Role:", user.Role); // Debug role của user khi vào trang /
+      console.log("User Role:", user.role); // Debug role của user khi vào trang /
     } else {
       console.log("User chưa đăng nhập.");
     }
@@ -15,7 +15,7 @@ const HomePage = () => {
   return (
     <div>
       <h1>Trang Chủ</h1>
-      {user && <p>Xin chào, {user.Email}! Vai trò của bạn là: {user.Role}</p>}
+      {user && <p>Xin chào, {user.name}! Vai trò của bạn là: {user.role}</p>}
     </div>
   );
 };
