@@ -5,7 +5,13 @@ using static Data.Models.ApplicationDbContext;
 
 namespace API.Repositories
 {
-    public class AuthRepository
+    public interface IAuthRepository
+    {
+        Task<User?> GetUserByEmail(string email);
+        Task CreateUser(User user);
+    }
+
+    public class AuthRepository : IAuthRepository
     {
         private readonly ApplicationDbContext _context;
         public AuthRepository(ApplicationDbContext context)

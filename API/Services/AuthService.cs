@@ -9,16 +9,23 @@ using Data.Models;
 
 namespace API.Services
 {
-    public class AuthService
+    public interface IAuthService
     {
-        private readonly AuthRepository _authRepository;
+        Task<IActionResult> Login(LoginRequest request);
+        Task<IActionResult> Register(RegisterDto request);
+    }
 
-        public AuthService(AuthRepository authRepository)
+    public class AuthService : IAuthService
+    {
+        private readonly IAuthRepository _authRepository;
+
+
+        public AuthService(IAuthRepository authRepository)
         {
             _authRepository = authRepository;
         }
 
-        public async Task<IActionResult> Login( AuthDTO.LoginRequest request)
+        public async Task<IActionResult> Login( LoginRequest request)
         {
             // Lấy thông tin user từ Repositories
             var user = await _authRepository.GetUserByEmail(request.Email);

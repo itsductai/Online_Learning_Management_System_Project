@@ -16,9 +16,9 @@ namespace API.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authservice;
+        private readonly IAuthService _authservice;
 
-        public AuthController(AuthService authservice)
+        public AuthController(IAuthService authservice)
         {
             _authservice = authservice;
         }
@@ -34,25 +34,6 @@ namespace API.Controllers
         {
             return await _authservice.Register(model);
         }
-
-        //public async Task<IActionResult> Register([FromBody] RegisterDto model)
-        //{
-        //    var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-        //    if (existingUser != null)
-        //        return BadRequest("Email đã tồn tại!");
-
-        //    var user = new User
-        //    {
-        //        Name = model.Name,
-        //        Email = model.Email,
-        //        PasswordHash = model.Password, // Chưa mã hóa mật khẩu, về sau nên dùng BCrypt để bảo mật
-        //        Role = "Student"
-        //    };
-
-        //    _context.Users.Add(user);
-        //    await _context.SaveChangesAsync();
-        //    return Ok(new { message = "Đăng ký thành công!" });
-        //}
     }
 
 }
