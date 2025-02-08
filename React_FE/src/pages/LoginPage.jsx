@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <Center>
-      <Card sx={{ width: 400 }}>
+      <Card sx={{ width: 400, borderRadius: "16px", boxShadow: 3 }}>
         <CardContent sx={{ textAlign: "center" }}>
           <Typography variant="h3" sx={{ my: 3 }}>Đăng nhập</Typography>
           {error && <Typography color="error">{error}</Typography>}
@@ -75,7 +75,7 @@ export default function LoginPage() {
           </Typography>
 
           {/* Nút đăng nhập bằng Google (chưa tích hợp OAuth) */}
-          <Button variant="outlined" sx={{ width: "100%", mt: 2 }}>
+          <Button variant="outlined" sx={{ width: "100%", mt: 3 }}>
             Đăng nhập bằng Google
           </Button>
         </CardContent>

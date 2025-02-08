@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Data.Models;
+using API.Services;
+using API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,12 @@ builder.Services.AddSwaggerGen();
 // Đăng ký DbContext với Connection String từ appsettings.json
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký cho Service
+builder.Services.AddScoped<AuthService>();
+
+// Đăng ký cho Repositorie 
+builder.Services.AddScoped<AuthRepository>();
 
 var app = builder.Build();
 
