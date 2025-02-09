@@ -18,7 +18,7 @@ namespace API.Controllers
     {
         private readonly IAuthService _authservice;
 
-        public AuthController(IAuthService authservice)
+        public AuthController(IAuthService authservice) // Gọi là Constructer Injection, tức là Dependency Injection thông qua constructor trong 1 class
         {
             _authservice = authservice;
         }
