@@ -27,7 +27,7 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 var app = builder.Build();
 
 app.UseCors(options =>
-    options.WithOrigins("http://localhost:3000", "https://localhost:3000")
+    options.WithOrigins("http://localhost:5173")
            .AllowAnyMethod()
            .AllowAnyHeader());
 
