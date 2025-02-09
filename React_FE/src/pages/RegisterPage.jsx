@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Box, Card, CardContent, Typography, Dialog } from "@mui/material";
-import { registerAPI } from "../services/api";
-import Center from "../components/Center";
+import { registerAPI } from "../services/api.js";
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -10,7 +9,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [openDialog, setOpenDialog] = useState(false); // Trạng thái mở thông báo
+  const [openDialog, setOpenDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -23,93 +24,128 @@ export default function RegisterPage() {
     try {
       const res = await registerAPI(name, email, password);
       console.log("Đăng ký thành công:", res.data);
-      setOpenDialog(true); // Mở thông báo đăng ký thành công
+      setOpenDialog(true);
     } catch (error) {
       setError("Đăng ký thất bại, vui lòng thử lại.");
     }
   };
 
   return (
-    <Center>
-      <Card sx={{ width: 400, borderRadius: "16px", boxShadow: 3 }}>
-        <CardContent sx={{ textAlign: "center" }}>
-          <Typography variant="h3" sx={{ my: 3 }}>Đăng ký</Typography>
-          {error && <Typography color="error">{error}</Typography>}
-          <Box
-            component="form"
-            sx={{ '& .MuiTextField-root': { m: 1, width: '90%' } }}
-            autoComplete="off"
-            onSubmit={handleRegister}
-          >
-            <TextField
-              label="Họ và tên"
-              placeholder="Nhập họ và tên"
-              variant="outlined"
-              fullWidth
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              label="Email"
-              placeholder="Nhập email"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              label="Mật khẩu"
-              placeholder="Nhập mật khẩu"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <TextField
-              label="Xác nhận mật khẩu"
-              placeholder="Nhập lại mật khẩu"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <Button type="submit" variant="contained" sx={{ width: "90%", mt: 2 }}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-accent1 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl transition-all duration-300 hover:shadow-3xl w-full max-w-md">
+        <div className="p-8">
+          <h2 className="text-3xl font-bold text-center mb-8 text-primary">Đăng ký</h2>
+          {error && <p className="text-accent3 text-center mb-4">{error}</p>}
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="relative">
+              <FaUser className="absolute top-3 left-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Nhập họ và tên"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="relative">
+              <FaEnvelope className="absolute top-3 left-3 text-gray-400" />
+              <input
+                type="email"
+                placeholder="Nhập email"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="relative">
+              <FaLock className="absolute top-3 left-3 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Nhập mật khẩu"
+                className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-3 right-3 text-gray-400"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            <div className="relative">
+              <FaLock className="absolute top-3 left-3 text-gray-400" />
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Nhập lại mật khẩu"
+                className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute top-3 right-3 text-gray-400"
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary text-white py-3 rounded-full font-bold transition duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+            >
               Đăng ký
-            </Button>
-          </Box>
+            </button>
+          </form>
 
-          <Typography variant="body2" sx={{ mt: 2 }}>
-            Đã có tài khoản? <Button onClick={() => navigate("/login")} sx={{ textTransform: "none" }}>Đăng nhập</Button>
-          </Typography>
-        </CardContent>
-      </Card>
-
-      {/* Dialog - Hiển thị thông báo lớn ở giữa màn hình */}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-      >
-        <Card sx={{ width: 400, textAlign: "center", borderRadius: "16px", p: 3 }}>
-          <CardContent>
-            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Success" width="80px" />
-            <Typography variant="h4" sx={{ my: 2, fontWeight: "bold" }}>
-              Đăng ký thành công!
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              Chúc mừng bạn đã tạo tài khoản thành công. Bây giờ bạn có thể đăng nhập.
-            </Typography>
-            <Button
-              variant="contained"
-              sx={{ width: "80%" }}
+          <p className="text-center mt-6">
+            Đã có tài khoản?{" "}
+            <button
               onClick={() => navigate("/login")}
+              className="text-secondary font-bold hover:underline"
+            >
+              Đăng nhập
+            </button>
+          </p>
+
+          <div className="mt-8 flex items-center">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-gray-500">Hoặc</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <button
+            className="w-full mt-6 bg-white text-gray-700 py-3 rounded-full font-bold border border-gray-300 flex items-center justify-center transition duration-300 hover:bg-gray-50 hover:shadow-md"
+          >
+            <FaGoogle className="mr-2 text-red-500" />
+            Đăng ký bằng Google
+          </button>
+        </div>
+      </div>
+
+      {openDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
+            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Success" className="w-20 h-20 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-green-600 mb-2">Đăng ký thành công!</h3>
+            <p className="mb-6">Chúc mừng bạn đã tạo tài khoản thành công. Bây giờ bạn có thể đăng nhập.</p>
+            <button
+              onClick={() => {
+                setOpenDialog(false);
+                navigate("/login");
+              }}
+              className="w-full bg-primary text-white py-3 rounded-full font-bold transition duration-300 hover:bg-opacity-90"
             >
               Đi tới Đăng nhập
-            </Button>
-          </CardContent>
-        </Card>
-      </Dialog>
-    </Center>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
