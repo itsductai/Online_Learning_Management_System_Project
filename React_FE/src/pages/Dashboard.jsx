@@ -1,31 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import AdminSidebar from "../components/AdminSidebar";
+import AdminNavbar from "../components/AdminNavbar";
+import AdminOverview from "../components/AdminOverview";
+import CourseTable from "../components/CourseTable";
+import Footer from "../components/Footer";
 
-const Dashboard = () => {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      console.log("User Role:", user.role);
-    } else {
-      console.log("User chưa đăng nhập.");
-    }
-    setTimeout(() => setLoading(false), 100); // Giả lập load dữ liệu
-  }, [user]);
-
-  // Nếu chưa đăng nhập, chuyển hướng về login
-  if (!user && !loading) {
-    return <Navigate to="/login" />;
-  }
+export default function AdminDashboard() {
+  const { user, logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div>
-      <h1>Admin Dashboard</h1>
-      {loading ? <p>Đang tải...</p> : <p>Chào mừng {user?.name} đến trang quản trị!</p>}
+    <div className="flex h-screen bg-gray-100">
+      <AdminSidebar isSidebarOpen={isSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <AdminNavbar user={user} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} logout={logout} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+          <AdminOverview />
+          <CourseTable />
+        </main>
+        <Footer />
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
