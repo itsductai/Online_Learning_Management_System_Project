@@ -1,23 +1,23 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
+import HeroSection from "../components/HeroSection";
+import FeaturedCourses from "../components/FeaturedCourses";
+import ProgressTracking from "../components/ProgressTracking";
+import Announcements from "../components/Announcements";
+import Footer from "../components/Footer";
 
-const HomePage = () => {
+export default function HomePage() {
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      console.log("User Role:", user.role); // Debug role của user khi vào trang /
-    } else {
-      console.log("User chưa đăng nhập.");
-    }
-  }, [user]);
-
   return (
-    <div>
-      <h1>Trang Chủ</h1>
-      {user && <p>Xin chào, {user.name}! Vai trò của bạn là: {user.role}</p>}
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+      <HeroSection user={user} />
+      <FeaturedCourses />
+      <ProgressTracking />
+      <Announcements />
+      <Footer />
     </div>
   );
-};
-
-export default HomePage;
+}
