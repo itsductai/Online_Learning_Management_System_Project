@@ -34,6 +34,7 @@ namespace API.Controllers
         {
             return await _authservice.Register(model);
         }
+
     }
 
 }

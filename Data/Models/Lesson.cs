@@ -13,14 +13,10 @@ namespace Data.Models
         public int CourseId { get; set; }
 
         [Required, MaxLength(50)]
-        public string LessonType { get; set; } = "Text"; // 'Video', 'Text', hoặc 'Quiz'
+        public string LessonType { get; set; } // 'Video', 'Text', 'Quiz'
 
         [Required, MaxLength(200)]  // Tiêu đề bài học không được null
-        public string Title { get; set; } = string.Empty;
-
-        public string? Content { get; set; } // Nội dung bài học (dành cho bài viết)
-
-        public string? Attachment { get; set; } // Đường dẫn file đính kèm
+        public string Title { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

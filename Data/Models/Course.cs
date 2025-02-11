@@ -9,7 +9,7 @@ namespace Data.Models
         public int CourseId { get; set; }
 
         [Required, MaxLength(200)]  // Tên khóa học, tối đa 200 ký tự
-        public string Title { get; set; } = string.Empty;
+        public string Title { get; set; }
 
         public string? Description { get; set; }  // Mô tả khóa học (có thể null)
         public bool IsPaid { get; set; } = false;  // Miễn phí hoặc trả phí

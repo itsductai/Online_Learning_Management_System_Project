@@ -8,22 +8,35 @@ namespace Data.Models
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        // Cấu hình kết nối database
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(
-                    "Server=MSI;Database=learning_system_DB;User Id=sa;Password=123;TrustServerCertificate=True",
-                    b => b.MigrationsAssembly("Data") //  Định nghĩa nơi lưu Migration
-                );
-            }
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Course>()
+                .Property(c => c.Price)
+                .HasColumnType("decimal(10,2)") // Đảm bảo kiểu dữ liệu đúng với SQL Server
+                .HasPrecision(10, 2); // Đảm bảo độ chính xác và tỷ lệ chính xác
         }
+
+
+        //// Cấu hình kết nối database
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        optionsBuilder.UseSqlServer(
+        //            "Server=MSI;Database=learning_system_DB;User Id=sa;Password=123;TrustServerCertificate=True",
+        //            b => b.MigrationsAssembly("Data") //  Định nghĩa nơi lưu Migration
+        //        );
+        //    }
+        //}
 
         // Khai báo các bảng trong database
         public DbSet<User> Users { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<TextLesson> TextLessons { get; set; }
+        public DbSet<VideoLesson> VideoLessons { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizResult> QuizResults { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
@@ -32,6 +45,25 @@ namespace Data.Models
         public DbSet<CommunityPost> CommunityPosts { get; set; }
         public DbSet<CommunityMessage> CommunityMessages { get; set; }
 
-        
+        //Chạy Migration và tạo database
+        //  dotnet ef migrations add InitialCreate -> Tạo migration từ các model.
+        //  dotnet ef database update -> Áp dụng migration để tạo database.
+
+
+        //Nếu muốn update database thì chạy lệnh sau:
+        //    dotnet ef database update
+
+        // Nếu muốn xóa database và tạo lại từ đầu thì chạy lệnh sau:
+        // Xóa db 
+        //    dotnet ef database drop --force
+
+        // Xóa thư mục Migrations
+        //    Remove-Item -Recurse -Force Migrations
+
+        // Tạo thư mục Migrations đầu tiên
+        //    dotnet ef migrations add InitialCreate
+
+        // Update db
+        //    dotnet ef database update
     }
 }
