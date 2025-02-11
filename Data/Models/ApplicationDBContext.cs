@@ -51,6 +51,7 @@ namespace Data.Models
 
 
         //Nếu muốn update database thì chạy lệnh sau:
+        // dotnet ef migrations add UpdateDatabaseStructure
         //    dotnet ef database update
 
         // Nếu muốn xóa database và tạo lại từ đầu thì chạy lệnh sau:

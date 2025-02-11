@@ -18,10 +18,13 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 
 // Đăng ký cho Service
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICoursesService, CoursesService>();
+
 builder.Services.AddScoped<AuthService>();
 
 // Đăng ký cho Repositorie 
 builder.Services.AddScoped<AuthRepository>();
+builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 var app = builder.Build();
