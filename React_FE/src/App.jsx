@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import HomePage from "./pages/HomePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import CoursesPage from "./pages/CoursesPage.jsx";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ function App() {
           <Route path="/" element={<DefaultRoute />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/courses" element={<CoursesPage />} />
           <Route path="/dashboard" element={<ProtectedRoute role="Admin"><Dashboard /></ProtectedRoute>} />
         </Routes>
       </Router>
