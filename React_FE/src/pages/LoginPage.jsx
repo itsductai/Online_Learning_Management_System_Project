@@ -1,32 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { loginAPI } from "../services/api";
+import useLogin from "../hooks/useLogin";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await loginAPI(email, password);
-      login(res.data);
-      console.log("User Data:", res.data);
-      if (res.data.role === "Admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      setError("Sai email hoặc mật khẩu!");
-    }
-  };
+  const { handleLogin, loading, error } = useLogin();
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-accent1 p-4">
@@ -34,7 +19,7 @@ export default function LoginPage() {
         <div className="p-8">
           <h2 className="text-3xl font-bold text-center mb-8 text-primary">Đăng nhập</h2>
           {error && <p className="text-accent3 text-center mb-4">{error}</p>}
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form  onSubmit={(e) => { e.preventDefault(); handleLogin(email, password); }} className="space-y-6">
             <div className="relative">
               <FaEnvelope className="absolute top-3 left-3 text-gray-400" />
               <input
@@ -66,9 +51,10 @@ export default function LoginPage() {
             </div>
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-primary text-white py-3 rounded-full font-bold transition duration-300 transform hover:-translate-y-1 hover:shadow-lg"
             >
-              Đăng nhập
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 

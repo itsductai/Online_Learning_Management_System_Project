@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaBook, FaChalkboardTeacher, FaUserGraduate, FaBell, FaSignOutAlt, FaHome } from 'react-icons/fa';
-import logo from "../logo/radient_logo_v1.png"; // Import ảnh
+import logo from "../logo/logo_white_v2.png"; // Import ảnh
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-white text-2xl font-bold">
-          <img src={logo} alt="Logo" className="h-24 w-auto" />
+          <img src={logo} alt="Logo" className="h-16 w-auto" />
         </Link>
 
         {/* Menu điều hướng */}

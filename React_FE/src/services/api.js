@@ -10,3 +10,7 @@ export const loginAPI = (email, password) => {
 export const registerAPI = (name, email, password) => {
   return axios.post(`${API_URL}/register`, {name, email, password });
 };
+
+export const coursesAPI = () => {
+  return axios.post(`${API_URL}/courses`, {});
+};
