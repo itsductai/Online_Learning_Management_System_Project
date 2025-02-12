@@ -16,29 +16,8 @@ export default function RegisterPage() {
   const { handleRegister, loading, error }= useRegister();
   
   useEffect(() => {
-    if (isRegistered) {
-      setOpenDialog(true); // ✅ Chỉ mở dialog khi `isRegistered` thay đổi
-    }
+    isRegistered == true ? setOpenDialog(true) : setOpenDialog(false); // Chỉ mở dialog khi `isRegistered` thay đổi
   }, [isRegistered]); // Chỉ chạy khi `isRegistered` thay đổi
-
-  // const [error, setError] = useState("");
-  // const [openDialog, setOpenDialog] = useState(false);
-
-  // const handleRegister = async (e) => {
-  //   e.preventDefault();
-  //   if (password !== confirmPassword) {
-  //     setError("Mật khẩu xác nhận không khớp!");
-  //     return;
-  //   }
-
-  //   try {
-  //     const res = await registerAPI(name, email, password);
-  //     console.log("Đăng ký thành công:", res.data);
-  //     setOpenDialog(true);
-  //   } catch (error) {
-  //     setError("Đăng ký thất bại, vui lòng thử lại.");
-  //   }
-  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-accent1 p-4">
@@ -48,9 +27,7 @@ export default function RegisterPage() {
           {error && <p className="text-accent3 text-center mb-4">{error}</p>}
           <form onSubmit={(e) => { 
                 e.preventDefault(); 
-                if (!isRegistered) { // ✅ Chỉ chạy nếu chưa đăng ký thành công
-                  handleRegister(name, email, password, confirmPassword, () => setIsRegistered(true));
-                }
+                  handleRegister(name, email, password, confirmPassword, setIsRegistered);
               }}
             className="space-y-4">
             <div className="relative">
@@ -155,8 +132,8 @@ export default function RegisterPage() {
               {/* Nút Thoát */}
               <button
                 onClick={() => {
-                  setIsRegistered(false); // ✅ Reset trạng thái đăng ký
-                  setOpenDialog(false); // ✅ Đóng dialog
+                  setIsRegistered(false); //  Reset trạng thái đăng ký
+                  setOpenDialog(false); //  Đóng dialog
                 }}
                 className="w-1/2 bg-gray-300 text-gray-700 py-3 rounded-full font-bold transition duration-300 hover:bg-gray-400"
               >
@@ -166,7 +143,7 @@ export default function RegisterPage() {
               {/* Nút Đi tới Đăng nhập */}
               <button
                 onClick={() => {
-                  setIsRegistered(false); // ✅ Reset trạng thái đăng ký
+                  setIsRegistered(false); // Reset trạng thái đăng ký
                   setOpenDialog(false);
                   navigate("/login");
                 }}

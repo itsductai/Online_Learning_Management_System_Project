@@ -5,7 +5,7 @@ function useRegister() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleRegister = async (name, email, password, confirmPassword, onSuccess) => {
+    const handleRegister = async (name, email, password, confirmPassword, setIsRegistered) => {
       setLoading(true);
       setError("");
 
@@ -17,7 +17,7 @@ function useRegister() {
       try {
         const res = await registerAPI(name, email, password);
         console.log("Đăng ký thành công:", res.data);
-        onSuccess();
+        setIsRegistered(true);
       } catch (error) {
         setError("Đăng ký thất bại, vui lòng thử lại.");
       }
