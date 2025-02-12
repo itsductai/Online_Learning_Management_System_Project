@@ -26,6 +26,7 @@ namespace API.Services
             List<Course?> courses = await _coursesRepository.GetAllCourses();
             return courses.Select(c => new CoursesDto
             {
+                CourseId = c.CourseId,
                 Title = c.Title,
                 ImageUrl = c.ImageUrl,
                 Description = c.Description,
@@ -39,6 +40,7 @@ namespace API.Services
             List<Course?> courses = await _coursesRepository.GetCourseByText(text);
             return courses.Select(c => new CoursesDto
             {
+                CourseId = c.CourseId,
                 Title = c.Title,
                 ImageUrl = c.ImageUrl,
                 Description = c.Description,
