@@ -34,11 +34,21 @@ app.UseCors(options =>
            .AllowAnyMethod()
            .AllowAnyHeader());
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("Content-Type", "application/json");
+    await next();
+});
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
 }
 
 // Bật Authorization (bảo vệ API)
