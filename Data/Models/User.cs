@@ -25,6 +25,8 @@ namespace Data.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày tạo tài khoản
 
-        
+        public string? RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpiry { get; set; }
     }
 }
