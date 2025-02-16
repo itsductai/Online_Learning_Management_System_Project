@@ -10,7 +10,10 @@ namespace API.Repositories
         Task<List<User>> GetAllUsers();
         Task<User?> GetUserByEmail(string email);
         Task CreateUser(User user);
+        Task UpdateUser(User user); // Thêm mới
+        Task<User?> GetUserByEmailRefreshToken(string refreshToken); // Thêm mới
         Task<bool> DeleteUser(int id);
+  
     }
 
     public class AuthRepository : IAuthRepository
@@ -36,6 +39,18 @@ namespace API.Repositories
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateUser(User user) // Hàm mới để update user
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        // AuthRepository.cs - Thêm phương thức GetUserByEmailRefreshToken
+        public async Task<User?> GetUserByEmailRefreshToken(string refreshToken)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        }
+
         public async Task<bool> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
