@@ -16,6 +16,7 @@ namespace API.Services
         Task<IActionResult> Login(LoginRequest request);
         Task<IActionResult> Register(RegisterDto request);
         Task<bool> DeleteUser(int id);
+        Task<IActionResult> RefreshToken(string refreshToken);
     }
 
     public class AuthService : IAuthService
@@ -43,9 +44,15 @@ namespace API.Services
             {
                 return new UnauthorizedObjectResult(new { message = "Email hoặc mật khẩu không đúng!" });
             }
+
             var token = _jwtService.GenerateToken(user.UserId.ToString(), user.Role);
+            var refreshToken = _jwtService.GenerateRefreshToken(); // Sinh Refresh Token
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7); // Hạn Refresh Token 7 ngày
+            await _authRepository.UpdateUser(user); // Lưu qua Repository
+
             // Trả về thông tin user nếu đăng nhập thành công
-            return new OkObjectResult(new { Token = token, UserId = user.UserId, Name = user.Name, Email = user.Email, Role = user.Role });
+            return new OkObjectResult(new { Token = token, RefreshToken = refreshToken, UserId = user.UserId, Name = user.Name, Email = user.Email, Role = user.Role });
         }
 
         public async Task<IActionResult> Register(AuthDTO.RegisterDto request)
@@ -74,6 +81,22 @@ namespace API.Services
         public async Task<bool> DeleteUser(int id)
         {
             return await _authRepository.DeleteUser(id);
+        }
+
+        public async Task<IActionResult> RefreshToken(string refreshToken)
+        {
+            var user = await _authRepository.GetUserByEmailRefreshToken(refreshToken);
+            if (user == null || user.RefreshTokenExpiry <= DateTime.UtcNow)
+                return new UnauthorizedObjectResult(new { message = "Refresh token không hợp lệ hoặc đã hết hạn!" });
+
+            var newToken = _jwtService.GenerateToken(user.UserId.ToString(), user.Role);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _authRepository.UpdateUser(user);
+
+            return new OkObjectResult(new { Token = newToken, RefreshToken = newRefreshToken });
         }
 
     }
