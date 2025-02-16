@@ -8,6 +8,7 @@ using static API.Services.AuthService;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Data;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace API.Controllers
@@ -23,6 +24,7 @@ namespace API.Controllers
             _authservice = authservice;
         }
 
+        [Authorize]
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {

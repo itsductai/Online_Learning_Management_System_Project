@@ -21,11 +21,12 @@ namespace API.Services
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
+        private readonly JwtService _jwtService;
 
-
-        public AuthService(IAuthRepository authRepository)
+        public AuthService(IAuthRepository authRepository, JwtService jwtService)
         {
             _authRepository = authRepository;
+            _jwtService = jwtService;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -42,9 +43,9 @@ namespace API.Services
             {
                 return new UnauthorizedObjectResult(new { message = "Email hoặc mật khẩu không đúng!" });
             }
-
+            var token = _jwtService.GenerateToken(user.UserId.ToString(), user.Role);
             // Trả về thông tin user nếu đăng nhập thành công
-            return new OkObjectResult(new { user.UserId, user.Name, user.Email, user.Role });
+            return new OkObjectResult(new { Token = token, UserId = user.UserId, Name = user.Name, Email = user.Email, Role = user.Role });
         }
 
         public async Task<IActionResult> Register(AuthDTO.RegisterDto request)
