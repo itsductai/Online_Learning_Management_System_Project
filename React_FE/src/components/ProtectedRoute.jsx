@@ -5,15 +5,15 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth(); // Lấy thông tin người dùng từ context
-
+  const token = localStorage.getItem('token'); // Thêm: Kiểm tra token trong localStorage
+  
   // Nếu người dùng chưa đăng nhập, chuyển hướng về trang đăng nhập
-  if (!user) {
+  if (!user || !token) { // Kiểm tra cả user và token
     return <Navigate to="/login" />;
   }
 
-  // Nếu route yêu cầu một vai trò cụ thể nhưng người dùng không có quyền, chuyển hướng về trang chủ
   if (role && user.role !== role) {
-    return <Navigate to="/" />;
+    return <Navigate to={user.role === "Admin" ? "/dashboard" : "/"} />;
   }
 
   // Nếu người dùng có quyền hợp lệ, hiển thị nội dung của route
