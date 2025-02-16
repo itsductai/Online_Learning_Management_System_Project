@@ -26,7 +26,8 @@ const useLogin = () => {
 
         try {
           const res = await loginAPI(email, password);
-          login(res.data);
+          localStorage.setItem('token', res.data.token); // Thêm: Lưu JWT token vào localStorage
+          login(res.data); 
           console.log("User Data:", res.data);
           if (res.data.role === "Admin") {
             navigate("/dashboard");
@@ -35,10 +36,11 @@ const useLogin = () => {
           }
         } catch (error) {
           setError("Sai email hoặc mật khẩu!");
+          setLoading(false);
         }
       };
 
   return {handleLogin,loading,error};
 }
 
-export default useLogin
+export default useLogin;
