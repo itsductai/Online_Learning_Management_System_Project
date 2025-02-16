@@ -26,9 +26,10 @@ const useLogin = () => {
 
         try {
           const res = await loginAPI(email, password);
+          console.log("Login response:", res.data); // In response để kiểm tra
           localStorage.setItem('token', res.data.token); // Thêm: Lưu JWT token vào localStorage
+          localStorage.setItem('refreshToken', res.data.refreshToken); // Lưu Refresh Token
           login(res.data); 
-          console.log("User Data:", res.data);
           if (res.data.role === "Admin") {
             navigate("/dashboard");
           } else {
