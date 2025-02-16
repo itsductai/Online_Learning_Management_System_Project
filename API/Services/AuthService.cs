@@ -1,4 +1,5 @@
-﻿using API.DTOs;
+﻿using BCrypt.Net;
+using API.DTOs;
 using static API.DTOs.AuthDTO;
 using API.Repositories;
 using static API.Repositories.AuthRepository;
@@ -11,8 +12,10 @@ namespace API.Services
 {
     public interface IAuthService
     {
+        Task<List<User>> GetAllUsers();
         Task<IActionResult> Login(LoginRequest request);
         Task<IActionResult> Register(RegisterDto request);
+        Task<bool> DeleteUser(int id);
     }
 
     public class AuthService : IAuthService
@@ -25,12 +28,17 @@ namespace API.Services
             _authRepository = authRepository;
         }
 
+        public async Task<List<User>> GetAllUsers()
+        {
+            return await _authRepository.GetAllUsers();
+        }
+
         public async Task<IActionResult> Login( LoginRequest request)
         {
             // Lấy thông tin user từ Repositories
             var user = await _authRepository.GetUserByEmail(request.Email);
 
-            if (user == null || user.PasswordHash != request.Password) // Chưa mã hóa mật khẩu, về sau nên dùng BCrypt để bảo mật
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash)) // Sử dụng BCrypt để kiểm tra mật khẩu
             {
                 return new UnauthorizedObjectResult(new { message = "Email hoặc mật khẩu không đúng!" });
             }
@@ -44,7 +52,7 @@ namespace API.Services
             // Lấy thông tin user từ Repositories
             var existingUser = await _authRepository.GetUserByEmail(request.Email);
 
-            if (existingUser != null) // Chưa mã hóa mật khẩu, về sau nên dùng BCrypt để bảo mật
+            if (existingUser != null) // Dùng BCrypt để bảo mật
             {
                 return new BadRequestObjectResult(new { message = "Email đã tồn tại!" });
             }
@@ -53,13 +61,18 @@ namespace API.Services
             {
                 Name = request.Name,
                 Email = request.Email,
-                PasswordHash = request.Password, // Chưa mã hóa mật khẩu, về sau nên dùng BCrypt để bảo mật
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password), // Sử dụng BCrypt để băm mật khẩu
                 Role = "Student"
             };
             await _authRepository.CreateUser(user);
 
             // Trả về thông tin user nếu đăng nhập thành công
             return new OkObjectResult(new { message = "Đăng ký thành công!" });
+        }
+
+        public async Task<bool> DeleteUser(int id)
+        {
+            return await _authRepository.DeleteUser(id);
         }
 
     }

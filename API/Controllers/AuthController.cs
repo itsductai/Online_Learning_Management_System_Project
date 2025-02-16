@@ -23,6 +23,13 @@ namespace API.Controllers
             _authservice = authservice;
         }
 
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _authservice.GetAllUsers();
+            return Ok(users);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthDTO.LoginRequest request)
         {
@@ -33,6 +40,15 @@ namespace API.Controllers
         public async Task<IActionResult> Register([FromBody] AuthDTO.RegisterDto model)
         {
             return await _authservice.Register(model);
+        }
+
+        [HttpDelete("deleteuser/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await _authservice.DeleteUser(id);
+            if (!result)
+                return NotFound(new { message = "Người dùng không tồn tại!" });
+            return Ok(new { message = "Xóa người dùng thành công!" });
         }
 
     }
