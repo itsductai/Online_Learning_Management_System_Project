@@ -44,6 +44,13 @@ namespace API.Controllers
             return await _authservice.Register(model);
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        {
+            var result = await _authservice.RefreshToken(refreshToken);
+            return result;
+        }
+
         [HttpDelete("deleteuser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
