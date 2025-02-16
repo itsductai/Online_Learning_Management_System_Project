@@ -9,9 +9,21 @@ const useLogin = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    const validateEmail = (email) => {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(email);
+    };
+
     const handleLogin = async (email,password) => {
         setLoading(true);
         setError("");
+
+        if (!validateEmail(email)) {
+          setError("Email không hợp lệ!");
+          setLoading(false);
+          return;
+        }
+
         try {
           const res = await loginAPI(email, password);
           login(res.data);
