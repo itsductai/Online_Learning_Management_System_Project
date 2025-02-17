@@ -52,7 +52,7 @@ namespace API.Services
             await _authRepository.UpdateUser(user); // Lưu qua Repository
 
             // Trả về thông tin user nếu đăng nhập thành công
-            return new OkObjectResult(new { Token = token, RefreshToken = refreshToken, UserId = user.UserId, Name = user.Name, Email = user.Email, Role = user.Role });
+            return new OkObjectResult(new { Token = token, RefreshToken = refreshToken, user.UserId, user.Name, user.Email, user.Role });
         }
 
         public async Task<IActionResult> Register(AuthDTO.RegisterDto request)
@@ -85,18 +85,18 @@ namespace API.Services
 
         public async Task<IActionResult> RefreshToken(string refreshToken)
         {
-            var user = await _authRepository.GetUserByEmailRefreshToken(refreshToken);
-            if (user == null || user.RefreshTokenExpiry <= DateTime.UtcNow)
-                return new UnauthorizedObjectResult(new { message = "Refresh token không hợp lệ hoặc đã hết hạn!" });
+            var user = await _authRepository.GetUserByEmailRefreshToken(refreshToken); // Gọi repo lấy user theo refresh token
+            if (user == null || user.RefreshTokenExpiry <= DateTime.UtcNow) // Kiểm tra refresh token
+                return new UnauthorizedObjectResult(new { message = "Refresh token không hợp lệ hoặc đã hết hạn!" }); // Trả về lỗi nếu không hợp lệ
 
-            var newToken = _jwtService.GenerateToken(user.UserId.ToString(), user.Role);
-            var newRefreshToken = _jwtService.GenerateRefreshToken();
+            var newToken = _jwtService.GenerateToken(user.UserId.ToString(), user.Role); // Sinh token mới
+            var newRefreshToken = _jwtService.GenerateRefreshToken(); // Sinh refresh token mới
 
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-            await _authRepository.UpdateUser(user);
+            user.RefreshToken = newRefreshToken; // Cập nhật refresh token mới
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7); // Cập nhật hạn refresh token mới
+            await _authRepository.UpdateUser(user); // Lưu thông tin user qua repo
 
-            return new OkObjectResult(new { Token = newToken, RefreshToken = newRefreshToken });
+            return new OkObjectResult(new { Token = newToken, RefreshToken = newRefreshToken }); // Trả về token mới
         }
 
     }

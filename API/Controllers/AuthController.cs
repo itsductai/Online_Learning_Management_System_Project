@@ -45,7 +45,7 @@ namespace API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken(string refreshToken)
         {
             var result = await _authservice.RefreshToken(refreshToken);
             return result;

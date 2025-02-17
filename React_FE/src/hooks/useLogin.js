@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { login } = useAuth();
-    const navigate = useNavigate();
+    const { login } = useAuth(); // Lấy hàm login từ context 
+    const navigate = useNavigate(); // Lấy hàm navigate đeeer chuyển trang 
 
     const validateEmail = (email) => {
       const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -41,7 +41,7 @@ const useLogin = () => {
         }
       };
 
-  return {handleLogin,loading,error};
+  return {handleLogin,loading,error}; // Trả về login và các trạng thái cần thiết 
 }
 
 export default useLogin;
