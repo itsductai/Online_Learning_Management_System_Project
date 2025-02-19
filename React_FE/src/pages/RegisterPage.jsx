@@ -115,6 +115,7 @@ export default function RegisterPage() {
 
           <button
             className="w-full mt-6 bg-white text-gray-700 py-3 rounded-full font-bold border border-gray-300 flex items-center justify-center transition duration-300 hover:bg-gray-50 hover:shadow-md"
+            onClick={() => window.location.href = 'http://localhost:7025/api/auth/google-login'}
           >
             <FaGoogle className="mr-2 text-red-500" />
             Đăng ký bằng Google
