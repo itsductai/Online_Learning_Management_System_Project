@@ -15,5 +15,15 @@
             public string Email { get; set; }
             public string Password { get; set; }
         }
+
+        public class UpdateUserDto
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string? Password { get; set; } // Có thể null (nếu không muốn đổi mật khẩu)
+            public bool IsActive { get; set; } // Trạng thái tài khoản
+            public string? AvatarUrl { get; set; }
+        }
+
     }
 }

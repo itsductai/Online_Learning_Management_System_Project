@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{2FCCC661-2F61-4C97-ABD4-6A53D972333D}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "react", "React_FE\react.esproj", "{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,12 @@ Global
 		{2FCCC661-2F61-4C97-ABD4-6A53D972333D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FCCC661-2F61-4C97-ABD4-6A53D972333D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FCCC661-2F61-4C97-ABD4-6A53D972333D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{453D5A69-0CA7-4213-A1A9-676BD0D0C9D0}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

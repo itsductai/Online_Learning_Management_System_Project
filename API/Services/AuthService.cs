@@ -15,6 +15,7 @@ namespace API.Services
         Task<List<User>> GetAllUsers();
         Task<IActionResult> Login(LoginRequest request);
         Task<IActionResult> Register(RegisterDto request);
+        Task<bool> UpdateUser(int id, AuthDTO.UpdateUserDto model);
         Task<bool> DeleteUser(int id);
         Task<IActionResult> RefreshToken(string refreshToken);
     }
@@ -35,7 +36,7 @@ namespace API.Services
             return await _authRepository.GetAllUsers();
         }
 
-        public async Task<IActionResult> Login( LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
             // Lấy thông tin user từ Repositories
             var user = await _authRepository.GetUserByEmail(request.Email);
@@ -52,7 +53,7 @@ namespace API.Services
             await _authRepository.UpdateUser(user); // Lưu qua Repository
 
             // Trả về thông tin user nếu đăng nhập thành công
-            return new OkObjectResult(new { Token = token, RefreshToken = refreshToken, user.UserId, user.Name, user.Email, user.Role });
+            return new OkObjectResult(new { Token = token, RefreshToken = refreshToken, user.UserId, user.Name, user.Email, user.Role, user.CreatedAt, user.AvatarUrl });
         }
 
         public async Task<IActionResult> Register(AuthDTO.RegisterDto request)
@@ -77,6 +78,35 @@ namespace API.Services
             // Trả về thông tin user nếu đăng nhập thành công
             return new OkObjectResult(new { message = "Đăng ký thành công!" });
         }
+
+        public async Task<bool> UpdateUser(int id, AuthDTO.UpdateUserDto model)
+        {
+            var user = await _authRepository.GetUserById(id);
+            if (user == null) return false;
+
+            // Kiểm tra nếu email đã tồn tại ở user khác
+            var existingUser = await _authRepository.GetUserByEmail(model.Email);
+            if (existingUser != null && existingUser.UserId != id)
+            {
+                return false; // Email đã được sử dụng bởi user khác
+            }
+
+            user.Name = model.Name;
+            user.Email = model.Email;
+            user.IsActive = model.IsActive;
+            user.AvatarUrl = model.AvatarUrl; // 🔥 Cập nhật avatar
+
+            // Nếu có mật khẩu mới, thì băm mật khẩu và cập nhật
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            }
+
+            await _authRepository.UpdateUser(user);
+            return true;
+        }
+
+
 
         public async Task<bool> DeleteUser(int id)
         {

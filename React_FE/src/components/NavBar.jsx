@@ -117,7 +117,7 @@ export default function Navbar() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
                   <img
-                    src={user?.avatar || "https://via.placeholder.com/40"}
+                    src={user?.avatarUrl || "https://via.placeholder.com/40"}
                     alt="Avatar"
                     className="w-10 h-10 rounded-full border-2 border-white"
                   />

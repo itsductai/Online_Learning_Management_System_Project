@@ -28,5 +28,7 @@ namespace Data.Models
         public string? RefreshToken { get; set; }
 
         public DateTime? RefreshTokenExpiry { get; set; }
+
+        public string? AvatarUrl { get; set; } = "default-avt.jpg"; // Thêm đường dẫn ảnh đại diện
     }
 }

@@ -27,7 +27,6 @@ namespace API.Controllers
             _authservice = authservice;
         }
 
-        
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -46,6 +45,29 @@ namespace API.Controllers
         {
             return await _authservice.Register(model);
         }
+
+        [HttpPut("updateuser/{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] AuthDTO.UpdateUserDto model)
+        {
+            var result = await _authservice.UpdateUser(id, model);
+            if (!result)
+                return NotFound(new { message = "Người dùng không tồn tại!" });
+
+            return Ok(new { message = "Cập nhật thông tin tài khoản thành công!" });
+        }
+
+        [HttpDelete("deleteuser/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await _authservice.DeleteUser(id);
+            if (!result)
+                return NotFound(new { message = "Người dùng không tồn tại!" });
+
+            return Ok(new { message = "Xóa người dùng thành công!" });
+        }
+
+
+
 
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(string refreshToken)
@@ -110,16 +132,6 @@ namespace API.Controllers
             // TODO: Tìm user trong DB, nếu chưa có thì tạo mới, sau đó sinh JWT Token và trả về client
 
             return Ok(new { email, name, claims }); // Tạm thời trả về thông tin để kiểm tra
-        }
-
-
-        [HttpDelete("deleteuser/{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var result = await _authservice.DeleteUser(id);
-            if (!result)
-                return NotFound(new { message = "Người dùng không tồn tại!" });
-            return Ok(new { message = "Xóa người dùng thành công!" });
         }
 
     }
