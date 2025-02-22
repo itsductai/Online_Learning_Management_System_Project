@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   // Hàm đăng nhập - Lưu user vào state và localStorage
   const login = (userData) => {
     setUser(userData); // yếu tố làm user thay đổi
+    localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", userData.token);
     localStorage.setItem("refreshToken", userData.refreshToken); 
   };
