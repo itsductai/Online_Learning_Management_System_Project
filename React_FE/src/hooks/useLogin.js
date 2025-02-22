@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { loginAPI } from "../services/api";
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { loginAPI } from "../services/api"; // Import API cho login từ api.js
+import { useAuth } from '../context/AuthContext';  // Import AuthContext để cập nhật trạng thái đăng nhập
+import { useNavigate } from 'react-router-dom'; // Import router để chuyển trang
 
 const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { login } = useAuth(); // Lấy hàm login từ context 
+    const { login } = useAuth(); // Lấy hàm login từ context, nhằm xử lý lấy dữ liệu user lưu vào localstorage dùng cho toàn hệ thống
     const navigate = useNavigate(); // Lấy hàm navigate đeeer chuyển trang 
 
     const validateEmail = (email) => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext" // Import hook useAuth để lấy user từ localstorage
 import {
   FaBook,
   FaChalkboardTeacher,
@@ -17,17 +17,20 @@ import {
   FaBookmark,
 } from "react-icons/fa"
 import logo from "../logo/logo_white_v2.png" // Import ảnh
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion" // Hiệu ứng động
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth() // Lấy user và lấy hàm logout từ AuthContext
   const navigate = useNavigate()
   const location = useLocation()
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
 
+    //  State kiểm soát hiệu ứng và giao diện
+  const [isScrolled, setIsScrolled] = useState(false); // Kiểm tra user có scroll xuống hay không
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Toggle menu mobile
+  const [isProfileOpen, setIsProfileOpen] = useState(false); // Toggle menu profile
+  const [isDarkMode, setIsDarkMode] = useState(false); // Toggle dark mode
+
+   //  Bắt sự kiện cuộn trang để làm mờ Navbar khi scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
@@ -36,6 +39,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // Danh sách menu điều hướng
   const menuItems = [
     { path: "/", icon: <FaHome />, label: "Trang chủ" },
     { path: "/courses", icon: <FaBook />, label: "Khóa học" },
@@ -52,6 +56,7 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Layout khung Navbar */}
       <motion.nav
         initial={{ y: 0 }}
         animate={{ y: 0 }}
@@ -117,13 +122,14 @@ export default function Navbar() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
                   <img
-                    src={user?.avatarUrl || "https://via.placeholder.com/40"}
+                    src={user?.avatarUrl}
                     alt="Avatar"
                     className="w-10 h-10 rounded-full border-2 border-white"
                   />
                   <span className="hidden md:block text-white text-base">{user?.name}</span>
                 </motion.button>
 
+                {/*  Profile Dropdown */}
                 <AnimatePresence>
                   {isProfileOpen && (
                     <motion.div

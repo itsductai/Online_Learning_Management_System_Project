@@ -1,3 +1,5 @@
+// Hook này giúp gọi API để lấy danh sách khóa học từ backend.
+
 import React, { useEffect, useState } from 'react'
 import { coursesAPI } from '../services/api';
 

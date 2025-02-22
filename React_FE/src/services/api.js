@@ -5,8 +5,13 @@ const API_URL = "http://localhost:7025/api"; // Đường dẫn gốc tới API 
 // Tạo một instance axios với baseURL cố định
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // ✅ Quan trọng: Bật gửi cookie với request
+  withCredentials: true, // Quan trọng: Bật gửi cookie với request
 });
+
+//Tóm tắt hoạt động của api.js
+// Khi gọi API: Tự động gắn JWT Token vào header.
+// Khi gặp lỗi 401 Unauthorized: Tự động refresh token.
+// Nếu refresh token thất bại: Đăng xuất người dùng.
 
 // Thêm: interceptor để thêm token vào header của tất cả request
 api.interceptors.request.use((config) => {
