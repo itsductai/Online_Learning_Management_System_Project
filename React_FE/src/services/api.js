@@ -23,6 +23,40 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error); // Xử lý lỗi nếu request có vấn đề
 });
 
+// 🛠 Interceptor response: Xử lý lỗi 401 Unauthorized (Token hết hạn)
+api.interceptors.response.use(
+  (response) => response, // Nếu response thành công, trả về bình thường
+  async (error) => {
+    const originalRequest = error.config; // Giữ lại request ban đầu
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Đánh dấu request này đã retry 1 lần
+
+      try {
+        // Gửi request lấy Access Token mới
+        const refreshToken = localStorage.getItem("refreshToken");
+        const res = await axios.post(`${API_URL}/auth/refresh-token`, { refreshToken });
+
+        if (res.status === 200) {
+          const newAccessToken = res.data.token; // Lấy Access Token mới
+          localStorage.setItem("token", newAccessToken); // Cập nhật vào localStorage
+
+          // Cập nhật header Authorization & gửi lại request cũ
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error("Lỗi khi refresh token:", refreshError);
+        localStorage.removeItem("token"); // Xóa token nếu refresh thất bại
+        localStorage.removeItem("refreshToken"); // Xóa refresh token
+        window.location.href = "/login"; // Chuyển hướng đến trang đăng nhập
+      }
+    }
+
+    return Promise.reject(error); // Trả lỗi về nếu không thể xử lý
+  }
+);
+
 // API đăng nhập
 export const loginAPI = (email, password) => {
   return api.post(`/auth/login`, { email, password });
