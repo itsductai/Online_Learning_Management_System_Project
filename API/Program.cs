@@ -7,21 +7,54 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.DataProtection; // Thêm thư viện Google Auth
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Identity; // Thêm thư viện Google Auth
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+    // Thêm xác thực JWT vào Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Nhập token theo format: Bearer {token}",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder =>
         {
-            builder.WithOrigins("http://localhost:5173")
+            builder.WithOrigins("http://localhost:5173", "http://localhost:7025") // Thêm cả Swagger
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials(); // Thêm AllowCredentials
+                   .AllowCredentials();
         });
 });
+
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(@"C:\Keys")) // 🔥 Lưu khóa vào file để tránh mất
@@ -130,16 +163,20 @@ builder.Services.AddSingleton<JwtService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Đăng ký cho Service
+// Đăng ký Service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICoursesService, CoursesService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 
-builder.Services.AddScoped<AuthService>();
-
-// Đăng ký cho Repositorie 
-builder.Services.AddScoped<AuthRepository>();
+// Đăng ký Repositories
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
+// Đăng ký IPasswordHasher<User>
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+
 
 
 var app = builder.Build();

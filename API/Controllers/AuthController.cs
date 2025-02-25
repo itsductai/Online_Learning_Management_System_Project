@@ -56,17 +56,6 @@ namespace API.Controllers
             return Ok(new { message = "Cập nhật thông tin tài khoản thành công!" });
         }
 
-        [HttpDelete("deleteuser/{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var result = await _authservice.DeleteUser(id);
-            if (!result)
-                return NotFound(new { message = "Người dùng không tồn tại!" });
-
-            return Ok(new { message = "Xóa người dùng thành công!" });
-        }
-
-
 
 
         [HttpPost("refresh-token")]

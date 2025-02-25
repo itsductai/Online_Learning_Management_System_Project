@@ -16,7 +16,6 @@ namespace API.Services
         Task<IActionResult> Login(LoginRequest request);
         Task<IActionResult> Register(RegisterDto request);
         Task<bool> UpdateUser(int id, AuthDTO.UpdateUserDto model);
-        Task<bool> DeleteUser(int id);
         Task<IActionResult> RefreshToken(string refreshToken);
     }
 
@@ -106,12 +105,6 @@ namespace API.Services
             return true;
         }
 
-
-
-        public async Task<bool> DeleteUser(int id)
-        {
-            return await _authRepository.DeleteUser(id);
-        }
 
         public async Task<IActionResult> RefreshToken(string refreshToken)
         {
