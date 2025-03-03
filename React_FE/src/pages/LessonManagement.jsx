@@ -6,12 +6,14 @@ import LessonList from '../components/LessonList';
 import AddLessonModal from '../components/admin/AddLessonModal';
 import useLessons from '../hooks/useLessons';
 import useCourses from '../hooks/useCourses';
+import { useAuth } from '../context/AuthContext';
 
 export default function LessonManagement() {
   const { courseId } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { courses } = useCourses();
+  const { user } = useAuth();
   // const [currentCourse, setCurrentCourse] = useState(null);
   const currentCourse = courses.find(c => c.courseId === Number(courseId));
 
@@ -129,12 +131,14 @@ export default function LessonManagement() {
                   <h2 className="text-xl font-semibold mb-4">{selectedLesson.title}</h2>
                   
                   {selectedLesson.type === 'video' && (
-                    <div className="aspect-w-16 aspect-h-9 mb-4">
-                      <iframe
-                        src={selectedLesson.videoUrl}
-                        className="w-full h-full rounded-lg"
-                        allowFullScreen
-                      ></iframe>
+                    <div className="relative w-full mb-4">
+                      <div className="relative overflow-hidden" style={{ paddingTop: '56.25%' }}>
+                        <iframe
+                          src={selectedLesson.videoUrl}
+                          className="absolute top-0 left-0 w-full h-full rounded-lg"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
                     </div>
                   )}
 

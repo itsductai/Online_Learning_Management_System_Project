@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaImage, FaPlus } from 'react-icons/fa';
+import { FaTimes, FaImage, FaPlus, FaTrash } from 'react-icons/fa';
 
 const AddLessonModal = ({ 
   isOpen, 
@@ -372,14 +372,15 @@ const AddLessonModal = ({
             {/* Thời lượng */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Thời lượng
+                Thời lượng (phút)
               </label>
               <input
-                type="text"
+                type="number"
+                min="1"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="VD: 10:00 hoặc 15 phút"
+                placeholder="VD: 10 hoặc 120"
               />
               {formErrors.duration && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.duration}</p>

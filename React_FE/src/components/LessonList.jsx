@@ -25,6 +25,10 @@ const LessonList = ({
     }
   };
 
+  console.log("showAdminActions:", showAdminActions);
+console.log("User role:", user?.role);
+
+
   return (
     <div className="bg-white rounded-lg shadow-md">
       <div className="divide-y divide-gray-200">
@@ -61,7 +65,7 @@ const LessonList = ({
                 </div>
               </div>
 
-              {showAdminActions && user?.role === 'admin' && (
+              {showAdminActions && user?.role === 'Admin' && (
                 <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => {
