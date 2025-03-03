@@ -1,9 +1,11 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Pencil, Trash2, Plus, X, DollarSign } from "lucide-react"
 import Sidebar from "../components/admin/Sidebar"
 import useCourses from "../hooks/useCourses";
 
 export default function CoursesManagement() {
+    const navigate = useNavigate()
     const { courses, addCourse, updateCourse, deleteCourse, loading, error } = useCourses();
 
     // State để kiểm soát modal
@@ -30,7 +32,7 @@ const resetForm = () => {
         description: "",
         isPaid: false,
         price: 0,
-    });
+        });
     };
 
 // Dùng để bắt event submit xử lý khi nhấn nút thêm khóa học
@@ -61,31 +63,38 @@ const resetForm = () => {
     setIsAddOpen(true);
   }
 
-  // Khi mở modal "Chỉnh sửa khóa học", form sẽ chứa dữ liệu khóa học được chọn
-  const openEditModal = (course) => {
-    setSelectedCourse(course)
-    setFormData({
-      title: course.title,
-      imageUrl: course.imageUrl,
-      description: course.description,
-      isPaid: course.isPaid,
-      price: course.price,
-    })
-    setIsEditOpen(true);
-  }
+    // Khi mở modal "Chỉnh sửa khóa học", form sẽ chứa dữ liệu khóa học được chọn
+    const openEditModal = (course, e) => {
+        e.stopPropagation() // Ngăn sự kiện click lan tỏa lên card
+        setSelectedCourse(course)
+        setFormData({
+        title: course.title,
+        imageUrl: course.imageUrl,
+        description: course.description,
+        isPaid: course.isPaid,
+        price: course.price,
+        })
+        setIsEditOpen(true)
+    }
 
-  // Khi mở modal "Xóa khóa học"
-  const openDeleteModal = (course) => {
-    setSelectedCourse(course);
-    setIsDeleteOpen(true);
-  }
+    // Mở modal xóa khóa học
+    const openDeleteModal = (course, e) => {
+        e.stopPropagation() // Ngăn sự kiện click lan tỏa lên card
+        setSelectedCourse(course)
+        setIsDeleteOpen(true)
+    }
+
+    // Điều hướng đến trang quản lý bài học
+    const navigateToLessons = (courseId) => {
+        navigate(`/admin/courses/${courseId}/lessons`)
+    }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar isSidebarOpen={isSidebarOpen} />
 
-      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
-        <div className="p-8">
+        <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
+            <div className="p-8">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
             <h1 className=" text-2xl font-bold text-gray-800 ">Quản lý khóa học</h1>
@@ -105,7 +114,8 @@ const resetForm = () => {
             {courses.map((course) => (
                 <div
                 key={course.courseId}
-                className="bg-white backdrop-blur-sm rounded-xl shadow-md p-4 transition-transform duration-300 hover:transform hover:scale-105"
+                onClick={() => navigateToLessons(course.courseId)}
+                className="bg-white backdrop-blur-sm rounded-xl shadow-md p-4 transition-transform duration-300 hover:transform hover:scale-105 cursor-pointer"
                 >
                 <div className="relative aspect-video mb-4 rounded-lg overflow-hidden">
                     <img
@@ -122,13 +132,13 @@ const resetForm = () => {
                     </span>
                     <div className="flex space-x-2">
                     <button
-                        onClick={() => openEditModal(course)}
+                        onClick={(e) => openEditModal(course, e)}
                         className="p-2 text-gray-600 hover:text-primary transition-colors"
                     >
                         <Pencil className="w-5 h-5" />
                     </button>
                     <button
-                        onClick={() => openDeleteModal(course)}
+                        onClick={(e) => openDeleteModal(course, e)}
                         className="p-2 text-gray-600 hover:text-red-500 transition-colors"
                     >
                         <Trash2 className="w-5 h-5" />
