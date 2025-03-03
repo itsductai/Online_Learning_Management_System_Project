@@ -18,7 +18,7 @@ export default function Sidebar() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const menuItems = [
-    { path: "/admin", icon: <FaHome size={20} />, label: "Tổng quan" },
+    { path: "/dashboard", icon: <FaHome size={20} />, label: "Tổng quan" },
     { path: "/admin/courses", icon: <FaBook size={20} />, label: "Quản lý khóa học" },
     { path: "/admin/students", icon: <FaUsers size={20} />, label: "Quản lý học viên" },
     { path: "/admin/community", icon: <FaComments size={20} />, label: "Chat cộng đồng" },
