@@ -18,7 +18,7 @@ namespace Data.Models
         [Required]  // Điểm số bài kiểm tra
         public int Score { get; set; }
 
-        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;  // Ngày nộp bài
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày nộp bài
 
         public User? User { get; set; }  // Navigation Property
         public Quiz? Quiz { get; set; }  // Navigation Property

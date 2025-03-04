@@ -17,7 +17,7 @@ namespace Data.Models
         [MaxLength(255)]
         public string? Attachment { get; set; } // File đính kèm
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         public Lesson? Lesson { get; set; }
     }

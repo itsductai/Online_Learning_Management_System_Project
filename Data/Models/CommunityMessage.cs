@@ -17,7 +17,7 @@ namespace Data.Models
 
         public string? Attachment { get; set; }  // File hoặc ảnh đính kèm (nếu có)
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày gửi tin nhắn
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày gửi tin nhắn
 
         public User? User { get; set; }  // Navigation Property
     }

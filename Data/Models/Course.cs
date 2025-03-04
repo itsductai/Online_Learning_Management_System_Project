@@ -16,6 +16,6 @@ namespace Data.Models
         public string? Description { get; set; }  // Mô tả khóa học (có thể null)
         public bool IsPaid { get; set; } = false;  // Miễn phí hoặc trả phí
         public decimal Price { get; set; } = 0.00m;  // Giá khóa học
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày tạo
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày tạo
     }
 }

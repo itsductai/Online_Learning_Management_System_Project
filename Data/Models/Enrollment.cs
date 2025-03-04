@@ -19,7 +19,7 @@ namespace Data.Models
 
         public DateTime? CompletionDate { get; set; } // Ngày hoàn thành khóa học (nếu có)
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày đăng ký khóa học
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày đăng ký khóa học
 
         public User? User { get; set; }  // Navigation Property
         public Course? Course { get; set; }  // Navigation Property

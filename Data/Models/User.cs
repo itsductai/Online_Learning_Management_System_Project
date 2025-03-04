@@ -23,7 +23,7 @@ namespace Data.Models
 
         public bool IsActive { get; set; } = true; //  Thêm thuộc tính IsActive
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // Ngày tạo tài khoản
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7); // Ngày tạo tài khoản
 
         public string? RefreshToken { get; set; }
 

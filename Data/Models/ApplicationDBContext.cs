@@ -41,8 +41,6 @@ namespace Data.Models
         public DbSet<QuizResult> QuizResults { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<LessonProgress> LessonProgress { get; set; }
-        public DbSet<Comment> Comments { get; set; }
-        public DbSet<CommunityPost> CommunityPosts { get; set; }
         public DbSet<CommunityMessage> CommunityMessages { get; set; }
 
         //Chạy Migration và tạo database

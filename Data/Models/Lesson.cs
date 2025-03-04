@@ -18,7 +18,9 @@ namespace Data.Models
         [Required, MaxLength(200)]  // Tiêu đề bài học không được null
         public string Title { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
+
+        public int? Duration { get; set; }
 
         public Course? Course { get; set; } // Navigation Property (liên kết với Course)
     }
