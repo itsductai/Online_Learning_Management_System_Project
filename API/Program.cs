@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Identity; // Thêm thư viện Google Auth
+using Microsoft.AspNetCore.Identity;
+using Services; // Thêm thư viện Google Auth
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -167,11 +168,13 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICoursesService, CoursesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<ILessonService, LessonService>();
 
 // Đăng ký Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 
 // Đăng ký IPasswordHasher<User>
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
