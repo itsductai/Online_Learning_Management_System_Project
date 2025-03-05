@@ -8,13 +8,13 @@ namespace Data.Models
         [Key]
         public int VideoId { get; set; }
 
-        [ForeignKey("Lessons")]
+        [ForeignKey("Lesson")]
         public int LessonId { get; set; }
         
         [MaxLength(255)]
         public string  YoutubeUrl { get; set; }
 
-        public Lesson? Lessons { get; set; }
+        public Lesson? Lesson { get; set; }
 
     }
 }

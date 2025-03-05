@@ -20,7 +20,7 @@ namespace Data.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
-        public int? Duration { get; set; }
+        public int Duration { get; set; }
 
         public Course? Course { get; set; } // Navigation Property (liên kết với Course)
     }
