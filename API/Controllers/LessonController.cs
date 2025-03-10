@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace API.Controllers
 {
     [Authorize]
+    [ProducesResponseType(401)]
     [Route("api/[controller]")]
     [ApiController]
     public class LessonController : ControllerBase
@@ -19,8 +20,17 @@ namespace API.Controllers
         }
 
         [HttpGet("courses/{courseId}/lessons")]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> GetLessonsByCourse(int courseId)
         {
+
+            // Lấy UserId từ Claims của Token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+            }
+
             var lessons = await _lessonService.GetLessonsByCourseAsync(courseId);
             return Ok(lessons);
         }
