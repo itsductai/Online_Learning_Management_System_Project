@@ -12,8 +12,8 @@ const LessonList = ({
 }) => {
   const { user } = useAuth();
 
-  const getLessonTypeIcon = (type) => {
-    switch (type) {
+  const getLessonTypeIcon = (lessonType) => {
+    switch (lessonType) {
       case 'video':
         return <FaPlay className="text-blue-500" />;
       case 'text':
@@ -51,15 +51,15 @@ console.log("User role:", user?.role);
                   </h3>
                   <div className="flex items-center space-x-4">
                     <span className="flex items-center text-sm text-gray-500">
-                      {getLessonTypeIcon(lesson.type)}
+                      {getLessonTypeIcon(lesson.lessonType)}
                       <span className="ml-2">
-                        {lesson.type === 'video' ? 'Video' : 
-                         lesson.type === 'text' ? 'Bài đọc' : 
+                        {lesson.lessonType === 'video' ? 'Video' : 
+                         lesson.lessonType === 'text' ? 'Bài đọc' : 
                          'Trắc nghiệm'}
                       </span>
                     </span>
                     <span className="text-sm text-gray-500">
-                      {lesson.duration}
+                      {lesson.duration} phút
                     </span>
                   </div>
                 </div>
@@ -70,6 +70,7 @@ console.log("User role:", user?.role);
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      console.log("Đang chỉnh sửa bài học:", lesson);  // Kiểm tra xem lesson có đầy đủ thông tin không
                       onEditClick(lesson);
                     }}
                     className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
@@ -80,7 +81,7 @@ console.log("User role:", user?.role);
                     onClick={(e) => {
                       e.stopPropagation();
                       if (window.confirm('Bạn có chắc chắn muốn xóa bài học này?')) {
-                        onDeleteClick(lesson);
+                        onDeleteClick(lesson.lessonId);
                       }
                     }}
                     className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"

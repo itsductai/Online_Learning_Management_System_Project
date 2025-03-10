@@ -19,14 +19,14 @@ export default function LessonManagement() {
 
 
   const {
-    lessons,
-    loading,
+    lessons, // Lấy danh sách bài học
+    loading,  // Trạng thái tải dữ liệu
     error,
-    selectedLesson,
-    setSelectedLesson,
-    addLesson,
-    updateLesson,
-    deleteLesson
+    selectedLesson, // Bài học đang chọn
+    setSelectedLesson, // Hàm để chọn bài học
+    addLesson, // Hàm xử lý bài học
+    updateLesson, // Hàm xử lý bài học 
+    deleteLesson // Hàm xử lý bài học
   } = useLessons(courseId);
 
   // useEffect(() => {
@@ -34,19 +34,31 @@ export default function LessonManagement() {
   //   setCurrentCourse(course);
   // }, [courseId, courses]);
 
-  const handleSubmit = async (data) => {
+const handleSubmit = async (data) => {
     try {
-      if (selectedLesson) {
-        await updateLesson(selectedLesson.id, data);
-      } else {
-        await addLesson(data);
-      }
-      setIsModalOpen(false);
-      setSelectedLesson(null);
+        console.log("Bài học được chọn submit:", selectedLesson);
+        if (selectedLesson && selectedLesson.lessonId) {
+            console.log("Cập nhật bài học có ID và dưx liệu là: ", selectedLesson.lessonId, data);
+            await updateLesson(selectedLesson.lessonId, data);
+        } else {
+            console.log("Thêm bài học mới");
+            await addLesson(data);
+        }
+
+        setIsModalOpen(false);
+        setSelectedLesson(null);
     } catch (error) {
-      console.error('Error:', error);
+        console.error('Lỗi:', error);
     }
-  };
+};
+
+const getEmbedUrl = (url) => {
+    const videoIdMatch = url.match(
+        /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    );
+    return videoIdMatch ? `https://www.youtube.com/embed/${videoIdMatch[1]}` : '';
+};
+
 
   if (loading) return <div className="text-center py-8">Đang tải...</div>;
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
@@ -111,15 +123,16 @@ export default function LessonManagement() {
                 </div>
 
                 <LessonList
-                  lessons={lessons}
-                  onLessonClick={setSelectedLesson}
+                  lessons={lessons} // Danh sách bài học từ API
+                  onLessonClick={setSelectedLesson} // Khi click vào bài học, nó sẽ được chọn
                   onEditClick={(lesson) => {
-                    setSelectedLesson(lesson);
+                    console.log("Đang chỉnh sửa bài học:", lesson);  // Kiểm tra xem lesson có đầy đủ thông tin không
+                    setSelectedLesson(lesson); // Cập nhật bài học được chọn trước khi mở modal
                     setIsModalOpen(true);
                   }}
-                  onDeleteClick={deleteLesson}
-                  selectedLessonId={selectedLesson?.id}
-                  showAdminActions={true}
+                  onDeleteClick={deleteLesson}  // Xóa bài học
+                  selectedLessonId={selectedLesson?.lessonId} // Highlight bài học đang chọn
+                  showAdminActions={true} // Truyền quyền hạn admin để hiện nút sửa và xóa 
                 />
               </div>
             </div>
@@ -130,11 +143,11 @@ export default function LessonManagement() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-semibold mb-4">{selectedLesson.title}</h2>
                   
-                  {selectedLesson.type === 'video' && (
+                  {selectedLesson.lessonType === 'video' && (
                     <div className="relative w-full mb-4">
                       <div className="relative overflow-hidden" style={{ paddingTop: '56.25%' }}>
                         <iframe
-                          src={selectedLesson.videoUrl}
+                          src={getEmbedUrl(selectedLesson.youtubeUrl)}
                           className="absolute top-0 left-0 w-full h-full rounded-lg"
                           allowFullScreen
                         ></iframe>
@@ -142,13 +155,13 @@ export default function LessonManagement() {
                     </div>
                   )}
 
-                  {selectedLesson.type === 'text' && (
+                  {selectedLesson.lessonType === 'text' && (
                     <div className="prose max-w-none">
                       {selectedLesson.content}
                     </div>
                   )}
 
-                  {selectedLesson.type === 'quiz' && (
+                  {selectedLesson.lessonType === 'quiz' && (
                     <div className="space-y-4">
                       {selectedLesson.questions?.map((question, index) => (
                         <div key={index} className="bg-gray-50 rounded-lg p-4">

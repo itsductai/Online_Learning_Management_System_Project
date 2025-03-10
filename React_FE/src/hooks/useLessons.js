@@ -11,12 +11,13 @@ import {
   updateQuizAPI,
   deleteQuizAPI
 } from "../services/quizAPI";
+import { data } from "react-router-dom";
 
 function useLessons(courseId) {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState(null); // quản lý trạng thái của bài học đang được chọn trong hệ thống
 
   useEffect(() => {
     if (courseId) {
@@ -52,6 +53,7 @@ function useLessons(courseId) {
       await fetchLessons();
     } catch (err) {
       setError("Lỗi khi thêm bài học");
+      console.log(courseId, lessonData);
       throw err;
     } finally {
       setLoading(false);
@@ -75,16 +77,13 @@ function useLessons(courseId) {
     }
   };
 
-  const deleteLesson = async (lessonId, type) => {
+  const deleteLesson = async (lessonId) => {
     try {
       setLoading(true);
-      if (type === 'quiz') {
-        await deleteQuizAPI(courseId, lessonId);
-      } else {
-        await deleteLessonAPI(lessonId);
-      }
+      console.log("Bạn đang xóa bài có ID:", lessonId)
+      await deleteLessonAPI(lessonId);
       await fetchLessons();
-      setSelectedLesson(null);
+      setSelectedLesson(null); // Xóa xong thì bỏ chọn bài học
     } catch (err) {
       setError("Lỗi khi xóa bài học");
       throw err;

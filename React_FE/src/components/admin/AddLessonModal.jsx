@@ -9,11 +9,12 @@ const AddLessonModal = ({
   courseId 
 }) => {
   const [formData, setFormData] = useState({
+    courseId: {courseId},
     title: '',
-    type: 'video',
-    content: '',
-    videoUrl: '',
+    lessonType: 'video',
     duration: '',
+    youtubeUrl: '',
+    content: '',
   });
 
   const [quizQuestions, setQuizQuestions] = useState([]);
@@ -29,7 +30,7 @@ const AddLessonModal = ({
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
-      if (initialData.type === 'quiz' && initialData.questions) {
+      if (initialData.lessonType === 'quiz' && initialData.questions) {
         setQuizQuestions(initialData.questions);
       }
     }
@@ -37,13 +38,13 @@ const AddLessonModal = ({
 
   useEffect(() => {
     // Load câu hỏi đã save từ localStorage khi mở modalmodal
-    if (formData.type === 'quiz') {
+    if (formData.lessonType === 'quiz') {
       const savedQuestions = localStorage.getItem(`quiz_${courseId}`);
       if (savedQuestions) {
         setQuizQuestions(JSON.parse(savedQuestions));
       }
     }
-  }, [courseId, formData.type]);
+  }, [courseId, formData.lessonType]);
 
   const validateQuizQuestion = () => {
     const errors = {};
@@ -90,13 +91,13 @@ const AddLessonModal = ({
     if (!formData.title.trim()) {
       errors.title = 'Vui lòng nhập tên bài học';
     }
-    if (formData.type === 'video' && !formData.videoUrl) {
-      errors.videoUrl = 'Vui lòng nhập URL video';
+    if (formData.lessonType === 'video' && !formData.youtubeUrl) {
+      errors.youtubeUrl = 'Vui lòng nhập URL video';
     }
-    if (formData.type === 'text' && !formData.content) {
+    if (formData.lessonType === 'text' && !formData.content) {
       errors.content = 'Vui lòng nhập nội dung bài học';
     }
-    if (formData.type === 'quiz' && quizQuestions.length === 0) {
+    if (formData.lessonType === 'quiz' && quizQuestions.length === 0) {
       errors.quiz = 'Vui lòng thêm ít nhất một câu hỏi';
     }
     if (!formData.duration) {
@@ -108,16 +109,30 @@ const AddLessonModal = ({
       return;
     }
 
-    // Submit form
-    const submitData = {
-      ...formData,
-      ...(formData.type === 'quiz' && { questions: quizQuestions })
-    };
+  // Xử lý giá trị NULL thành chuỗi rỗng ""
+  const addData = {
+    title: formData.title ?? '',
+    youtubeUrl: formData.youtubeUrl ?? '',
+    content: formData.content ?? '',
+    duration: formData.duration ?? '',
+    lessonType: formData.lessonType ?? 'video', // Mặc định video nếu không có
+    questions: formData.lessonType === 'quiz' ? quizQuestions : []
+  };
+
+  const updateData = {
+        title: formData.title ?? '',
+        lessonType: formData.lessonType,
+        youtubeUrl: formData.youtubeUrl ?? '',
+        content: formData.content ?? '',
+        duration: formData.duration
+  }
+
+  const submitData = initialData ? updateData : addData;
 
     onSubmit(submitData);
     
     // XóaXóa localStorage sau khi submit thành công 
-    if (formData.type === 'quiz') {
+    if (formData.lessonType === 'quiz') {
       localStorage.removeItem(`quiz_${courseId}`);
     }
   };
@@ -163,8 +178,8 @@ const AddLessonModal = ({
                 Loại bài học
               </label>
               <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                value={formData.lessonType}
+                onChange={(e) => setFormData({ ...formData, lessonType: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="video">Video</option>
@@ -174,26 +189,26 @@ const AddLessonModal = ({
             </div>
 
             {/* Video URL */}
-            {formData.type === 'video' && (
+            {formData.lessonType === 'video' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   URL Video
                 </label>
                 <input
                   type="url"
-                  value={formData.videoUrl}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  value={formData.youtubeUrl}
+                  onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Nhập URL video YouTube"
                 />
-                {formErrors.videoUrl && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.videoUrl}</p>
+                {formErrors.youtubeUrl && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.youtubeUrl}</p>
                 )}
               </div>
             )}
 
             {/* Nội dung bài đọc */}
-            {formData.type === 'text' && (
+            {formData.lessonType === 'text' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nội dung bài học
@@ -211,7 +226,7 @@ const AddLessonModal = ({
             )}
 
             {/* Quiz Questions */}
-            {formData.type === 'quiz' && (
+            {formData.lessonType === 'quiz' && (
               <div className="space-y-6">
                 {/* Danh sách câu hỏi đã thêm */}
                 <div>
@@ -238,7 +253,7 @@ const AddLessonModal = ({
                         <p className="text-gray-900 mb-2">{question.question}</p>
                         {question.imageUrl && (
                           <img
-                            src={question.imageUrl || "/placeholder.svg"}
+                            src={question.imageUrl}
                             alt="Question"
                             className="mb-2 rounded-lg max-w-xs"
                           />
