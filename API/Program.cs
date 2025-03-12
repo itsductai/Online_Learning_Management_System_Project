@@ -184,6 +184,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICoursesService, CoursesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<IQuizService, QuizService>(); // Đăng ký service Quiz
 
 // Đăng ký Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
