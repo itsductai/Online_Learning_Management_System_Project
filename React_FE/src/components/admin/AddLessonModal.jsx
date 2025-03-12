@@ -74,7 +74,7 @@ const AddLessonModal = ({
       options: ['', '', '', ''],
       correctAnswer: 0
     });
-    setFormErrors({});
+    setFormErrors({}); 
   };
 
   const handleRemoveQuestion = (index) => {
@@ -124,7 +124,8 @@ const AddLessonModal = ({
         lessonType: formData.lessonType,
         youtubeUrl: formData.youtubeUrl ?? '',
         content: formData.content ?? '',
-        duration: formData.duration
+        duration: formData.duration,
+        questions: formData.lessonType === 'quiz' ? quizQuestions : []
   }
 
   const submitData = initialData ? updateData : addData;
