@@ -8,8 +8,7 @@ import {
 
 import {
   addQuizAPI,
-  updateQuizAPI,
-  deleteQuizAPI
+  updateQuizAPI
 } from "../services/quizAPI";
 import { data } from "react-router-dom";
 
@@ -42,11 +41,28 @@ function useLessons(courseId) {
     }
   };
 
+  // ✅ Chuẩn bị dữ liệu cho Quiz
+  const prepareQuizData = (lessonData) => {
+    return {
+      title: lessonData.title,
+      duration: lessonData.duration,
+      questions: lessonData.questions.map(q => ({
+        question: q.question,
+        imageUrl: q.imageUrl ?? "", // Nếu không có ảnh thì truyền chuỗi rỗng
+        options: q.options || ["", "", "", ""], // Đảm bảo đủ 4 lựa chọn
+        correctAnswer: q.correctAnswer ?? 0 // Mặc định là A (0) nếu không có dữ liệu
+      }))
+    };
+  };
+
   const addLesson = async (lessonData) => {
     try {
       setLoading(true);
-      if (lessonData.type === 'quiz') {
-        await addQuizAPI(courseId, lessonData);
+      if (lessonData.lessonType === 'quiz') {
+        console.log("ddu lieu cho quiz:", courseId, lessonData);
+        const quizData = prepareQuizData(lessonData);
+        console.log("Tien hanh them du lieu cho quiz:", courseId, quizData);
+        await addQuizAPI(courseId, quizData);
       } else {
         await addLessonAPI(courseId, lessonData);
       }
@@ -63,8 +79,10 @@ function useLessons(courseId) {
   const updateLesson = async (lessonId, lessonData) => {
     try {
       setLoading(true);
-      if (lessonData.type === 'quiz') {
-        await updateQuizAPI(courseId, lessonId, lessonData);
+       console.log("Sua du lieu cho:", lessonId, lessonData);
+      if (lessonData.lessonType === 'quiz') {
+        const quizUpdate = prepareQuizData(lessonData);
+        await updateQuizAPI(lessonId, quizUpdate);
       } else {
         await updateLessonAPI(lessonId, lessonData);
       }
