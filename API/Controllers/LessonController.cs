@@ -31,7 +31,8 @@ namespace API.Controllers
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
             }
 
-            var lessons = await _lessonService.GetLessonsByCourseAsync(courseId);
+            var isAdmin = User.IsInRole("Admin"); // Kiểm tra quyền admin
+            var lessons = await _lessonService.GetLessonsByCourseAsync(courseId, isAdmin);
             return Ok(lessons);
         }
 

@@ -190,6 +190,8 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+
 
 // Đăng ký IPasswordHasher<User>
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

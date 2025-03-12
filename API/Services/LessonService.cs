@@ -7,7 +7,7 @@ namespace Services
 {
     public interface ILessonService
     {
-        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId);
+        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool isAdmin);
         Task AddLessonAsync(AddLessonDto lessonDto);
         Task UpdateLessonAsync(int lessonId, UpdateLessonDto lessonDto);
         Task DeleteLessonAsync(int lessonId);
@@ -16,13 +16,15 @@ namespace Services
     public class LessonService : ILessonService
     {
         private readonly ILessonRepository _lessonRepository;
+        private readonly IQuizRepository _quizRepository;
 
-        public LessonService(ILessonRepository lessonRepository)
+        public LessonService(ILessonRepository lessonRepository, IQuizRepository quizRepository)
         {
             _lessonRepository = lessonRepository;
+            _quizRepository = quizRepository; //  Inject repository quiz
         }
 
-        public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId)
+        public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool isAdmin)
         {
             var lessons = await _lessonRepository.GetLessonsByCourseAsync(courseId);
             var lessonDtos = new List<LessonDto>();
@@ -41,11 +43,10 @@ namespace Services
                 if (lesson.LessonType == "video")
                 {
                     var videoLesson = await _lessonRepository.GetVideoLessonByLessonIdAsync(lesson.LessonId);
-                    if(videoLesson != null)
+                    if (videoLesson != null)
                     {
                         lessonDto.YoutubeUrl = videoLesson.YoutubeUrl;
                     }
-                        
                 }
                 else if (lesson.LessonType == "text")
                 {
@@ -55,12 +56,24 @@ namespace Services
                         lessonDto.Content = textLesson.Content;
                     }
                 }
+                else if (lesson.LessonType == "quiz")
+                {
+                    var quizzes = await _quizRepository.GetQuizzesByLessonIdAsync(lesson.LessonId);
+                    lessonDto.Questions = quizzes.Select(q => new QuizQuestionDto
+                    {
+                        QuizId = q.QuizId,
+                        Question = q.Question,
+                        Options = new List<string> { q.OptionA, q.OptionB, q.OptionC, q.OptionD },
+                        CorrectAnswer = isAdmin ? q.CorrectAnswer : -1 // Ẩn đáp án nếu không phải admin
+                    }).ToList();
+                }
 
                 lessonDtos.Add(lessonDto);
             }
 
             return lessonDtos;
         }
+
 
         public async Task AddLessonAsync(AddLessonDto lessonDto)
         {

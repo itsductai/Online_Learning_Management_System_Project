@@ -24,9 +24,10 @@ namespace API.DTOs
 
     public class QuizQuestionDto
     {
+        public int QuizId { get; set; }  // Thêm ID câu hỏi
         public string Question { get; set; }
         public List<string> Options { get; set; }
-        public string CorrectAnswer { get; set; }
+        public int CorrectAnswer { get; set; } // Ẩn hoặc hiển thị tùy quyền truy cập
     }
 
     public class AddLessonDto
