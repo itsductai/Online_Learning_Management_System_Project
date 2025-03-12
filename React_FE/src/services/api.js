@@ -39,9 +39,17 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Nếu request hiện tại là /auth/refresh-token thì không xử lý interceptor nữa
+    if (originalRequest.url.includes("/auth/refresh-token")) {
+      console.error("Refresh Token thất bại, không tiếp tục gọi lại.");
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
 
     // Nếu _retry chưa tồn tại, gán giá trị mặc định là false
-    if (!originalRequest.hasOwnProperty("_retry")) {
+    if (!originalRequest._retry) {
       originalRequest._retry = false;
     }
 
@@ -52,14 +60,14 @@ api.interceptors.response.use(
     // Kiểm tra nếu là lỗi 401 và chưa thử refresh token
     if ((error.response?.status === 401 ) && !originalRequest._retry) {
       originalRequest._retry = true; // Đánh dấu đã thử refresh token 1 lần
-      console.log(" Token hết hạn, đang lấy Refresh Token mới...");
+      console.log("⏳ Token hết hạn, đang lấy Refresh Token mới...");
       try {
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) {
           console.error(" Không tìm thấy Refresh Token!");
           throw new Error("Không tìm thấy Refresh Token!");
         }
-        console.error("RefreshToken hiện tại: " ,refreshToken);
+        console.error("RefreshToken hiện tại: ", refreshToken);
 
         // Gửi request lấy Access Token mới
         const res = await api.post(`/auth/refresh-token`, {refreshToken});
@@ -72,12 +80,11 @@ api.interceptors.response.use(
 
           // Cập nhật header Authorization & gửi lại request cũ
           originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-          console.log(" Refresh Token thành công, gửi lại request cũ.");
-          
+          console.log("✅Refresh Token thành công, gửi lại request cũ.");
           return api(originalRequest); // Gửi lại request cũ với token mới
         }
       } catch (refreshError) {
-        console.error(" Refresh Token thất bại:", refreshError);
+        console.error("❌Refresh Token thất bại:", refreshError);
 
         // Xóa token & redirect đến trang đăng nhập
         localStorage.removeItem("token");
@@ -85,7 +92,7 @@ api.interceptors.response.use(
         window.location.href = "/login";
       }
     }
-    //  originalRequest._retry = false;
+
     return Promise.reject(error); // Trả lỗi về nếu không thể xử lý
   }
 );
