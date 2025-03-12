@@ -7,6 +7,9 @@ import AddLessonModal from '../components/admin/AddLessonModal';
 import useLessons from '../hooks/useLessons';
 import useCourses from '../hooks/useCourses';
 import { useAuth } from '../context/AuthContext';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from 'rehype-raw';
 
 export default function LessonManagement() {
   const { courseId } = useParams();
@@ -156,8 +159,13 @@ const getEmbedUrl = (url) => {
                   )}
 
                   {selectedLesson.lessonType === 'text' && (
-                    <div className="prose max-w-none">
-                      {selectedLesson.content}
+                    <div className="prose max-w-none"> 
+                    {/* ReactMarkdown giúp hiển thị Markdown giống file README.md.
+                    remarkGfm giúp hỗ trợ các cú pháp GitHub-Flavored 
+                    rehype-raw để hỗ trợ hiển thị HTML từ Markdown.*/}
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} >
+                        {selectedLesson.content}
+                      </ReactMarkdown>
                     </div>
                   )}
 
