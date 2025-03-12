@@ -20,8 +20,8 @@ namespace Data.Models
         public string? OptionC { get; set; }
         public string? OptionD { get; set; }
 
-        [Required, MaxLength(1)]  // Đáp án đúng (A, B, C hoặc D)
-        public char CorrectAnswer { get; set; }
+        [Required, MaxLength(1)]  // Đáp án đúng (0 , 1, 2 hoặc 3)
+        public int CorrectAnswer { get; set; }
 
         public Lesson? Lesson { get; set; } // Navigation Property
     }
