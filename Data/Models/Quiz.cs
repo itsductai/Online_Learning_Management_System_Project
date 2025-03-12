@@ -22,6 +22,7 @@ namespace Data.Models
 
         [Required, MaxLength(1)]  // Đáp án đúng (0 , 1, 2 hoặc 3)
         public int CorrectAnswer { get; set; }
+        public string? ImageUrl { get; set; } // Thêm link hình ảnh vào câu hỏi
 
         public Lesson? Lesson { get; set; } // Navigation Property
     }

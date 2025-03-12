@@ -23,15 +23,18 @@ namespace API.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetLessonsByCourse(int courseId)
         {
-
             // Lấy UserId từ Claims của Token
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
             }
+            //var isAdmin = User.IsInRole("Admin"); // Kiểm tra quyền admin
+            // Kiểm tra role có phải là Admin hay không
+            var roleClaim = User.FindFirst(ClaimTypes.Role);
+            bool isAdmin = roleClaim != null && roleClaim.Value == "Admin";
 
-            var isAdmin = User.IsInRole("Admin"); // Kiểm tra quyền admin
+            // Gọi service với biến isAdmin
             var lessons = await _lessonService.GetLessonsByCourseAsync(courseId, isAdmin);
             return Ok(lessons);
         }

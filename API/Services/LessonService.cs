@@ -64,7 +64,8 @@ namespace Services
                         QuizId = q.QuizId,
                         Question = q.Question,
                         Options = new List<string> { q.OptionA, q.OptionB, q.OptionC, q.OptionD },
-                        CorrectAnswer = isAdmin ? q.CorrectAnswer : -1 // Ẩn đáp án nếu không phải admin
+                        CorrectAnswer = isAdmin ? q.CorrectAnswer : -1, // Ẩn đáp án nếu không phải admin
+                        ImageUrl = q.ImageUrl  
                     }).ToList();
                 }
 
