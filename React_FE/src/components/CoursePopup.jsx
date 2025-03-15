@@ -1,3 +1,5 @@
+// Popup chi tiết khóa học
+
 import { useNavigate } from "react-router-dom"
 import { FaStar, FaUsers, FaClock, FaBook, FaTimes } from "react-icons/fa"
 
@@ -5,13 +7,7 @@ const CoursePopup = ({ course, onClose }) => {
   const navigate = useNavigate()
 
   const handleJoinCourse = () => {
-    // Kiểm tra nếu khóa học đã có tiến độ, chuyển đến trang bài học
-    if (course.progress && course.progress > 0) {
-      navigate(`/courses/${course.courseId}/lessons`)
-    } else {
-      // Nếu chưa có tiến độ, bắt đầu khóa học mới
-      navigate(`/courses/${course.courseId}/lessons`)
-    }
+    navigate(`/courses/${course.courseId}/lessons`)
   }
 
   return (

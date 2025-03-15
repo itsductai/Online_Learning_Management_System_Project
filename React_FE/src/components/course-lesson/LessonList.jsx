@@ -1,7 +1,12 @@
+// Hiển thị danh sách bài học, đánh dấu các bài đã mở khóa và cho phép chọn bài học
+
 import { FaLock, FaPlay, FaCheck, FaClock } from "react-icons/fa"
 
 const LessonList = ({ lessons, selectedLesson, lessonUnlocked, onSelectLesson }) => {
+  // Kiểm tra và chọn bài học
+  console.log("Cac gia tri truyen vao lessonList: lessons, selectedLesson, lessonUnlocked, onSelectLesson ",lessons, selectedLesson, lessonUnlocked, onSelectLesson)
   const handleLessonSelect = (lesson) => {
+    // Khi người dùng click vào bài học, gọi onSelectLesson(lesson) để cập nhật bài học đang xem
     if (onSelectLesson) {
       onSelectLesson(lesson)
     }
@@ -14,9 +19,12 @@ const LessonList = ({ lessons, selectedLesson, lessonUnlocked, onSelectLesson })
       </div>
 
       <div className="divide-y divide-gray-200">
+        {/* Hiển thị danh sách bài học */}
         {lessons.map((lesson, index) => (
           <div
             key={lesson.lessonId}
+            // Nếu bài học đang được chọn (selectedLesson.lessonId === lesson.lessonId), nó sẽ được highlight (bg-gray-50)
+            // Nếu lessonUnlocked[lesson.lessonId] === false, bài học sẽ bị mờ đi (opacity-60)
             className={`group p-6 hover:bg-gray-50 cursor-pointer transition-colors ${
               selectedLesson?.lessonId === lesson.lessonId ? "bg-gray-50" : ""
             } ${!lessonUnlocked[lesson.lessonId] ? "opacity-60" : ""}`}

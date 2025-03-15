@@ -1,23 +1,30 @@
-import { motion } from "framer-motion"
+// Hiển thị từng khóa học
+
+import { motion } from "framer-motion" // Sử dụng Framer Motion để thêm hiệu ứng cho các thẻ khóa học
 import { FaStar } from "react-icons/fa"
 import BookmarkButton from "./BookmarkButton"
 
-// Animation variants
+// Animation cho thẻ khóa học
 const cardVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
-      duration: 0.4,
+      duration: 1.4,
     },
   },
 }
-
+// Component chínhcourse	
+// course đối tượng chứa thông tin khóa học
+// variant	Kiểu hiển thị (default, compact, progress)
+// onClick	Hàm được gọi khi click vào khóa học
+// showBookmark	Hiển thị nút lưu khóa học
+// animate dùng animation 
 const CourseCard = ({ course, variant = "default", onClick, showBookmark = false, animate = true }) => {
   const handleCardClick = () => {
     if (onClick) {
-      onClick(course)
+      onClick(course) // Gọi hàm onClick(course) để điều hướng đến chi tiết khóa học
     }
   }
 
@@ -25,9 +32,9 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
   const CardWrapper = animate ? motion.div : "div"
   const wrapperProps = animate
     ? {
-        variants: cardVariants,
-        whileHover: { y: -5 },
-        whileTap: { scale: 0.98 },
+        variants: cardVariants, // Áp dụng hiệu ứng xuất hiện
+        whileHover: { y: -5 }, // // Khi hover, thẻ nhấc lên 5px
+        whileTap: { scale: 0.98 }, // // Khi click, thẻ thu nhỏ 2%
       }
     : {}
 

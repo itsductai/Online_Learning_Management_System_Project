@@ -1,4 +1,3 @@
-"use client"
 import { motion } from "framer-motion"
 import { FaBullhorn, FaCalendarAlt, FaUsers, FaAward } from "react-icons/fa"
 

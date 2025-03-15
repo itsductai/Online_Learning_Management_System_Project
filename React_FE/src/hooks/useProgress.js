@@ -1,17 +1,15 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import { getProgressByCourseId, updateProgress, completeLesson } from "../services/progressAPI"
 
 function useProgress(courseId) {
-    const { user } = useAuth()
-    const [progress, setProgress] = useState(0)
-    const [completedLessons, setCompletedLessons] = useState([])
-    const [lessonUnlocked, setLessonUnlocked] = useState({})
-    const [watchTime, setWatchTime] = useState(0)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const { user } = useAuth() // Lấy thông tin từ user thông qua conext
+    const [progress, setProgress] = useState(0) // Quản lý trạng thái % tiến độ khóa học 
+    const [completedLessons, setCompletedLessons] = useState([]) // Danh sách bài học đã hoàn thành
+    const [lessonUnlocked, setLessonUnlocked] = useState({}) // Danh sách bài học đã mở khóa
+    const [watchTime, setWatchTime] = useState(0) // Quản lý thời gian học tập trong bài học hiện tịa
+    const [loading, setLoading] = useState(false) // Quản lý trạng thái load dữ liệu
+    const [error, setError] = useState(null) // Quản lý các lỗi
 
     // Lấy tiến độ học tập khi component mount hoặc courseId thay đổi
     useEffect(() => {
@@ -84,6 +82,8 @@ function useProgress(courseId) {
       setLoading(true)
       setError(null)
 
+      console.log("Goi saveProgress ")
+
       // Cập nhật danh sách bài học đã hoàn thành
       const updatedCompletedLessons = [...completedLessons]
       if (completedLessonId && !updatedCompletedLessons.includes(completedLessonId)) {
@@ -120,6 +120,8 @@ function useProgress(courseId) {
 
       // Lưu vào localStorage
       localStorage.setItem(`course_${courseId}_progress`, JSON.stringify(progressData))
+
+      console.log("Goi saveProgress luu vao localstorage: ", JSON.stringify(progressData))
 
       // Nếu đã đăng nhập, gửi lên server
       if (user?.id) {

@@ -1,9 +1,13 @@
+// Hiển thị thông tin chung của khóa học, bao gồm ảnh, tiêu đề, mô tả, tiến độ hoàn thành và giá
+
 import { useNavigate } from "react-router-dom"
 import { FaHome } from "react-icons/fa"
 
 const CourseHeader = ({ course, progress, error }) => {
+  // dùng để điều hướng người dùng
   const navigate = useNavigate()
 
+  // Nếu course chưa có dữ liệu (ví dụ: API chưa load xong), component sẽ không render gì cả
   if (!course) return null
 
   return (
@@ -27,12 +31,14 @@ const CourseHeader = ({ course, progress, error }) => {
               <span className="text-sm font-medium text-gray-700">Tiến độ khóa học</span>
               <span className="text-sm font-medium text-gray-700">{Math.round(progress)}%</span>
             </div>
+            {/* Hiển thị tiến độ hoàn thành của khóa học dựa trên giá trị progress (tính theo %) */}
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div className="bg-primary h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
             </div>
           </div>
 
           <div className="flex items-center gap-4 mt-2">
+            {/* Hiển thị số lượng bài học có trong khóa học */}
             <span className="text-sm text-gray-500">{course.lessonCount || 0} bài học</span>
             <span
               className={`px-2 py-1 text-xs font-semibold rounded-full ${

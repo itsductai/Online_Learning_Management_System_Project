@@ -1,3 +1,5 @@
+// Hiển thị danh sách khóa học theo dạng lưới
+
 import { motion } from "framer-motion"
 import CourseCard from "./CourseCard"
 
@@ -21,13 +23,12 @@ const CourseGrid = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
+        staggerChildren: 0.8 // staggerChildren giúp các thẻ khóa học xuất hiện lần lượt thay vì đồng thời
       },
     },
   }
 
-  // Xác định số cột dựa trên prop columns
+  // Xác định số cột dựa trên prop columns, tự động điều chỉnh số cột trên desktop, tablet, mobile
   const getGridCols = () => {
     return `grid-cols-${columns.mobile} md:grid-cols-${columns.tablet} lg:grid-cols-${columns.default}`
   }
