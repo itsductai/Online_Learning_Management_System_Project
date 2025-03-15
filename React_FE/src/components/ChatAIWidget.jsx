@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { FaRobot, FaTimes, FaPaperPlane } from "react-icons/fa"
 
