@@ -3,8 +3,9 @@
 import { FaLock, FaPlay, FaCheck, FaClock } from "react-icons/fa"
 
 const LessonList = ({ lessons, selectedLesson, lessonUnlocked, onSelectLesson }) => {
+  console.log("LessonList render với lessonUnlocked:", lessonUnlocked);
+  
   // Kiểm tra và chọn bài học
-  console.log("Cac gia tri truyen vao lessonList: lessons, selectedLesson, lessonUnlocked, onSelectLesson ",lessons, selectedLesson, lessonUnlocked, onSelectLesson)
   const handleLessonSelect = (lesson) => {
     // Khi người dùng click vào bài học, gọi onSelectLesson(lesson) để cập nhật bài học đang xem
     if (onSelectLesson) {

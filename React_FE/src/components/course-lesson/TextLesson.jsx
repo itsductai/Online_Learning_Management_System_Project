@@ -17,14 +17,18 @@ const TextLesson = ({ lesson, watchTime, onWatchTimeUpdate, onComplete }) => {
     const timer = setInterval(() => {
       if (onWatchTimeUpdate) {
         const newTime = onWatchTimeUpdate()
-
-        // Nếu đã đọc đủ 50% thời gian, đánh dấu hoàn thành
         const requiredTime = lesson.duration * 30 // 50% thời gian tính bằng giây
+        
+        console.log("Cac gia tri theo doi thoi gian ",requiredTime, newTime, onComplete);
+        // Nếu đã đọc đủ 50% thời gian, đánh dấu hoàn thành
+        
         if (newTime >= requiredTime && onComplete) {
+          console.log("Da du 50% thoi gian: ", lesson.lessonId)
           onComplete(lesson.lessonId)
           clearInterval(timer)
         }
       }
+      console.log("Dang theo doi thoi gian hoc")
     }, 1000)
 
     return () => clearInterval(timer)

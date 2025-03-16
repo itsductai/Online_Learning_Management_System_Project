@@ -30,7 +30,6 @@ const CoursesPage = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredCourses, setFilteredCourses] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedCategory, setSelectedCategory] = useState("All")
   const coursesPerPage = 9
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showPopup, setShowPopup] = useState(false)
@@ -45,12 +44,11 @@ const CoursesPage = () => {
   useEffect(() => {
     const filtered = courses.filter(
       (course) =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (selectedCategory === "All" || course.category === selectedCategory),
+        course.title.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredCourses(filtered)
     setCurrentPage(1)
-  }, [searchTerm, courses, selectedCategory])
+  }, [searchTerm, courses])
 
   const indexOfLastCourse = currentPage * coursesPerPage
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage
@@ -58,7 +56,6 @@ const CoursesPage = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
-  const categories = ["All", "C#", "ReactJS", "Develop"]
 
   // Lấy khóa học mới nhất dựa vào createdAt
   const getNewestCourses = (count = 4) => {
@@ -156,21 +153,6 @@ const CoursesPage = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              <div className="flex space-x-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm ${
-                      selectedCategory === category
-                        ? "bg-primary text-white"
-                        : "bg-white text-primary border border-primary"
-                    } hover:bg-opacity-90 transition`}
-                  >
-                    {category}
-                  </button>
-                ))}
               </div>
             </div>
 

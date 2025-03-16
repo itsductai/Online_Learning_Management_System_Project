@@ -35,14 +35,16 @@ function useStudentLessons(courseId) {
     } finally {
       setLoading(false)
     }
+    console.log("🔍 Dữ liệu lessons trong useStudentLessons:", lessons);
+
   }
 
   return {
-    lessons,
+    lessons, // Truyền lesson từ api
     loading,
     error,
-    selectedLesson,
-    setSelectedLesson,
+    selectedLesson, // Truyền trạng thái chọn 1 lesson
+    setSelectedLesson, // Truyền hàm set trạng thái chọn 1 lesson
     fetchLessons,
   }
 }

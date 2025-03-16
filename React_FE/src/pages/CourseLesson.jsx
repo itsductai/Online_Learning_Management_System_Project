@@ -21,10 +21,12 @@ export default function CourseLesson() {
   const { user } = useAuth()
   const currentCourse = courses.find((c) => c.courseId === Number(courseId))
  
-  console.log("Luong debug dang o courseLesson")
   // Sử dụng custom hooks
+  // Lấy danh sách bài học
   const { lessons, loading, error: lessonError, selectedLesson, setSelectedLesson } = useStudentLessons(courseId)
 
+
+  // Lấy các hàm định nghĩa để quản lý tiến trình
   const {
     progress, // Truyền trạng thái mặc định của tiến trình (được khởi tạo từ init ở hook)
     watchTime, // Truyền thời gian xem của trạng thái watch
@@ -34,18 +36,30 @@ export default function CourseLesson() {
     saveProgress, // Truyền hàm xử lý khi có tiến trình pphát sinh
     trackWatchTime, // Truyền bộ đếm theo dõi thời gian xem bài
     resetWatchTime, // Truyền hàm reset thời gian khi chuyển bài học
+    initLessonUnlocked, // Truyền hàm khởi tạo
+    completedLessons, // Lấy danh sách bài học đã hoàn thành từ api
   } = useProgress(courseId) // truyền props
-
-  console.log("Luong debug sau khi goi hoook va dang o courseLesson")
 
   // Khởi tạo trạng thái mở khóa bài học khi danh sách bài học thay đổi
   useEffect(() => {
     if (lessons.length > 0) {
-      // Cập nhật trạng thái mở khóa bài học trong useProgress
-      saveProgress(null, lessons)
-      console.log("UseEffect taij courseLesson, Cập nhật trạng thái mở khóa bài học trong useProgress")
+      console.log("--- Cập nhật trạng thái mở khóa bài học:", completedLessons, lessons);
+      // Khởi tạo trạng thái mở khóa
+      initLessonUnlocked(completedLessons, lessons);
+      
+      // Nếu chưa có bài học nào được chọn, chọn bài đầu tiên
+      if (!selectedLesson) {
+        setSelectedLesson(lessons[0]);
+      }
     }
-  }, [lessons])
+  }, [lessons, completedLessons, initLessonUnlocked, selectedLesson, setSelectedLesson]);
+
+  useEffect(() => {
+    if (lessons.length > 0) {
+      saveProgress(null, lessons);
+      console.log("Dang trong effect save Progress")
+    }
+  }, [lessons]);
 
   // Xử lý khi chọn bài học
   const handleLessonSelect = (lesson) => {

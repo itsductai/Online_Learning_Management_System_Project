@@ -89,6 +89,7 @@ api.interceptors.response.use(
         // Xóa token & redirect đến trang đăng nhập
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
+        alert("Opps! Có lỗi xảy ra khi xác thực. Vui lòng đăng nhập lại giúp mình nhé!")
         window.location.href = "/login";
       }
     }
