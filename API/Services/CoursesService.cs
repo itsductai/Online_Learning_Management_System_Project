@@ -7,7 +7,7 @@ namespace API.Services
 {
     public interface ICoursesService
     {
-        Task<List<CoursesDto>> GetAllCourses();
+        Task<List<CoursesDto>> GetAllCourses(int? userId, bool isStudent);
         Task<List<CoursesDto>> GetCoursesByText(string text);
         Task<Course?> CreateCourse(CreateCourseDto courseDto);
         Task<Course?> UpdateCourse(int id, UpdateCourseDto courseDto);
@@ -23,21 +23,37 @@ namespace API.Services
             _coursesRepository = coursesRepository;
         }
 
-        public async Task<List<CoursesDto>> GetAllCourses()
+        public async Task<List<CoursesDto>> GetAllCourses(int? userId, bool isStudent)
         {
             List<Course> courses = await _coursesRepository.GetAllCourses();
-            return courses.Select(c => new CoursesDto
-            {
-                CourseId = c.CourseId,
-                Title = c.Title,
-                ImageUrl = c.ImageUrl,
-                Description = c.Description,
-                Price = c.Price,
-                IsPaid = c.IsPaid,
-                CreatedAt = c.CreatedAt
+            List<Enrollment> enrollments = new List<Enrollment>();
 
+            // Nếu là Student, lấy danh sách Enrollments của User
+            if (isStudent && userId.HasValue)
+            {
+                enrollments = await _coursesRepository.GetEnrollmentsByUserId(userId.Value);
+            }
+
+            return courses.Select(c =>
+            {
+                var enrollment = enrollments.FirstOrDefault(e => e.CourseId == c.CourseId); // Tìm Enrollment theo CourseId
+
+                return new CoursesDto
+                {
+                    CourseId = c.CourseId,
+                    Title = c.Title,
+                    ImageUrl = c.ImageUrl,
+                    Description = c.Description,
+                    Price = c.Price,
+                    IsPaid = c.IsPaid,
+                    CreatedAt = c.CreatedAt,
+                    IsComplete = isStudent && enrollment != null ? enrollment.IsCompleted : false,
+                    IsJoin = isStudent && enrollment != null // Nếu có Enrollment, nghĩa là đã tham gia
+                };
             }).ToList();
         }
+
+
 
         public async Task<List<CoursesDto>> GetCoursesByText(string text)
         {

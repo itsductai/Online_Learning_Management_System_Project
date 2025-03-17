@@ -1,6 +1,7 @@
 ﻿using API.DTOs;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using static API.DTOs.CoursesDTO;
 
 namespace API.Controllers
@@ -20,9 +21,17 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCourses()
         {
-            var res = await _coursesService.GetAllCourses();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
+            bool isStudent = roleClaim == "Student"; // Kiểm tra nếu user là Student
+
+            var res = await _coursesService.GetAllCourses(userId, isStudent);
             return Ok(res);
         }
+
+
 
         // GET: Lấy khóa học theo từ khóa
         [HttpGet("text")]

@@ -11,6 +11,8 @@
             public decimal Price { get; set; }
             public bool IsPaid { get; set; }
             public DateTime CreatedAt { get; set; }
+            public bool IsComplete { get; set; }
+            public bool IsJoin { get; set; }
         }
 
         public class CreateCourseDto

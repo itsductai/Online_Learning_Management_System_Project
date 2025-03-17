@@ -7,6 +7,7 @@ namespace API.Repositories
     public interface ICoursesRepository
     {
         Task<List<Course?>> GetAllCourses();
+        Task<List<Enrollment>> GetEnrollmentsByUserId(int userId);
         Task<List<Course?>> GetCourseByText(string text);
         Task<Course?> GetCourseById(int id);
         Task<Course?> CreateCourse(Course course);
@@ -26,6 +27,14 @@ namespace API.Repositories
         public async Task<List<Course?>> GetAllCourses()
         {
             return await _context.Courses.ToListAsync();    // Lấy tất cả các khóa học
+        }
+
+        // Thêm mới: Lấy danh sách Enrollments của User
+        public async Task<List<Enrollment>> GetEnrollmentsByUserId(int userId)
+        {
+            return await _context.Enrollments
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
         }
 
         public async Task<List<Course?>> GetCourseByText(string text)
