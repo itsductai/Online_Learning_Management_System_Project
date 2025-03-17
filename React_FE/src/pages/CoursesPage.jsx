@@ -12,6 +12,7 @@ import CourseGrid from "../components/CourseGrid";
 import CoursePopup from "../components/CoursePopup";
 import useCourses from "../hooks/useCourses";
 import { FaSearch, FaStar } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"
 
 // Animation variants
 const itemVariants = {
@@ -33,12 +34,17 @@ const CoursesPage = () => {
   const coursesPerPage = 9
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showPopup, setShowPopup] = useState(false)
+  const navigate = useNavigate()
 
   // Thêm hàm xử lý khi click vào khóa học
   const handleCourseClick = (course) => {
     console.log("Clicked course:", course)
     setSelectedCourse(course)
-    setShowPopup(true)
+    if(course.isJoin) {
+      navigate(`/courses/${course.courseId}/lessons`);
+    } else {
+      setShowPopup(true)
+    }
   }
 
   useEffect(() => {

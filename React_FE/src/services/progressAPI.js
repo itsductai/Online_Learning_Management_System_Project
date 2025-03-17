@@ -1,9 +1,10 @@
 import api from "./api"
 
 // Lấy tiến độ học tập theo khóa học và người dùng
-export const getProgressByCourseId = async (courseId, userId) => {
+export const getProgressByCourseId = async (courseId) => {
   try {
-    const res = await api.get(`/progress/${courseId}?userId=${userId}`)
+    console.log("Lay tien do hoc tap: ", courseId);
+    const res = await api.get(`/progress/user/${courseId}`)
     return res.data
   } catch (error) {
     console.error("Lỗi khi lấy tiến độ học tập:", error)
@@ -11,30 +12,29 @@ export const getProgressByCourseId = async (courseId, userId) => {
   }
 }
 
-// Cập nhật tiến độ học tập
-export const updateProgress = async (progressData) => {
-  try {
-    const res = await api.post(`/progress/update`, progressData)
-    return res.data
-  } catch (error) {
-    console.error("Lỗi khi cập nhật tiến độ học tập:", error)
-    throw error
+  // Cập nhật tiến độ học tập
+  export const updateProgress = async (progressData) => {
+    try {
+      console.log("Goi API update tien trinh: ", progressData);
+      const res = await api.put(`/progress/update`, progressData)
+      return res.data
+    } catch (error) {
+      console.error("Lỗi khi cập nhật tiến độ học tập:", error)
+      throw error
+    }
   }
-}
 
-// Đánh dấu bài học đã hoàn thành
-export const completeLesson = async (courseId, lessonId) => {
+export const createProgress = async (courseID) => {
   try {
-    const res = await api.post(`/progress/complete-lesson`, {
-      courseId,
-      lessonId,
-    })
-    return res.data
+    console.log("Gọi API enroll khóa học với courseId:", courseID);
+    const res = await api.post(`/progress/enroll`, { courseId: courseID }); // 🟢 Đúng định dạng JSON
+    return res.data;
   } catch (error) {
-    console.error("Lỗi khi đánh dấu bài học đã hoàn thành:", error)
-    throw error
+    console.error("Lỗi khi tham gia khóa học!", error);
+    throw error;
   }
-}
+};
+
 
 // Lấy thống kê tiến độ học tập của người dùng
 export const getUserProgressStats = async (userId) => {
@@ -46,25 +46,4 @@ export const getUserProgressStats = async (userId) => {
     return null
   }
 }
-// Lấy tiến độ theo lộ trình học tập
-export const getProgressByPath = async (pathId, userId) => {
-  try {
-    const res = await api.get(`/progress/path/${pathId}?userId=${userId}`);
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy tiến độ theo lộ trình:", error);
-    return null;
-  }
-};
-
-// Lấy đề xuất khóa học tiếp theo dựa trên tiến độ
-export const getNextCourseRecommendation = async (userId) => {
-  try {
-    const res = await api.get(`/progress/recommendation/${userId}`);
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy đề xuất khóa học:", error);
-    return null;
-  }
-};
 

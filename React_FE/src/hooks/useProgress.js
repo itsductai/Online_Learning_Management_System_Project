@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../context/AuthContext"
-import { getProgressByCourseId, updateProgress, completeLesson } from "../services/progressAPI"
+import { getProgressByCourseId, updateProgress, createProgress} from "../services/progressAPI"
 
 function useProgress(courseId) {
     const { user } = useAuth() // Lấy thông tin từ user thông qua conext
@@ -18,6 +18,16 @@ function useProgress(courseId) {
     }
   }, [courseId]);
 
+  // Đăng ký khóa học
+  const createNewProgress = async (courseId) => {
+    try {
+      await createProgress(courseId);
+    } catch (error) {
+      console.error("Lỗi khi tạo tiến trình mới.", error);
+      setError("Không tham gia khóa học. Vui lòng thử lại sau.");
+    }
+  }
+
   // Lấy tiến độ học tập từ API hoặc localStorage
   const fetchProgress = async () => {
     try {
@@ -25,8 +35,8 @@ function useProgress(courseId) {
       setError(null);
 
         // Nếu đã đăng nhập, lấy tiến độ từ API
-        if (user?.id) {
-            const data = await getProgressByCourseId(courseId, user.id)
+        if (user?.userId) {
+            const data = await getProgressByCourseId(courseId);
             if (data) {
             setProgress(data.progressPercent || 0)
             setCompletedLessons(data.completedLessons || [])
@@ -120,23 +130,25 @@ function useProgress(courseId) {
       // Dữ liệu tiến độ
       const progressData = {
         courseId: Number(courseId),
-        userId: user?.id,
         completedLessons: updatedCompletedLessons,
         progressPercent,
         lastUpdated: new Date().toISOString(),
       };
 
+      
+      
+
       // Lưu vào localStorage
       localStorage.setItem(`course_${courseId}_progress`, JSON.stringify(progressData));
 
-      console.log("Goi saveProgress luu vao localstorage: ", JSON.stringify(progressData));
+      console.log("Goi saveProgress luu vao localstorage du lieu tien do: ", JSON.stringify(progressData));
 
       // Nếu đã đăng nhập, gửi lên server
-      if (user?.id) {
+      if (user?.userId) {
+        // Cập nhật lên qua DB thông qua API
         await updateProgress(progressData);
-        await completeLesson(courseId, completedLessonId);
       }
-
+      
       return true;
     } catch (err) {
       console.error("Lỗi khi lưu tiến độ:", err);
@@ -176,6 +188,7 @@ function useProgress(courseId) {
     resetWatchTime,
     saveProgress,
     initLessonUnlocked, // Xuất ra để có thể dùng bên ngoài
+    createNewProgress, // Hàm tạo tiến trình khi nhấn tham gia khóa học
   };
 }
 

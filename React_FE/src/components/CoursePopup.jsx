@@ -2,12 +2,20 @@
 
 import { useNavigate } from "react-router-dom"
 import { FaStar, FaUsers, FaClock, FaBook, FaTimes } from "react-icons/fa"
+import useProgress from "../hooks/useProgress";
+
+
 
 const CoursePopup = ({ course, onClose }) => {
   const navigate = useNavigate()
+  const { createNewProgress } = useProgress();
 
   const handleJoinCourse = () => {
-    navigate(`/courses/${course.courseId}/lessons`)
+    // Goi them phan api dang ky khoa học ở đây
+    if(!course.isJoin) {
+      createNewProgress(course.courseId);
+      navigate(`/courses/${course.courseId}/lessons`)
+    }
   }
 
   return (

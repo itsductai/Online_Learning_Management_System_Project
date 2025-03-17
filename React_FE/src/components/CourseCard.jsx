@@ -71,7 +71,7 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
         )
 
       case "progress":
-        const progress = course.progress || 0
+        const progress = course.progressPercent || 0
         return (
           <CardWrapper
             {...wrapperProps}
@@ -98,7 +98,7 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
               <h3 className="font-semibold text-lg mb-2 line-clamp-1">{course.title}</h3>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">
-                  {course.completedLessons || 0}/{course.totalLessons || 0} bài học
+                  {course.totalLesson || 0} bài học
                 </span>
                 <button
                   className="text-primary text-sm font-medium hover:underline"
