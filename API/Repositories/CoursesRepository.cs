@@ -8,6 +8,7 @@ namespace API.Repositories
     {
         Task<List<Course?>> GetAllCourses();
         Task<List<Enrollment>> GetEnrollmentsByUserId(int userId);
+        Task<int> GetTotalLessonsByCourseId(int courseId);
         Task<List<Course?>> GetCourseByText(string text);
         Task<Course?> GetCourseById(int id);
         Task<Course?> CreateCourse(Course course);
@@ -35,6 +36,12 @@ namespace API.Repositories
             return await _context.Enrollments
                 .Where(e => e.UserId == userId)
                 .ToListAsync();
+        }
+
+        //  Lấy tổng số bài học trong một khóa học
+        public async Task<int> GetTotalLessonsByCourseId(int courseId)
+        {
+            return await _context.Lessons.CountAsync(l => l.CourseId == courseId);
         }
 
         public async Task<List<Course?>> GetCourseByText(string text)

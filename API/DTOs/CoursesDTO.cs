@@ -13,6 +13,8 @@
             public DateTime CreatedAt { get; set; }
             public bool IsComplete { get; set; }
             public bool IsJoin { get; set; }
+            public double ProgressPercent { get; set; }
+            public int TotalLesson { get; set; }
         }
 
         public class CreateCourseDto
