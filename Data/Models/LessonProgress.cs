@@ -17,6 +17,8 @@ namespace Data.Models
 
         public bool IsCompleted { get; set; } = false;  // 0: Chưa hoàn thành, 1: Đã hoàn thành
 
+        public DateTime LastUpdate { get; set; } // Ngày cập nhật tiến độ học
+
         public DateTime? CompletedAt { get; set; }  // Ngày hoàn thành bài học (nếu có)
 
         public User? User { get; set; }  // Navigation Property

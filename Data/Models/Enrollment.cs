@@ -19,6 +19,8 @@ namespace Data.Models
 
         public DateTime? CompletionDate { get; set; } // Ngày hoàn thành khóa học (nếu có)
 
+        public float ProgressPercent { get; set; } = 0;  // Tiến độ học tập (%)
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày đăng ký khóa học
 
         public User? User { get; set; }  // Navigation Property
