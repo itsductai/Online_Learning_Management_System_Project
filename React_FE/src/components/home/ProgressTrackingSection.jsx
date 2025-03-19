@@ -1,7 +1,5 @@
-"use client"
-
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { getUserProgressStats } from "../../services/progressAPI"
 import { FaChartLine, FaGraduationCap, FaClock, FaTrophy } from "react-icons/fa"
@@ -16,6 +14,7 @@ const ProgressTrackingSection = () => {
     averageProgress: 0,
   })
   const [loading, setLoading] = useState(true)
+  const location = useLocation(); // Lấy đường dẫn hiện tại
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -59,12 +58,14 @@ const ProgressTrackingSection = () => {
             <h2 className="text-2xl font-bold text-gray-800">Tiến độ học tập của bạn</h2>
             <p className="text-gray-600 mt-1">Theo dõi quá trình học tập và thành tích của bạn</p>
           </div>
-          <Link
-            to="/progress"
-            className="mt-4 md:mt-0 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition"
-          >
-            Xem chi tiết
-          </Link>
+            {location.pathname !== "/progress" && ( // Kiểm tra nếu không phải trang /progress thì hiển thị
+              <Link
+                to="/progress"
+                className="mt-4 md:mt-0 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition"
+              >
+                Xem chi tiết
+              </Link>
+            )}
         </div>
 
         {loading ? (

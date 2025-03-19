@@ -1,18 +1,19 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
 import { useAuth } from "../context/AuthContext"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import useCourses from "../hooks/useCourses"
 import { getUserProgressStats } from "../services/progressAPI"
 
-// Tái sử dụng các component hiện có
-import CourseGrid from "../components/CourseGrid"
+// Components
 import CoursePopup from "../components/CoursePopup"
-import ProgressStats from "../components/progress/ProgressStats"
+import ProgressHeader from "../components/progress/ProgressHeader"
+import ProgressTrackingSection from "../components/home/ProgressTrackingSection"
 import LearningPaths from "../components/progress/LearningPaths"
+import ProgressCalendar from "../components/progress/ProgressCalendar"
 import CourseFilter from "../components/progress/CourseFilter"
+import CourseGrid from "../components/CourseGrid";
 
 const ProgressPage = () => {
   const { user } = useAuth()
@@ -25,11 +26,13 @@ const ProgressPage = () => {
     totalHoursLearned: 0,
     averageProgress: 0,
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filter, setFilter] = useState("all") // all, inProgress, completed
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showPopup, setShowPopup] = useState(false)
+  const [dataFetched, setDataFetched] = useState(false)
+  
 
   // Chuyển hướng nếu chưa đăng nhập
   useEffect(() => {
@@ -38,15 +41,16 @@ const ProgressPage = () => {
     }
   }, [user, navigate])
 
-  // Lấy thống kê tiến độ học tập
+  // Lấy thống kê tiến độ học tập - chỉ fetch một lần
   useEffect(() => {
     const fetchStats = async () => {
-      if (user?.id) {
+      if (user?.id && !dataFetched) {
         try {
           setLoading(true)
-          const data = await getUserProgressStats(user.id)
+          const data = await getUserProgressStats()
           if (data) {
             setStats(data)
+            setDataFetched(true)
           }
         } catch (error) {
           console.error("Lỗi khi lấy thống kê tiến độ:", error)
@@ -57,31 +61,34 @@ const ProgressPage = () => {
     }
 
     fetchStats()
-  }, [user])
+  }, [user, dataFetched])
 
   // Lọc và tìm kiếm khóa học
-  const filteredCourses = courses.filter((course) => {
-    // Tìm kiếm theo tên
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const getFilteredCourses = useCallback(() => {
+    return courses.filter((course) => {
+      // Tìm kiếm theo tên
+      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase())
 
-    // Lọc theo trạng thái
-    if (filter === "inProgress") {
-      return matchesSearch && course.progress && course.progress > 0 && course.progress < 100
-    } else if (filter === "completed") {
-      return matchesSearch && course.progress && course.progress >= 100
-    } else {
-      return matchesSearch && course.progress && course.progress > 0
-    }
-  })
+      // Lọc theo trạng thái
+      if (filter === "inProgress") {
+        return matchesSearch && course.isJoin && !course.isComplete
+      } else if (filter === "completed") {
+        return matchesSearch && course.isComplete
+      } else {
+        return matchesSearch && course.isJoin
+      }
+    })
+  }, [courses, searchTerm, filter])
 
-  // Xử lý khi click vào khóa học
+  const filteredCourses = getFilteredCourses()
+
+  // Thêm hàm xử lý khi click vào khóa học
   const handleCourseClick = (course) => {
-    // Nếu khóa học đã có tiến độ, chuyển đến trang bài học
-    if (course.progress && course.progress > 0) {
-      navigate(`/courses/${course.courseId}/lessons`)
+    console.log("Clicked course:", course)
+    setSelectedCourse(course)
+    if(course.isJoin) {
+      navigate(`/courses/${course.courseId}/lessons`);
     } else {
-      // Nếu chưa có tiến độ, hiển thị popup thông tin khóa học
-      setSelectedCourse(course)
       setShowPopup(true)
     }
   }
@@ -92,69 +99,44 @@ const ProgressPage = () => {
     setSelectedCourse(null)
   }
 
-  // Hiển thị thông báo khi không có khóa học
-  const renderEmptyState = () => (
-    <div className="bg-white rounded-lg p-8 text-center">
-      <h3 className="text-xl font-semibold text-gray-800 mb-2">Không tìm thấy khóa học</h3>
-      <p className="text-gray-600 mb-4">
-        {filter === "all"
-          ? "Bạn chưa bắt đầu khóa học nào. Hãy khám phá các khóa học của chúng tôi."
-          : filter === "inProgress"
-            ? "Bạn không có khóa học nào đang học. Hãy bắt đầu một khóa học mới."
-            : "Bạn chưa hoàn thành khóa học nào. Hãy tiếp tục học tập để hoàn thành khóa học."}
-      </p>
-      <button
-        onClick={() => navigate("/courses")}
-        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition"
-      >
-        Khám phá khóa học
-      </button>
-    </div>
-  )
-
-  if (!user) {
-    return null // Sẽ chuyển hướng trong useEffect
-  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <div className="pt-8 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h1
-            className="text-3xl font-bold text-gray-800 mb-8"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Tiến độ học tập của bạn
-          </motion.h1>
+          {/* Header Section */}
+          <ProgressHeader user={user} stats={stats} />
 
           {/* Stats Cards */}
-          <ProgressStats stats={stats} loading={loading} />
+          {<ProgressTrackingSection />}
 
           {/* Learning Paths */}
           <LearningPaths />
 
-          {/* Course List - Sử dụng CourseGrid */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Khóa học của bạn</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            {/* Calendar & Activity */}
+            <div className="lg:col-span-2">
+              <ProgressCalendar />
+            </div>
+          </div>
 
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-              </div>
-            ) : (
-              <CourseGrid
-                courses={filteredCourses}
-                variant="progress"
-                onCourseClick={handleCourseClick}
-                animate={true}
-                emptyState={renderEmptyState()}
-              />
-            )}
-          </motion.div>
+          {/* Course Filter */}
+          <CourseFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filter={filter}
+            setFilter={setFilter}
+            totalCourses={filteredCourses.length}
+          />
+
+          {/* Current Courses and Progress */}
+          <section className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <CourseGrid courses={courses.slice(0, 3)} variant="progress" onCourseClick={handleCourseClick} />
+            </div>
+          </section>
         </div>
       </div>
 
