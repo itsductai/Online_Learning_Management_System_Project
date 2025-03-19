@@ -78,7 +78,9 @@ namespace Services
 
         public async Task AddLessonAsync(AddLessonDto lessonDto)
         {
-            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using var transaction = await _lessonRepository.BeginTransactionAsync(); // Bắt đầu transaction
+
+            try
             {
                 var lesson = new Lesson
                 {
@@ -109,7 +111,12 @@ namespace Services
                     await _lessonRepository.AddTextLessonAsync(textLesson);
                 }
 
-                transaction.Complete();
+                await transaction.CommitAsync(); // Commit nếu không lỗi
+            }
+            catch
+            {
+                await transaction.RollbackAsync(); // Rollback nếu có lỗi
+                throw; // Quăng lỗi để xử lý ở Controller
             }
         }
 
@@ -118,7 +125,9 @@ namespace Services
             var lesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
             if (lesson == null) throw new Exception("Bài học không tồn tại.");
 
-            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using var transaction = await _lessonRepository.BeginTransactionAsync(); // Bắt đầu transaction
+
+            try
             {
                 // Cập nhật thông tin chung của bài học
                 lesson.Title = lessonDto.Title;
@@ -138,7 +147,12 @@ namespace Services
                 }
 
                 await _lessonRepository.SaveChangesAsync(); // Đảm bảo lưu tất cả thay đổi
-                transaction.Complete();
+                await transaction.CommitAsync(); // Commit nếu không lỗi
+            }
+            catch
+            {
+                await transaction.RollbackAsync(); // Rollback nếu có lỗi
+                throw;
             }
         }
 

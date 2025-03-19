@@ -1,10 +1,12 @@
 ﻿using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API.Repositories
 {
     public interface ILessonRepository
     {
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task<List<Lesson>> GetLessonsByCourseAsync(int courseId);
         Task<Lesson?> GetLessonByIdAsync(int lessonId);
         Task AddLessonAsync(Lesson lesson);
@@ -27,6 +29,11 @@ namespace API.Repositories
         public LessonRepository(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync(); // Mở transaction
         }
 
         public async Task<List<Lesson>> GetLessonsByCourseAsync(int courseId)

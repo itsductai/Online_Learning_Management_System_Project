@@ -1,6 +1,5 @@
 ﻿using API.Repositories;
 using Data.Models;
-using Microsoft.EntityFrameworkCore;
 using static API.DTOs.ProgressDTO;
 
 namespace API.Services
@@ -17,40 +16,42 @@ namespace API.Services
     public class ProgressService : IProgressService
     {
         private readonly IProgressRepository _progressRepository;
-        private readonly ApplicationDbContext _context;
 
-        public ProgressService(IProgressRepository progressRepository, ApplicationDbContext context)
+        public ProgressService(IProgressRepository progressRepository)
         {
             _progressRepository = progressRepository;
-            _context = context;
         }
 
-        // Ghi danh khóa học (Sử dụng Transaction)
+        // Ghi danh khóa học (Sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu)
         public async Task<bool> EnrollInCourseAsync(int userId, int courseId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _progressRepository.BeginTransactionAsync();
             try
             {
+                // Kiểm tra xem học viên đã ghi danh chưa
                 if (await _progressRepository.CheckEnrollmentAsync(userId, courseId))
                     return false;
 
+                // Tạo bản ghi mới trong bảng Enrollments
                 await _progressRepository.CreateEnrollmentAsync(userId, courseId);
+
+                // Khởi tạo dữ liệu LessonProgress
                 await _progressRepository.InitializeLessonProgressAsync(userId, courseId);
 
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(); // Commit Transaction nếu thành công
                 return true;
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(); // Rollback nếu có lỗi
                 return false;
             }
         }
 
-        // Cập nhật tiến trình học tập (Sử dụng Transaction)
+        // Cập nhật tiến trình học tập
         public async Task<bool> UpdateLessonProgressAsync(int userId, ProgressUpdateDto progressDto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _progressRepository.BeginTransactionAsync();
             try
             {
                 // 🟢 Cập nhật danh sách bài học đã hoàn thành
@@ -68,6 +69,8 @@ namespace API.Services
 
                 // 🟢 Kiểm tra nếu tất cả bài học đã hoàn thành
                 bool isCourseCompleted = containsLastLesson && progressDto.CompletedLessons.Count == totalLessons;
+
+                // Kiểm tra và tính toán lại % ở đây ====================================================================================================================
 
                 // 🟢 Cập nhật trạng thái hoàn thành khóa học trong bảng Enrollment
                 await _progressRepository.UpdateEnrollmentCompletionStatusAsync(userId, progressDto.CourseId, isCourseCompleted);
@@ -99,7 +102,6 @@ namespace API.Services
                 IsCompleted = enrollment.IsCompleted // 🟢 Thêm trạng thái hoàn thành khóa học
             };
         }
-
 
         // Lấy danh sách học viên đã ghi danh
         public async Task<IEnumerable<EnrollmentResponseDto>> GetEnrollmentsAsync()

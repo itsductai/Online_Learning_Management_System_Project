@@ -1,5 +1,6 @@
 ﻿using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace API.Repositories
 {
     public interface IProgressRepository
     {
+        Task<IDbContextTransaction> BeginTransactionAsync(); // Hỗ trợ Transaction
         Task<bool> CheckEnrollmentAsync(int userId, int courseId);
         Task CreateEnrollmentAsync(int userId, int courseId);
         Task<bool> UpdateLessonProgressAsync(int userId, List<int> completedLessons);
@@ -29,6 +31,11 @@ namespace API.Repositories
         public ProgressRepository(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync(); // Mở transaction
         }
 
         // Kiểm tra xem học viên đã ghi danh vào khóa học chưa
