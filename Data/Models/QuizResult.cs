@@ -12,15 +12,17 @@ namespace Data.Models
         [ForeignKey("User")]  // Khóa ngoại tham chiếu đến bảng Users
         public int UserId { get; set; }
 
-        [ForeignKey("Quiz")]  // Khóa ngoại tham chiếu đến bảng Quizzes
-        public int QuizId { get; set; }
+        [ForeignKey("Lesson")]  // Khóa ngoại tham chiếu đến bảng Quizzes
+        public int LessonId { get; set; }
 
         [Required]  // Điểm số bài kiểm tra
         public int Score { get; set; }
+        public int CorrectAnswers { set; get; }
+        public int TotalQuestions { set; get; }
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow.AddHours(7);  // Ngày nộp bài
 
         public User? User { get; set; }  // Navigation Property
-        public Quiz? Quiz { get; set; }  // Navigation Property
+        public Lesson? Lesson { get; set; }  // Navigation Property
     }
 }

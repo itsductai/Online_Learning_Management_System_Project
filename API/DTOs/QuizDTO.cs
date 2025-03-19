@@ -30,4 +30,45 @@
         public int Duration { get; set; }
         public List<QuizQuestionDto> Questions { get; set; }
     }
+
+    public class QuizSubmissionDto
+    {
+        public int LessonId { get; set; } // ID bài học chứa quiz
+        public Dictionary<int, int> Answers { get; set; } = new(); // Key: Index câu hỏi, Value: Đáp án chọn
+    }
+
+    // Kết quả chi tiết từng câu
+    public class QuizAnswerResultDto
+    {
+        public int QuizId { get; set; } // QuizId tương ứng
+        public string Question { get; set; } = string.Empty; // Câu hỏi
+        public int CorrectAnswer { get; set; } // Đáp án đúng
+        public int SelectedAnswer { get; set; } // Đáp án học viên chọn
+        public bool IsCorrect { get; set; } // Học viên trả lời đúng hay sai
+    }
+
+
+    public class QuizResultDto
+    {
+        public int UserId { get; set; }
+        public int LessonId { get; set; }
+        public int TotalQuestions { get; set; }
+        public int CorrectAnswers { get; set; }
+        public double Score { get; set; } // Điểm số (0 - 10)
+        public DateTime SubmittedAt { get; set; }
+        public List<QuizAnswerResultDto> AnswerResults { get; set; } = new();
+    }
+
+    public class QuizCompleteDto
+    {
+        public int ResultId { get; set; }
+        public int UserId { get; set; }
+        public int LessonId { get; set; }
+        public int TotalQuestions { get; set; }
+        public int CorrectAnswers { get; set; }
+        public double Score { get; set; } // Điểm số (0 - 10)
+        public DateTime SubmittedAt { get; set; }
+
+    }
+
 }
