@@ -1,11 +1,12 @@
 // Hiển thị bài kiểm tra và xử lý logic chấm điểm
-
+import { getQuizResultAPI } from "../../services/quizAPI";
 import { useState, useEffect } from "react"
 import { FaClock, FaCheck } from "react-icons/fa"
 import QuizQuestion from "./QuizQuestion"
 import QuizResult from "./QuizResult"
+import { submitQuizAPI } from "../../services/quizAPI";
 
-const QuizLesson = ({ lesson, onComplete }) => {
+const QuizLesson = ({ lesson, onComplete, completedLessons }) => {
   // useState quản lý trạng thái của bài quiz
   const [quizStarted, setQuizStarted] = useState(false) // Quản lý trạng thái bắt đầu quiz
   const [quizCompleted, setQuizCompleted] = useState(false) // Quản lý trạng tháu hoàn thành quiz
@@ -14,6 +15,10 @@ const QuizLesson = ({ lesson, onComplete }) => {
   const [timeLeft, setTimeLeft] = useState(0) // Quản lý thời gian còn lại
   const [quizScore, setQuizScore] = useState(0) // QUản lý điểm
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false) //Quản lý popup hoàn thành bài quiz
+  const [quizResult, setQuizResult] = useState(null);
+  // Thêm state để lưu chi tiết kết quả bài kiểm tra
+  const [answerResults, setAnswerResults] = useState([]);
+  const [correctAnswer, setCorrectAnswer] = useState(0) // Quản lý số câu đúng
 
   // Thiết lập thời gian cho quiz khi bắt đầu
   // Khi bắt đầu quiz, đếm ngược thời gian và tự động nộp bài khi hết giờ
@@ -38,6 +43,21 @@ const QuizLesson = ({ lesson, onComplete }) => {
     }
   }, [quizStarted, lesson, quizCompleted])
 
+  // Lấy dữ liệu của bài học dạng quiz nếu bài đã hoàn thành
+  useEffect(() => {
+    if (lesson?.lessonType === "quiz" && completedLessons.includes(lesson.lessonId)) {
+      getQuizResultAPI(lesson.lessonId).then((result) => {
+        if (result) {
+          setQuizScore(result.score);
+          setCorrectAnswer(result.correctAnswers);
+          setQuizCompleted(true);
+          setShowSubmitConfirm(false);
+          setQuizResult(result);
+        }
+      });
+    }
+  }, [lesson, completedLessons]);
+
   // Hiển thị thời gian dưới dạng phút:giây
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -50,13 +70,16 @@ const QuizLesson = ({ lesson, onComplete }) => {
     setQuizCompleted(false)
     setCurrentQuestionIndex(0)
     setSelectedAnswers({})
+    setAnswerResults([]); // Reset kết quả khi bắt đầu lại bài quiz
   }
   // Ghi nhận câu trả lời với mỗi câu hỏi vd: {0:1 , 1:3, ...}
   const handleAnswerSelect = (questionIndex, answerIndex) => {
     setSelectedAnswers({
       ...selectedAnswers, // Các câu trả lời trước đó
-      [questionIndex]: answerIndex, // Câu trả lời mới
+      [questionIndex]: answerIndex, // Câu trả lời mới 
+      
     })
+    console.log("Ghi nhan: ",selectedAnswers);
   }
   // Chuyển sang câu hỏi tiếp theo
   const goToNextQuestion = () => {
@@ -72,24 +95,31 @@ const QuizLesson = ({ lesson, onComplete }) => {
       setCurrentQuestionIndex(currentQuestionIndex - 1)
     }
   }
-  // Hoàn thành bài quiz
-  const handleQuizComplete = () => {
-    // Tính điểm
-    let score = 0
-    lesson.questions.forEach((question, index) => {
-      if (selectedAnswers[index] === question.correctAnswer) {
-        score++
-      }
-    })
 
-    setQuizScore(score)
-    setQuizCompleted(true)
+  // Hoàn thành bài quiz
+  const handleQuizComplete = async () => {
+  try {
+    const quizSubmitData = {
+      lessonId: lesson.lessonId,
+      answers: selectedAnswers // { quizId: selectedAnswer }
+    };
+    const result = await submitQuizAPI(quizSubmitData);
+    console.log(" Bài kiểm tra đã được chấm điểm:", result);
+    setQuizScore(result.score);
+    setCorrectAnswer(result.correctAnswers);
+    setQuizCompleted(true);
+    setShowSubmitConfirm(false);
+    // Lưu kết quả chi tiết từ API vào state
+      setAnswerResults(result.answerResults);
 
     // Đánh dấu hoàn thành bài học
     if (onComplete) {
       onComplete(lesson.lessonId)
     }
+  } catch (error) {
+    console.error(" Lỗi khi nộp bài kiểm tra!", error);
   }
+};
 
   if (!lesson) return null
 
@@ -122,7 +152,7 @@ const QuizLesson = ({ lesson, onComplete }) => {
 
   // Hiển thị kết quả quiz
   if (quizCompleted) {
-    return <QuizResult lesson={lesson} quizScore={quizScore} selectedAnswers={selectedAnswers} onRetry={startQuiz} />
+    return <QuizResult lesson={lesson} answerResults={answerResults} quizScore={quizScore} correctAnswer={correctAnswer} onRetry={startQuiz} />
   }
 
   // Hiển thị câu hỏi quiz

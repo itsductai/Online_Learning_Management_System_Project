@@ -20,6 +20,7 @@ function useStudentLessons(courseId) {
     try {
       setLoading(true)
       const data = await getLessonsByCourseId(courseId)
+      console.log("Du lieu khoa hoc co duoc: ", data);
       if (Array.isArray(data)) {
         setLessons(data)
         // Nếu có bài học và chưa chọn bài học nào, chọn bài đầu tiên

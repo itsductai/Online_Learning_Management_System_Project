@@ -189,6 +189,7 @@ export default function CourseLesson() {
           <div className="col-span-12 lg:col-span-8">
             <LessonContent
               lesson={selectedLesson} // Truyền vào giá trị lesson đang được chọn
+              completedLessons={completedLessons} // Truyền bài học đã hoàn thành để mở quiz tự động
               watchTime={watchTime} // Truyền vào thời gian bắt đầu xem (mặc định là 0)
               onWatchTimeUpdate={trackWatchTime} // Truyền hàm cập nhật thời gian xem
               onLessonComplete={handleLessonComplete} // Truyền hàm khi hoàn thành 1 bài học (nói trắng ra là truyền saveprogress(lessonId, lessonlesson))

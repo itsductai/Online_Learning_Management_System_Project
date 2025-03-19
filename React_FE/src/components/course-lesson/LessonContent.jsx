@@ -1,11 +1,11 @@
 // Hiển thị nội dung bài học dựa trên loại bài học (video, text, quiz)
-
 import VideoLesson from "./VideoLesson"
 import TextLesson from "./TextLesson"
 import QuizLesson from "./QuizLesson"
 
 
-const LessonContent = ({ lesson, watchTime, onWatchTimeUpdate, onLessonComplete }) => {
+const LessonContent = ({ lesson, watchTime, completedLessons, onWatchTimeUpdate, onLessonComplete }) => {
+
   //  Kiểm tra xem bài học có tồn tại không
   if (!lesson) {
     return (
@@ -38,7 +38,7 @@ const LessonContent = ({ lesson, watchTime, onWatchTimeUpdate, onLessonComplete 
       )}
 
       {/* Quiz Lesson */}
-      {lesson.lessonType === "quiz" && <QuizLesson lesson={lesson} onComplete={onLessonComplete} />}
+      {lesson.lessonType === "quiz" && <QuizLesson lesson={lesson} onComplete={onLessonComplete} completedLessons={completedLessons} />}
     </div>
   )
 }
