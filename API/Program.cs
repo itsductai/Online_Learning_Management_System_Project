@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
-using Services; // Thêm thư viện Google Auth
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -228,5 +227,7 @@ app.MapControllers();
 
 // Chạy ứng dụng
 app.Run();
+
+public partial class Program { }
 
 

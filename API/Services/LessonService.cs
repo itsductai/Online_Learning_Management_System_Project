@@ -3,7 +3,7 @@ using API.DTOs;
 using Data.Models;
 using System.Transactions;
 
-namespace Services
+namespace API.Services
 {
     public interface ILessonService
     {

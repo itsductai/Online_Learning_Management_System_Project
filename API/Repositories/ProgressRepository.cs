@@ -12,16 +12,27 @@ namespace API.Repositories
         Task<IDbContextTransaction> BeginTransactionAsync(); // Hỗ trợ Transaction
         Task<bool> CheckEnrollmentAsync(int userId, int courseId);
         Task CreateEnrollmentAsync(int userId, int courseId);
-        Task<bool> UpdateLessonProgressAsync(int userId, List<int> completedLessons);
+        Task<bool> UpdateLessonProgressAsync(int userId, int lessonId);
         Task InitializeLessonProgressAsync(int userId, int courseId);
         Task<Enrollment?> GetEnrollmentAsync(int userId, int courseId);
         Task<List<int>> GetCompletedLessonsAsync(int userId, int courseId);
         Task<List<Enrollment>> GetAllEnrollmentsAsync();
         Task<int> GetTotalLessonsInCourseAsync(int courseId);
         Task<int> GetLastLessonIdInCourseAsync(int courseId);
-        Task UpdateEnrollmentCompletionStatusAsync(int userId, int courseId, bool isCompleted);
-        Task<int> GetTotalEnrollmentsAsync();
-        Task<int> GetCompletedEnrollmentsAsync();
+        Task UpdateEnrollmentCompletionStatusAsync(int userId, int courseId, bool isCompleted, double ProgressPercent);
+        // tudent
+        Task<int> GetTotalEnrollmentsAsync(); // Lấy số khóa học đã tham gia
+        Task<int> GetCompletedEnrollmentsAsync(); // Lấy số khóa học đã hoàn thành
+        Task<List<int>> GetCompletedLessonsAsync(int userId); // Lấy tất cả bài học đã hoàn thành của user
+        Task<float> GetAverageProgressAsync(int userId); // Lấy tiến độ trung bình của user
+        Task<List<int>> GetCompletedLessonDurationsAsync(int userId); // Lấy thời gian học (minutes) từ bài học hoàn thành
+        Task<int> GetTotalEnrollmentsByIdAsync(int userId);
+        Task<int> GetCompletedEnrollmentsByIdAsync(int userId);
+
+        // Admin
+        Task<int> GetTotalStudentsAsync(); // Lấy tổng số học viên
+        Task<int> GetTotalCoursesAsync(); // Lấy tổng số khóa học
+        Task<int> GetTotalLessonsAsync(); // Lấy tổng số bài học
     }
 
     public class ProgressRepository : IProgressRepository
@@ -60,14 +71,26 @@ namespace API.Repositories
         }
 
         // Cập nhật danh sách bài học đã hoàn thành của học viên
-        public async Task<bool> UpdateLessonProgressAsync(int userId, List<int> completedLessons)
+        public async Task<bool> UpdateLessonProgressAsync(int userId, int lessonId)
         {
-            var lessonProgress = await _context.LessonProgress
-                .Where(lp => lp.UserId == userId && completedLessons.Contains(lp.LessonId))
-                .ToListAsync();
+            var progress = await _context.LessonProgress
+                .FirstOrDefaultAsync(lp => lp.UserId == userId && lp.LessonId == lessonId);
 
-            foreach (var progress in lessonProgress)
+            if (progress == null)
             {
+                // Nếu chưa tồn tại, tạo mới bản ghi
+                progress = new LessonProgress
+                {
+                    UserId = userId,
+                    LessonId = lessonId,
+                    IsCompleted = true,
+                    CompletedAt = DateTime.UtcNow
+                };
+                _context.LessonProgress.Add(progress);
+            }
+            else
+            {
+                // Nếu đã tồn tại, cập nhật trạng thái hoàn thành
                 progress.IsCompleted = true;
                 progress.CompletedAt = DateTime.UtcNow;
             }
@@ -75,6 +98,7 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         // Khởi tạo LessonProgress rỗng khi học viên ghi danh khóa học
         public async Task InitializeLessonProgressAsync(int userId, int courseId)
@@ -126,7 +150,7 @@ namespace API.Repositories
         }
 
         // Cập nhật trạng thái hoàn thành khóa học
-        public async Task UpdateEnrollmentCompletionStatusAsync(int userId, int courseId, bool isCompleted)
+        public async Task UpdateEnrollmentCompletionStatusAsync(int userId, int courseId, bool isCompleted, double ProgressPercent)
         {
             var enrollment = await _context.Enrollments
                 .FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
@@ -134,7 +158,7 @@ namespace API.Repositories
             if (enrollment != null)
             {
                 enrollment.IsCompleted = isCompleted;
-                enrollment.ProgressPercent = isCompleted ? 100 : enrollment.ProgressPercent;
+                enrollment.ProgressPercent = (float)ProgressPercent;
                 await _context.SaveChangesAsync();
             }
         }
@@ -156,5 +180,58 @@ namespace API.Repositories
         {
             return await _context.Enrollments.CountAsync(e => e.IsCompleted);
         }
+
+        public async Task<List<int>> GetCompletedLessonsAsync(int userId)
+        {
+            return await _context.LessonProgress
+                .Where(lp => lp.UserId == userId && lp.IsCompleted)
+                .Select(lp => lp.LessonId)
+                .ToListAsync();
+        }
+
+        public async Task<float> GetAverageProgressAsync(int userId)
+        {
+            return await _context.Enrollments
+                .Where(e => e.UserId == userId)
+                .AverageAsync(e => (float?)e.ProgressPercent) ?? 0;
+        }
+
+        public async Task<List<int>> GetCompletedLessonDurationsAsync(int userId)
+        {
+            return await _context.LessonProgress
+                .Where(lp => lp.UserId == userId && lp.IsCompleted)
+                .Join(_context.Lessons, lp => lp.LessonId, l => l.LessonId, (lp, l) => l.Duration)
+                .ToListAsync();
+        }
+
+        // 🔹 Admin
+        public async Task<int> GetTotalStudentsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role == "Student")
+                .CountAsync();
+        }
+
+        public async Task<int> GetTotalCoursesAsync()
+        {
+            return await _context.Courses.CountAsync();
+        }
+
+        public async Task<int> GetTotalLessonsAsync()
+        {
+            return await _context.Lessons.CountAsync();
+        }
+        // Đếm tổng số lượt ghi danh khóa học của một user cụ thể
+        public async Task<int> GetTotalEnrollmentsByIdAsync(int userId)
+        {
+            return await _context.Enrollments.CountAsync(e => e.UserId == userId);
+        }
+
+        // Đếm số lượt hoàn thành khóa học của một user cụ thể
+        public async Task<int> GetCompletedEnrollmentsByIdAsync(int userId)
+        {
+            return await _context.Enrollments.CountAsync(e => e.UserId == userId && e.IsCompleted);
+        }
+
     }
 }

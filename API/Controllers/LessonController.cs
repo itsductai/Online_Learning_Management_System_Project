@@ -1,7 +1,7 @@
 ﻿using API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services;
+using API.Services;
 using System.Security.Claims;
 
 namespace API.Controllers

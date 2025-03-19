@@ -81,6 +81,25 @@ namespace API.Controllers
             var stats = await _progressService.GetProgressStatisticsAsync();
             return Ok(stats);
         }
+
+        [HttpGet("getProcess")]
+        public async Task<IActionResult> GetProcess()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var roleClaim = User.FindFirst(ClaimTypes.Role).Value;
+
+                if (userId == 0) return Unauthorized("Không xác định được user!");
+
+                var process = await _progressService.GetProcessAsync(userId, roleClaim);
+                return Ok(process);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
     }
 
 }
