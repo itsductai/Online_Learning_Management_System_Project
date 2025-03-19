@@ -146,6 +146,7 @@ function useProgress(courseId) {
       // Nếu đã đăng nhập, gửi lên server
       if (user?.userId) {
         // Cập nhật lên qua DB thông qua API
+        console.log("cap nhat len database", progressData)
         await updateProgress(progressData);
       }
       

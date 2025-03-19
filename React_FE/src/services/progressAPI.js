@@ -27,7 +27,7 @@ export const getProgressByCourseId = async (courseId) => {
 export const createProgress = async (courseID) => {
   try {
     console.log("Gọi API enroll khóa học với courseId:", courseID);
-    const res = await api.post(`/progress/enroll`, { courseId: courseID }); // 🟢 Đúng định dạng JSON
+    const res = await api.post(`/progress/enroll`, { courseId: courseID }); //  Đúng định dạng JSON
     return res.data;
   } catch (error) {
     console.error("Lỗi khi tham gia khóa học!", error);
@@ -37,9 +37,10 @@ export const createProgress = async (courseID) => {
 
 
 // Lấy thống kê tiến độ học tập của người dùng
-export const getUserProgressStats = async (userId) => {
+export const getUserProgressStats = async () => {
   try {
-    const res = await api.get(`/progress/stats/${userId}`)
+    console.log("Lay thong ke tien do")
+    const res = await api.get(`/progress/getProcess`)
     return res.data
   } catch (error) {
     console.error("Lỗi khi lấy thống kê tiến độ học tập:", error)

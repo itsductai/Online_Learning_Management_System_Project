@@ -41,28 +41,6 @@ const ProgressPage = () => {
     }
   }, [user, navigate])
 
-  // Lấy thống kê tiến độ học tập - chỉ fetch một lần
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (user?.id && !dataFetched) {
-        try {
-          setLoading(true)
-          const data = await getUserProgressStats()
-          if (data) {
-            setStats(data)
-            setDataFetched(true)
-          }
-        } catch (error) {
-          console.error("Lỗi khi lấy thống kê tiến độ:", error)
-        } finally {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchStats()
-  }, [user, dataFetched])
-
   // Lọc và tìm kiếm khóa học
   const getFilteredCourses = useCallback(() => {
     return courses.filter((course) => {
@@ -112,16 +90,6 @@ const ProgressPage = () => {
           {/* Stats Cards */}
           {<ProgressTrackingSection />}
 
-          {/* Learning Paths */}
-          <LearningPaths />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-            {/* Calendar & Activity */}
-            <div className="lg:col-span-2">
-              <ProgressCalendar />
-            </div>
-          </div>
-
           {/* Course Filter */}
           <CourseFilter
             searchTerm={searchTerm}
@@ -134,9 +102,17 @@ const ProgressPage = () => {
           {/* Current Courses and Progress */}
           <section className="py-12 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <CourseGrid courses={courses.slice(0, 3)} variant="progress" onCourseClick={handleCourseClick} />
+              <CourseGrid courses={courses} variant="progress" onCourseClick={handleCourseClick} />
             </div>
           </section>
+
+          {/* Learning Paths */}
+          <LearningPaths />
+
+          <div className="gap-8 mb-10">
+            {/* Calendar & Activity */}
+              <ProgressCalendar />
+          </div>
         </div>
       </div>
 
