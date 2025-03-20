@@ -18,8 +18,8 @@ namespace Data.Models
         [Required, MaxLength(255)]
         public string PasswordHash { get; set; }
 
-        [Required, MaxLength(50)]  // Vai trò (Admin hoặc Student)
-        public string Role { get; set; } = "Student";
+        [Required, MaxLength(50)]
+        public string Role { get; set; } = "Student"; // Admin, Instructor, Student
 
         public bool IsActive { get; set; } = true; //  Thêm thuộc tính IsActive
 
