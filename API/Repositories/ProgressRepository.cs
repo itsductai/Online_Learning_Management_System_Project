@@ -64,7 +64,7 @@ namespace API.Repositories
                 CourseId = courseId,
                 IsCompleted = false,
                 ProgressPercent = 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.AddHours(7)
             };
             _context.Enrollments.Add(enrollment);
             await _context.SaveChangesAsync();
@@ -84,7 +84,7 @@ namespace API.Repositories
                     UserId = userId,
                     LessonId = lessonId,
                     IsCompleted = true,
-                    CompletedAt = DateTime.UtcNow
+                    CompletedAt = DateTime.UtcNow.AddHours(7)
                 };
                 _context.LessonProgress.Add(progress);
             }
@@ -92,7 +92,7 @@ namespace API.Repositories
             {
                 // Nếu đã tồn tại, cập nhật trạng thái hoàn thành
                 progress.IsCompleted = true;
-                progress.CompletedAt = DateTime.UtcNow;
+                progress.CompletedAt = DateTime.UtcNow.AddHours(7);
             }
 
             await _context.SaveChangesAsync();
@@ -159,6 +159,10 @@ namespace API.Repositories
             {
                 enrollment.IsCompleted = isCompleted;
                 enrollment.ProgressPercent = (float)ProgressPercent;
+                if (isCompleted)
+                {
+                    enrollment.CompletionDate = DateTime.UtcNow.AddHours(7);
+                }
                 await _context.SaveChangesAsync();
             }
         }

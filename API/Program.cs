@@ -56,6 +56,15 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Tạo một policy mới để bảo vệ API chỉ cho Instructor & Admin sử dụng.
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireInstructorOrAdmin", policy =>
+    {
+        policy.RequireRole("Admin", "Instructor");
+    });
+});
+
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(@"C:\Keys")) // 🔥 Lưu khóa vào file để tránh mất
@@ -185,6 +194,7 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IQuizService, QuizService>(); // Đăng ký service Quiz
 builder.Services.AddScoped<IProgressService, ProgressService>(); // Đăng ký service Progress
+builder.Services.AddScoped<IInstructorService, InstructorService>(); // Đăng ký service Instructor
 
 // Đăng ký Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
@@ -193,6 +203,7 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
+builder.Services.AddScoped<IInstructorRepository, InstructorRepository>(); // Đăng ký repository Instructor
 
 
 // Đăng ký IPasswordHasher<User>

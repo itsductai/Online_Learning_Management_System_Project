@@ -1,5 +1,6 @@
 ﻿using API.DTOs;
 using API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using static API.DTOs.CoursesDTO;
@@ -42,12 +43,26 @@ namespace API.Controllers
         }
 
         // POST: Thêm khóa học mới
+        [Authorize(Policy = "RequireInstructorOrAdmin")]
         [HttpPost]
-        public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto courseDto)
+        public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto courseDto) // Luôn truyền InstructorId từ json ban đầu
         {
-            var result = await _coursesService.CreateCourse(courseDto);
-            if (result == null) return BadRequest("Không thể tạo khóa học");
-            return Ok(result);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); // Lấy UserId từ token
+            var role = User.FindFirst(ClaimTypes.Role).Value; // Lấy Role từ token
+
+            if (role == "Instructor") // Nếu là Instructor, gán InstructorId từ token
+            {
+                courseDto.InstructorId = userId; // Chỉ Instructor được tạo khóa học của riêng họ
+                var result = await _coursesService.CreateCourse(courseDto, userId);
+                return result != null ? Ok(result) : BadRequest("Không thể tạo khóa học.");
+            }
+            if (role == "Admin") // Nếu là Admin, gán InstructorId từ json
+            {
+                userId = courseDto.InstructorId.Value; // Gán InstructorId từ json
+                var result = await _coursesService.CreateCourse(courseDto, userId); // Nếu là Admin, userId sẽ là của Instructor
+                return result != null ? Ok(result) : BadRequest("Không thể tạo khóa học.");
+            }
+            return BadRequest("Không thể tạo khóa học.");
         }
 
         // PUT: Cập nhật khóa học

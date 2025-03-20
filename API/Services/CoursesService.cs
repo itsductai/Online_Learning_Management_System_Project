@@ -9,7 +9,7 @@ namespace API.Services
     {
         Task<List<CoursesDto>> GetAllCourses(int? userId, bool isStudent);
         Task<List<CoursesDto>> GetCoursesByText(string text);
-        Task<Course?> CreateCourse(CreateCourseDto courseDto);
+        Task<Course?> CreateCourse(CreateCourseDto courseDto, int instructorId);
         Task<Course?> UpdateCourse(int id, UpdateCourseDto courseDto);
         Task<bool> DeleteCourse(int id);
     }
@@ -54,6 +54,8 @@ namespace API.Services
                     Price = c.Price,
                     IsPaid = c.IsPaid,
                     CreatedAt = c.CreatedAt,
+                    ExpiryDate = c.ExpiryDate,
+                    InstructorId = c.InstructorId,
                     IsComplete = isStudent && enrollment != null ? enrollment.IsCompleted : false,
                     IsJoin = isStudent && enrollment != null, // Nếu có Enrollment, nghĩa là đã tham gia
                     ProgressPercent = isStudent && enrollment != null ? enrollment.ProgressPercent : 0, // Tiến trình học
@@ -81,7 +83,7 @@ namespace API.Services
             }).ToList();
         }
 
-        public async Task<Course?> CreateCourse(CreateCourseDto courseDto)
+        public async Task<Course?> CreateCourse(CreateCourseDto courseDto, int instructorId)
         {
             var course = new Course
             {
@@ -90,7 +92,9 @@ namespace API.Services
                 Description = courseDto.Description,
                 Price = courseDto.Price,
                 IsPaid = courseDto.IsPaid,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                ExpiryDate = courseDto.ExpiryDate,
+                InstructorId = instructorId // Gán InstructorId khi tạo khóa học
             };
             return await _coursesRepository.CreateCourse(course);
         }
@@ -106,6 +110,8 @@ namespace API.Services
             existingCourse.Description = courseDto.Description;
             existingCourse.Price = courseDto.Price;
             existingCourse.IsPaid = courseDto.IsPaid;
+            existingCourse.ExpiryDate = courseDto.ExpiryDate;
+            existingCourse.InstructorId = courseDto.InstructorId; // Gán InstructorId khi cập nhật khóa học
 
             return await _coursesRepository.UpdateCourse(existingCourse);
         }
