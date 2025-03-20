@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import CourseCard from "../CourseCard"
 
-const RecentCourses = ({ courses, limit = 3, onCourseClick }) => {
+const RecentCourses = ({ courses, limit = 3, onCourseClick, instructors = [] }) => {
   const { user } = useAuth()
 
   // Lọc các khóa học đang học gần đây
@@ -60,6 +60,7 @@ const RecentCourses = ({ courses, limit = 3, onCourseClick }) => {
               variant={recentCourses.length > 0 ? "progress" : "default"}
               onClick={onCourseClick}
               animate={true}
+              instructors={instructors} // Truyền danh sách giảng viên
             />
           ))}
         </div>

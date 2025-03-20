@@ -32,7 +32,11 @@ const useLogin = () => {
           login(res.data); 
           if (res.data.role === "Admin") {
             navigate("/dashboard");
-          } else {
+          } 
+          if (res.data.role === "Instructor") {
+            navigate("/instructor/dashboard");
+          } 
+          if ((res.data.role === "Student")) {
             navigate("/");
           }
         } catch (error) {

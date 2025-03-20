@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import useStudentLessons from "../hooks/useStudentLessons"
 import useCourses from "../hooks/useCourses"
+import useInstructors from "../hooks/useInstructors" // Thêm hook useInstructors
 import useProgress from "../hooks/useProgress"
 import { useAuth } from "../context/AuthContext"
 import ChatAIWidget from "../components/ChatAIWidget"
@@ -18,6 +19,7 @@ export default function CourseLesson() {
   const { courseId } = useParams()
   const navigate = useNavigate()
   const { courses } = useCourses()
+  const { instructors } = useInstructors() // Lấy danh sách giảng viên
   const { user } = useAuth()
   const currentCourse = courses.find((c) => c.courseId === Number(courseId))
  
@@ -147,8 +149,12 @@ export default function CourseLesson() {
       <div className="min-h-screen flex flex-col bg-gray-100">
         <Navbar />
         <div className="flex-grow container mx-auto px-4 py-8">
-          <CourseHeader course={currentCourse} progress={progress} error={progressError} />
-
+          <CourseHeader
+            course={currentCourse}
+            progress={progress}
+            error={progressError}
+            instructors={instructors} // Truyền danh sách giảng viên
+          />
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <FaExclamationTriangle className="text-yellow-500 text-5xl mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Chưa có bài học</h2>
@@ -172,8 +178,12 @@ export default function CourseLesson() {
 
       <div className="flex-grow container mx-auto px-4 py-8">
         {/* Course Info & Progress */}
-        <CourseHeader course={currentCourse} progress={progress} error={progressError} />
-
+        <CourseHeader
+          course={currentCourse}
+          progress={progress}
+          error={progressError}
+          instructors={instructors} // Truyền danh sách giảng viên
+        />
         <div className="grid grid-cols-12 gap-6">
           {/* Lessons List */}
           <div className="col-span-12 lg:col-span-4">

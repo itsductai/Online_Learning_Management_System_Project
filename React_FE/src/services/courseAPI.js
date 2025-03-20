@@ -4,6 +4,7 @@ import api from "./api";
 export const coursesAPI = async () => {
   try {
     const res = await api.get(`/courses`);
+    console.log("Du lieu course tra ve: ", res);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi lấy danh sách khóa học:", error);

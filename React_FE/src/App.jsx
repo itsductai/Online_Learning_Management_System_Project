@@ -12,11 +12,26 @@ import CoursesManagement from "./pages/CoursesManagement.jsx";
 import LessonManagement from "./pages/LessonManagement.jsx";
 import CourseLesson from "./pages/CourseLesson.jsx";
 import ProgressPage from "./pages/ProgressPage.jsx";
+import InstructorDashboard from "./pages/InstructorDashboard.jsx";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
-  return user ? <HomePage /> : <Navigate to="/login" />;
+
+  if (!user) return <Navigate to="/login" />;
+
+  // Điều hướng theo role của người dùng
+  switch (user.role) {
+    case "Admin":
+      return <Navigate to="/dashboard" />;
+    case "Instructor":
+      return <Navigate to="/instructor/dashboard" />;
+    case "Student":
+      return <HomePage />; // Student sẽ hiển thị trang chủ
+    default:
+      return <Navigate to="/login" />;
+  }
 };
+
 
 
 function App() {
@@ -24,16 +39,25 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<ProtectedRoute role="Student"><DefaultRoute /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute roles={["Student"]}><DefaultRoute /></ProtectedRoute>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/courses" element={<ProtectedRoute role="Student"><CoursesPage /></ProtectedRoute>} />
-          <Route path="/courses/:courseId/lessons" element={ <ProtectedRoute role="Student"> <CourseLesson /> </ProtectedRoute>}/>
-          <Route path="/profile" element={<ProtectedRoute role="Student"><ProfilePage /></ProtectedRoute>} />
-          <Route path="/progress" element={ <ProtectedRoute role="Student"> <ProgressPage /> </ProtectedRoute> } />
-          <Route path="/dashboard" element={<ProtectedRoute role="Admin"><Dashboard /></ProtectedRoute>} />
-          <Route path="/admin/courses" element={<ProtectedRoute role="Admin"><CoursesManagement /></ProtectedRoute>}/>
-          <Route path="/admin/courses/:courseId/lessons" element={ <ProtectedRoute role="Admin"> <LessonManagement /> </ProtectedRoute> }/>
+          <Route path="/courses" element={<ProtectedRoute roles={["Student"]}><CoursesPage /></ProtectedRoute>} />
+          <Route path="/courses/:courseId/lessons" element={ <ProtectedRoute roles={["Student"]}> <CourseLesson /> </ProtectedRoute>}/>
+
+          <Route path="/profile" element={<ProtectedRoute roles={["Student", "Instructor"]}><ProfilePage /></ProtectedRoute>} />
+          <Route path="/progress" element={<ProtectedRoute roles={["Student"]}> <ProgressPage /> </ProtectedRoute>} />
+
+          {/* Admin Dashboard */}
+          <Route path="/dashboard" element={<ProtectedRoute roles={["Admin"]}><Dashboard /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute roles={["Admin"]}><CoursesManagement /></ProtectedRoute>}/>
+          <Route path="/admin/courses/:courseId/lessons" element={<ProtectedRoute roles={["Admin"]}> <LessonManagement /> </ProtectedRoute>}/>
+
+          {/* Instructor Dashboard */}
+          <Route path="/instructor/dashboard" element={<ProtectedRoute roles={["Instructor"]}><InstructorDashboard /></ProtectedRoute>} />
+          <Route path="/instructor/courses" element={<ProtectedRoute roles={["Instructor"]}><CoursesManagement /></ProtectedRoute>}/>
+          <Route path="/instructor/courses/:courseId/lessons" element={<ProtectedRoute roles={["Instructor"]}> <LessonManagement /> </ProtectedRoute>}/>
+
         </Routes>
       </Router>
     </AuthProvider>

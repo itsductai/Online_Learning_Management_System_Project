@@ -1,7 +1,5 @@
-// Hiển thị từng khóa học
-
 import { motion } from "framer-motion" // Sử dụng Framer Motion để thêm hiệu ứng cho các thẻ khóa học
-import { FaStar } from "react-icons/fa"
+import { FaStar, FaUser, FaClock } from "react-icons/fa"
 import BookmarkButton from "./BookmarkButton"
 
 // Animation cho thẻ khóa học
@@ -15,18 +13,34 @@ const cardVariants = {
     },
   },
 }
-// Component chínhcourse	
+// Component chínhcourse
 // course đối tượng chứa thông tin khóa học
 // variant	Kiểu hiển thị (default, compact, progress)
 // onClick	Hàm được gọi khi click vào khóa học
 // showBookmark	Hiển thị nút lưu khóa học
-// animate dùng animation 
-const CourseCard = ({ course, variant = "default", onClick, showBookmark = false, animate = true }) => {
+// animate dùng animation
+const CourseCard = ({
+  course,
+  variant = "default",
+  onClick,
+  showBookmark = false,
+  animate = true,
+  instructors = [],
+}) => {
   const handleCardClick = () => {
     if (onClick) {
       onClick(course) // Gọi hàm onClick(course) để điều hướng đến chi tiết khóa học
     }
   }
+
+  // Tìm tên giảng viên dựa trên instructorId
+  const instructorName = instructors.find((i) => i.userId === course.instructorId)?.name || "Chưa có"
+
+  // Kiểm tra ngày hết hạn
+  const isExpiringSoon = course.expiryDate && new Date(course.expiryDate) - new Date() < 7 * 24 * 60 * 60 * 1000
+
+  // Format ngày hết hạn
+  const formattedExpiryDate = course.expiryDate ? new Date(course.expiryDate).toLocaleDateString("vi-VN") : null
 
   // Wrapper component - có thể là motion.div hoặc div thường
   const CardWrapper = animate ? motion.div : "div"
@@ -60,12 +74,28 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
             </div>
             <div className="p-4">
               <h3 className="font-semibold text-lg mb-1 line-clamp-1">{course.title}</h3>
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-gray-500 mb-1">
                 <FaStar className="text-yellow-400 mr-1" />
                 <span>{course.rating || 4.5}</span>
                 <span className="mx-2">•</span>
                 <span>{course.studentCount || 0} học viên</span>
               </div>
+
+              {/* Thêm thông tin giảng viên */}
+              <div className="flex items-center text-sm text-gray-500 mb-1">
+                <FaUser className="mr-1" />
+                <span>{instructorName}</span>
+              </div>
+
+              {/* Thêm ngày hết hạn nếu có */}
+              {formattedExpiryDate && (
+                <div className="flex items-center text-sm">
+                  <FaClock className={`mr-1 ${isExpiringSoon ? "text-red-500" : "text-gray-500"}`} />
+                  <span className={isExpiringSoon ? "text-red-500 font-medium" : "text-gray-500"}>
+                    HH: {formattedExpiryDate}
+                  </span>
+                </div>
+              )}
             </div>
           </CardWrapper>
         )
@@ -96,10 +126,25 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
             </div>
             <div className="p-4">
               <h3 className="font-semibold text-lg mb-2 line-clamp-1">{course.title}</h3>
+
+              {/* Thêm thông tin giảng viên */}
+              <div className="flex items-center text-sm text-gray-500 mb-1">
+                <FaUser className="mr-1" />
+                <span>{instructorName}</span>
+              </div>
+
+              {/* Thêm ngày hết hạn nếu có */}
+              {formattedExpiryDate && (
+                <div className="flex items-center text-sm mb-2">
+                  <FaClock className={`mr-1 ${isExpiringSoon ? "text-red-500" : "text-gray-500"}`} />
+                  <span className={isExpiringSoon ? "text-red-500 font-medium" : "text-gray-500"}>
+                    HH: {formattedExpiryDate}
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  {course.totalLesson || 0} bài học
-                </span>
+                <span className="text-sm text-gray-500">{course.totalLesson || 0} bài học</span>
                 <button
                   className="text-primary text-sm font-medium hover:underline"
                   onClick={(e) => {
@@ -139,6 +184,23 @@ const CourseCard = ({ course, variant = "default", onClick, showBookmark = false
             <div className="p-4">
               <h3 className="font-semibold text-lg mb-2 line-clamp-1">{course.title}</h3>
               <p className="text-gray-600 text-sm mb-3 line-clamp-2">{course.description}</p>
+
+              {/* Thêm thông tin giảng viên */}
+              <div className="flex items-center text-sm text-gray-500 mb-1">
+                <FaUser className="mr-1" />
+                <span>{instructorName}</span>
+              </div>
+
+              {/* Thêm ngày hết hạn nếu có */}
+              {formattedExpiryDate && (
+                <div className="flex items-center text-sm mb-2">
+                  <FaClock className={`mr-1 ${isExpiringSoon ? "text-red-500" : "text-gray-500"}`} />
+                  <span className={isExpiringSoon ? "text-red-500 font-medium" : "text-gray-500"}>
+                    HH: {formattedExpiryDate}
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <FaStar className="text-yellow-400 mr-1" />

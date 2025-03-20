@@ -13,6 +13,7 @@ const CourseGrid = ({
   columns = { default: 3, tablet: 2, mobile: 1 },
   limit,
   emptyState = null,
+  instructors = [], // Thêm prop instructors
 }) => {
   // Giới hạn số lượng khóa học hiển thị nếu có limit
   const displayCourses = limit ? courses.slice(0, limit) : courses
@@ -23,7 +24,7 @@ const CourseGrid = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.8 // staggerChildren giúp các thẻ khóa học xuất hiện lần lượt thay vì đồng thời
+        staggerChildren: 0.8, // staggerChildren giúp các thẻ khóa học xuất hiện lần lượt thay vì đồng thời
       },
     },
   }
@@ -58,6 +59,7 @@ const CourseGrid = ({
           onClick={onCourseClick}
           showBookmark={showBookmark}
           animate={animate}
+          instructors={instructors} // Truyền danh sách giảng viên
         />
       ))}
     </GridWrapper>
@@ -65,4 +67,3 @@ const CourseGrid = ({
 }
 
 export default CourseGrid
-

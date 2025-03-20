@@ -1,19 +1,26 @@
-// Popup chi tiết khóa học
-
 import { useNavigate } from "react-router-dom"
-import { FaStar, FaUsers, FaClock, FaBook, FaTimes } from "react-icons/fa"
-import useProgress from "../hooks/useProgress";
+import { FaStar, FaUsers, FaClock, FaBook, FaTimes, FaUser } from "react-icons/fa"
+import useProgress from "../hooks/useProgress"
 
-
-
-const CoursePopup = ({ course, onClose }) => {
+const CoursePopup = ({ course, onClose, instructors = [] }) => {
   const navigate = useNavigate()
-  const { createNewProgress } = useProgress();
+  const { createNewProgress } = useProgress()
+
+  // Tìm tên giảng viên dựa trên instructorId
+  const instructorName = instructors.find((i) => i.userId === course.instructorId)?.name || "Chưa có"
+
+  // Kiểm tra ngày hết hạn
+  const isExpiringSoon = course.expiryDate && new Date(course.expiryDate) - new Date() < 7 * 24 * 60 * 60 * 1000
+
+  // Format ngày hết hạn
+  const formattedExpiryDate = course.expiryDate
+    ? new Date(course.expiryDate).toLocaleDateString("vi-VN")
+    : "Không giới hạn"
 
   const handleJoinCourse = () => {
     // Goi them phan api dang ky khoa học ở đây
-    if(!course.isJoin) {
-      createNewProgress(course.courseId);
+    if (!course.isJoin) {
+      createNewProgress(course.courseId)
       navigate(`/courses/${course.courseId}/lessons`)
     }
   }
@@ -49,32 +56,23 @@ const CoursePopup = ({ course, onClose }) => {
               <FaUsers className="text-gray-500 mr-1" />
               <span>{course.studentCount || 120} học viên</span>
             </div>
+            {/* Thêm thông tin giảng viên */}
             <div className="flex items-center">
-              <FaClock className="text-gray-500 mr-1" />
-              <span>{course.totalDuration || 8} giờ học</span>
+              <FaUser className="text-gray-500 mr-1" />
+              <span>{instructorName}</span>
+            </div>
+            {/* Cập nhật hiển thị ngày hết hạn */}
+            <div className="flex items-center">
+              <FaClock className={`mr-1 ${isExpiringSoon ? "text-red-500" : "text-gray-500"}`} />
+              <span className={isExpiringSoon ? "text-red-500 font-medium" : "text-gray-700"}>
+                HH: {formattedExpiryDate}
+              </span>
             </div>
             <div className="flex items-center">
               <FaBook className="text-gray-500 mr-1" />
-              <span>{course.lessonCount || 12} bài học</span>
+              <span>{course.totalLesson} bài học</span>
             </div>
           </div>
-
-          {/* Hiển thị tiến độ nếu đã bắt đầu học */}
-          {course.progress > 0 && (
-            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Tiến độ của bạn</h3>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-700">Hoàn thành</span>
-                <span className="text-sm font-medium text-gray-700">{course.progress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div className="bg-primary h-2.5 rounded-full" style={{ width: `${course.progress}%` }}></div>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                Đã hoàn thành {course.completedLessons || 0}/{course.totalLessons || 0} bài học
-              </div>
-            </div>
-          )}
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Mô tả khóa học</h3>

@@ -11,6 +11,7 @@ import Footer from "../components/Footer";
 import CourseGrid from "../components/CourseGrid";
 import CoursePopup from "../components/CoursePopup";
 import useCourses from "../hooks/useCourses";
+import useInstructors from "../hooks/useInstructors"; // Thêm hook useInstructors
 import { FaSearch, FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"
 
@@ -28,6 +29,7 @@ const itemVariants = {
 
 const CoursesPage = () => {
   const { courses, error } = useCourses()
+  const { instructors } = useInstructors() // Lấy danh sách giảng viên
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredCourses, setFilteredCourses] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
@@ -40,7 +42,7 @@ const CoursesPage = () => {
   const handleCourseClick = (course) => {
     console.log("Clicked course:", course)
     setSelectedCourse(course)
-    if(course.isJoin) {
+    if (course.isJoin) {
       navigate(`/courses/${course.courseId}/lessons`);
     } else {
       setShowPopup(true)
@@ -48,10 +50,7 @@ const CoursesPage = () => {
   }
 
   useEffect(() => {
-    const filtered = courses.filter(
-      (course) =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+    const filtered = courses.filter((course) => course.title.toLowerCase().includes(searchTerm.toLowerCase()))
     setFilteredCourses(filtered)
     setCurrentPage(1)
   }, [searchTerm, courses])
@@ -78,7 +77,6 @@ const CoursesPage = () => {
   // Lấy khóa học đánh giá cao nhất
   const getTopRatedCourses = (count = 5) => {
     if (!courses || courses.length === 0) return []
-
     return [...courses].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, count)
   }
 
@@ -140,7 +138,12 @@ const CoursesPage = () => {
         <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-8">Khóa học của bạn</h2>
-            <CourseGrid courses={courses.slice(0, 3)} variant="progress" onCourseClick={handleCourseClick} />
+            <CourseGrid
+              courses={courses.slice(0, 3)}
+              variant="progress"
+              onCourseClick={handleCourseClick}
+              instructors={instructors} // Truyền danh sách giảng viên
+            />
           </div>
         </section>
 
@@ -169,6 +172,7 @@ const CoursesPage = () => {
               variant="default"
               showBookmark={true}
               onCourseClick={handleCourseClick}
+              instructors={instructors} // Truyền danh sách giảng viên
             />
 
             {filteredCourses.length > coursesPerPage && (
@@ -198,6 +202,7 @@ const CoursesPage = () => {
               variant="compact"
               columns={{ default: 4, tablet: 2, mobile: 1 }}
               onCourseClick={handleCourseClick}
+              instructors={instructors} // Truyền danh sách giảng viên
             />
           </div>
         </section>
@@ -244,8 +249,13 @@ const CoursesPage = () => {
       </main>
 
       {/* Course Popup */}
-      {showPopup && selectedCourse && <CoursePopup course={selectedCourse} onClose={() => setShowPopup(false)} />}
-
+      {showPopup && selectedCourse && (
+        <CoursePopup
+          course={selectedCourse}
+          onClose={() => setShowPopup(false)}
+          instructors={instructors} // Truyền danh sách giảng viên
+        />
+      )}
       <Footer />
     </div>
   )

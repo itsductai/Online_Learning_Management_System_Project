@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import useCourses from "../hooks/useCourses"
-import { getUserProgressStats } from "../services/progressAPI"
+import useInstructors from "../hooks/useInstructors" // Thêm hook useInstructors
 
 // Components
 import CoursePopup from "../components/CoursePopup"
@@ -19,6 +19,7 @@ const ProgressPage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { courses } = useCourses()
+  const { instructors } = useInstructors() // Lấy danh sách giảng viên
   const [stats, setStats] = useState({
     totalCourses: 0,
     completedCourses: 0,
@@ -64,7 +65,7 @@ const ProgressPage = () => {
   const handleCourseClick = (course) => {
     console.log("Clicked course:", course)
     setSelectedCourse(course)
-    if(course.isJoin) {
+    if (course.isJoin) {
       navigate(`/courses/${course.courseId}/lessons`);
     } else {
       setShowPopup(true)
@@ -76,7 +77,6 @@ const ProgressPage = () => {
     setShowPopup(false)
     setSelectedCourse(null)
   }
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -102,7 +102,12 @@ const ProgressPage = () => {
           {/* Current Courses and Progress */}
           <section className="py-12 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <CourseGrid courses={courses} variant="progress" onCourseClick={handleCourseClick} />
+              <CourseGrid
+                courses={courses}
+                variant="progress"
+                onCourseClick={handleCourseClick}
+                instructors={instructors} // Truyền danh sách giảng viên
+              />
             </div>
           </section>
 
@@ -111,13 +116,19 @@ const ProgressPage = () => {
 
           <div className="gap-8 mb-10">
             {/* Calendar & Activity */}
-              <ProgressCalendar />
+            <ProgressCalendar />
           </div>
         </div>
       </div>
 
       {/* Course Popup */}
-      {showPopup && selectedCourse && <CoursePopup course={selectedCourse} onClose={handleClosePopup} />}
+      {showPopup && selectedCourse && (
+        <CoursePopup
+          course={selectedCourse}
+          onClose={handleClosePopup}
+          instructors={instructors} // Truyền danh sách giảng viên
+        />
+      )}
 
       <Footer />
     </div>
@@ -125,4 +136,3 @@ const ProgressPage = () => {
 }
 
 export default ProgressPage
-

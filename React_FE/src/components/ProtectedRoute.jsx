@@ -1,22 +1,24 @@
-import React from "react";
+import React from "react"; 
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const ProtectedRoute = ({ children, roles }) => {
+  const { user } = useAuth();
+  const token = localStorage.getItem('token');
 
-const ProtectedRoute = ({ children, role }) => {
-  const { user } = useAuth(); // Lấy thông tin người dùng từ context
-  const token = localStorage.getItem('token'); // Thêm: Kiểm tra token trong localStorage
-  
-  // Nếu người dùng chưa đăng nhập, chuyển hướng về trang đăng nhập
-  if (!user || !token) { // Kiểm tra cả user và token
+  // Nếu chưa đăng nhập hoặc không có token, chuyển về trang đăng nhập
+  if (!user || !token) {
     return <Navigate to="/login" />;
   }
 
-  if (role && user.role !== role) {
-    return <Navigate to={user.role === "Admin" ? "/dashboard" : "/"} />;
+  // Nếu route có yêu cầu roles và user không có role phù hợp, điều hướng về trang phù hợp với vai trò
+  if (roles && !roles.includes(user.role)) {
+    if (user.role === "Admin") return <Navigate to="/dashboard" />;
+    if (user.role === "Instructor") return <Navigate to="/instructor/dashboard" />;
+    return <Navigate to="/" />; // Mặc định nếu role không phù hợp
   }
 
-  // Nếu người dùng có quyền hợp lệ, hiển thị nội dung của route
+  // Nếu có quyền, hiển thị nội dung của route
   return children;
 };
 

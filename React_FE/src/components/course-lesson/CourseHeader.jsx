@@ -1,14 +1,23 @@
 // Hiển thị thông tin chung của khóa học, bao gồm ảnh, tiêu đề, mô tả, tiến độ hoàn thành và giá
 
 import { useNavigate } from "react-router-dom"
-import { FaHome } from "react-icons/fa"
+import { FaHome, FaUser, FaClock } from "react-icons/fa"
 
-const CourseHeader = ({ course, progress, error }) => {
+const CourseHeader = ({ course, progress, error, instructors = [] }) => {
   // dùng để điều hướng người dùng
   const navigate = useNavigate()
 
   // Nếu course chưa có dữ liệu (ví dụ: API chưa load xong), component sẽ không render gì cả
   if (!course) return null
+
+  // Tìm tên giảng viên dựa trên instructorId
+  const instructorName = instructors.find((i) => i.userId === course.instructorId)?.name || "Chưa có"
+
+  // Kiểm tra ngày hết hạn
+  const isExpiringSoon = course.expiryDate && new Date(course.expiryDate) - new Date() < 7 * 24 * 60 * 60 * 1000
+
+  // Format ngày hết hạn
+  const formattedExpiryDate = course.expiryDate ? new Date(course.expiryDate).toLocaleDateString("vi-VN") : null
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -24,6 +33,23 @@ const CourseHeader = ({ course, progress, error }) => {
             </button>
           </div>
           <p className="text-gray-600 mb-4">{course.description}</p>
+
+          {/* Thêm thông tin giảng viên và ngày hết hạn */}
+          <div className="flex flex-wrap items-center gap-4 mb-3">
+            <div className="flex items-center text-sm text-gray-600">
+              <FaUser className="mr-1" />
+              <span>Giảng viên: {instructorName}</span>
+            </div>
+
+            {formattedExpiryDate && (
+              <div className="flex items-center text-sm">
+                <FaClock className={`mr-1 ${isExpiringSoon ? "text-red-500" : "text-gray-600"}`} />
+                <span className={isExpiringSoon ? "text-red-500 font-medium" : "text-gray-600"}>
+                  Hết hạn: {formattedExpiryDate}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Progress Bar */}
           <div className="mb-2">
@@ -58,4 +84,3 @@ const CourseHeader = ({ course, progress, error }) => {
 }
 
 export default CourseHeader
-

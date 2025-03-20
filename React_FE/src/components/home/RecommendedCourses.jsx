@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import CourseCard from "../CourseCard"
 
-const RecommendedCourses = ({ courses, limit = 3, onCourseClick }) => {
+const RecommendedCourses = ({ courses, limit = 3, onCourseClick, instructors = [] }) => {
   // Lấy các khóa học được đề xuất (có rating cao)
   const getRecommendedCourses = () => {
     if (!courses || courses.length === 0) return []
@@ -44,6 +44,7 @@ const RecommendedCourses = ({ courses, limit = 3, onCourseClick }) => {
               showBookmark={true}
               onClick={onCourseClick}
               animate={true}
+              instructors={instructors} // Truyền danh sách giảng viên
             />
           ))}
         </div>
