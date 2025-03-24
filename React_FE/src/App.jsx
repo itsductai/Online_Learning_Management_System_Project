@@ -13,6 +13,8 @@ import LessonManagement from "./pages/LessonManagement.jsx";
 import CourseLesson from "./pages/CourseLesson.jsx";
 import ProgressPage from "./pages/ProgressPage.jsx";
 import InstructorDashboard from "./pages/InstructorDashboard.jsx";
+import InstructorManagement from "./pages/admin/InstructorManagement";
+import StudentManagement from "./pages/admin/StudentManagement";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -52,6 +54,9 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute roles={["Admin"]}><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute roles={["Admin"]}><CoursesManagement /></ProtectedRoute>}/>
           <Route path="/admin/courses/:courseId/lessons" element={<ProtectedRoute roles={["Admin"]}> <LessonManagement /> </ProtectedRoute>}/>
+          {/* Thêm route mới cho quản lý giảng viên và học viên */}
+          <Route path="/admin/instructors" element={<ProtectedRoute roles={["Admin"]}><InstructorManagement /></ProtectedRoute>}/>
+          <Route path="/admin/students" element={<ProtectedRoute roles={["Admin"]}><StudentManagement /></ProtectedRoute>}/>
 
           {/* Instructor Dashboard */}
           <Route path="/instructor/dashboard" element={<ProtectedRoute roles={["Instructor"]}><InstructorDashboard /></ProtectedRoute>} />

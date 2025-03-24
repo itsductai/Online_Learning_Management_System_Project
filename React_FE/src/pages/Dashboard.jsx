@@ -6,7 +6,7 @@ import Sidebar from "../components/admin/Sidebar"
 import StatsOverview from "../components/admin/StatsOverview"
 import Charts from "../components/admin/Charts"
 import CourseManagement from "../components/admin/CourseManagement"
-import StudentManagement from "../components/admin/StudentManagement"
+import StudentManagement from "./admin/StudentManagement"
 import CommunityChat from "../components/admin/CommunityChat"
 
 export default function Dashboard() {
