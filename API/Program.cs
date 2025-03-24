@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
+using API.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,13 +49,24 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         builder =>
         {
-            builder.WithOrigins("http://localhost:5173", "http://localhost:7025") // Thêm cả Swagger
+            builder.WithOrigins("http://localhost:5173", "http://localhost:7025", "https://c1ea-123-28-250-163.ngrok-free.app") // Thêm cả Swagger
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials()
                    .WithExposedHeaders("WWW-Authenticate"); // Đảm bảo phản hồi lỗi JWT được hiển thị;
         });
 });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 
 // Tạo một policy mới để bảo vệ API chỉ cho Instructor & Admin sử dụng.
 builder.Services.AddAuthorization(options =>
@@ -209,12 +221,16 @@ builder.Services.AddScoped<IInstructorRepository, InstructorRepository>(); // Đ
 // Đăng ký IPasswordHasher<User>
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 
+
+builder.Services.AddScoped<IVnPayService, VnPayService>(); // Đăng ký service VnPay
 
 
 var app = builder.Build();
 
-app.UseCors("AllowReactApp");
+app.UseCors("AllowAll");
 
 
 
