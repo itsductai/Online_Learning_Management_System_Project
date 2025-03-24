@@ -30,27 +30,48 @@ export const checkPromoCode = async (promoCode, courseId) => {
   }
 }
 
+// Tạo thanh toán MoMo
+export const createMomoPayment = async (paymentData) => {
+  try {
+    const res = await api.post("http://localhost:7025/api/Payment/create-momo", {
+      fullName: paymentData.fullName,
+      orderId: paymentData.orderId,
+      orderInfo: paymentData.orderInfo || `Thanh toán khóa học: ${paymentData.courseName}`,
+      amount: paymentData.amount.toString(),
+    })
+
+    // API trả về paymentUrl để chuyển hướng người dùng
+    return res.data
+  } catch (error) {
+    console.error("Lỗi khi tạo thanh toán MoMo:", error)
+    throw error
+  }
+}
+
 // Tạo đơn hàng và chuyển hướng đến cổng thanh toán VNPay
 export const createPaymentVNPay = async (orderData) => {
   try {
-    const res = await api.post("/payment/create-vnpay", orderData)
-    return res.data
+    const res = await api.post("/payment/createpaymenturl", orderData) // đúng route API backend
+    return res.data // { paymentUrl: "https://..." }
   } catch (error) {
     console.error("Lỗi khi tạo đơn hàng:", error)
     throw error
   }
 }
 
+
 // Xác nhận thanh toán thành công
-export const confirmPayment = async (paymentData) => {
+export const confirmPayment = async (query) => {
   try {
-    const res = await api.post("/payment/confirm", paymentData)
+    const queryString = new URLSearchParams(query).toString()
+    const res = await api.get(`/payment/paymentcallback?${queryString}`) // <-- đổi từ POST sang GET
     return res.data
   } catch (error) {
     console.error("Lỗi khi xác nhận thanh toán:", error)
     throw error
   }
 }
+
 
 // Lấy lịch sử thanh toán của người dùng
 export const getPaymentHistory = async () => {

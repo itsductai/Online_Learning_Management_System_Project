@@ -15,6 +15,8 @@ import ProgressPage from "./pages/ProgressPage.jsx";
 import InstructorDashboard from "./pages/InstructorDashboard.jsx";
 import InstructorManagement from "./pages/admin/InstructorManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
+import CheckoutSuccess from "./pages/checkout/CheckoutSuccess.jsx";
+import CheckoutMomoSuccess from "./pages/checkout/CheckoutMomoSuccess.jsx"
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -62,6 +64,11 @@ function App() {
           <Route path="/instructor/dashboard" element={<ProtectedRoute roles={["Instructor"]}><InstructorDashboard /></ProtectedRoute>} />
           <Route path="/instructor/courses" element={<ProtectedRoute roles={["Instructor"]}><CoursesManagement /></ProtectedRoute>}/>
           <Route path="/instructor/courses/:courseId/lessons" element={<ProtectedRoute roles={["Instructor"]}> <LessonManagement /> </ProtectedRoute>}/>
+
+          
+          {/* Checkout routes */}
+          <Route path="/checkout/momo-success" element={<CheckoutMomoSuccess />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
 
         </Routes>
       </Router>
