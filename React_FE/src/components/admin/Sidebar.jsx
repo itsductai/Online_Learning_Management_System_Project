@@ -20,6 +20,7 @@ export default function Sidebar() {
   const menuItems = [
     { path: "/dashboard", icon: <FaHome size={20} />, label: "Tổng quan" },
     { path: "/admin/courses", icon: <FaBook size={20} />, label: "Quản lý khóa học" },
+    { path: "/admin/instructors", icon: <FaUsers size={20} />, label: "Quản lý giảng viên" }, // Đường dẫn đã được cập nhật
     { path: "/admin/students", icon: <FaUsers size={20} />, label: "Quản lý học viên" },
     { path: "/admin/community", icon: <FaComments size={20} />, label: "Chat cộng đồng" },
     { path: "/admin/analytics", icon: <FaChartLine size={20} />, label: "Thống kê" },
@@ -31,7 +32,7 @@ export default function Sidebar() {
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between h-20 px-4 border-b border-white/10">
           {isSidebarOpen && (
-            <img src={logo} alt="Logo" className="w-32" />
+            <img src={logo || "/placeholder.svg"} alt="Logo" className="w-32" />
           )}
             <button onClick={toggleSidebar} className="text-white lg:hidden">
               <FaBars size={24} />
