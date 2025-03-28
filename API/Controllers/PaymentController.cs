@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using API.DTOs;
 using API.Services;
+using static API.DTOs.PaymentDTO;
 
 namespace API.Controllers
 {
@@ -10,13 +11,52 @@ namespace API.Controllers
     {
         private readonly IVnPayService _vnPayService;
         private readonly IMomoService _momoService;
+        private readonly IPaymentService _paymentService;
 
-        public PaymentController(IMomoService momoService, IVnPayService vnPayService)
+        public PaymentController(IPaymentService paymentService, IMomoService momoService, IVnPayService vnPayService)
         {
+            _paymentService = paymentService;
             _momoService = momoService; 
             _vnPayService = vnPayService;
         }
+        // ======================= Các thành phần xử lý thanh toán ở database ===========================
 
+        // Tạo hóa đơn
+        [HttpPost]
+        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDTO dto)
+        {
+            var id = await _paymentService.CreatePaymentAsync(dto);
+            return Ok(new { PaymentId = id });
+        }
+
+        // Cập nhật trạng thái thanh toán
+        [HttpPut("{paymentId}")]
+        public async Task<IActionResult> UpdatePayment(int paymentId, [FromBody] UpdatePaymentDTO dto)
+        {
+            var result = await _paymentService.UpdatePaymentAsync(paymentId, dto);
+            if (!result) return NotFound();
+            return NoContent();
+        }
+
+        // Lấy tất cả hóa đơn
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPayments()
+        {
+            var data = await _paymentService.GetAllPaymentsAsync();
+            return Ok(data);
+        }
+
+        // Lấy hóa đơn theo user
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUserPayments(int userId)
+        {
+            var data = await _paymentService.GetPaymentsByUserAsync(userId);
+            return Ok(data);
+        }
+
+        // ======================= Các thành phần xử lý thanh toán qua cổng thanh toán ===========================
+
+        // Tạo thanh toán Momo
         [HttpPost("create-momo")]
         public async Task<IActionResult> CreatePaymentMomo([FromBody] OrderInfoModel model)
         {
