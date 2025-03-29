@@ -1,4 +1,5 @@
 ﻿using Data.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace API.Repositories
@@ -6,7 +7,7 @@ namespace API.Repositories
     public interface IPaymentRepository
     {
         Task<int> CreatePaymentAsync(Payment payment);
-        Task<bool> UpdatePaymentAsync(int paymentId, string? transactionId, string? responseMessage, string status);
+        Task<bool> UpdatePaymentAsync(int paymentId, string orderId, string? transactionId, string? responseMessage, string status);
         Task<List<object>> GetAllPaymentsWithDetailsAsync();
         Task<List<object>> GetPaymentsByUserIdWithDetailsAsync(int userId);
     }
@@ -25,10 +26,11 @@ namespace API.Repositories
             return payment.PaymentId;
         }
 
-        public async Task<bool> UpdatePaymentAsync(int paymentId, string? transactionId, string? responseMessage, string status)
+        public async Task<bool> UpdatePaymentAsync(int paymentId, string orderId, string? transactionId, string? responseMessage, string status)
         {
             var payment = await _context.Payments.FindAsync(paymentId);
             if (payment == null) return false;
+            payment.OrderId= orderId;
             payment.TransactionId = transactionId;
             payment.ResponseMessage = responseMessage;
             payment.Status = status;

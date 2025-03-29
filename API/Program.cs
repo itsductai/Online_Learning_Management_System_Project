@@ -207,6 +207,8 @@ builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IQuizService, QuizService>(); // Đăng ký service Quiz
 builder.Services.AddScoped<IProgressService, ProgressService>(); // Đăng ký service Progress
 builder.Services.AddScoped<IInstructorService, InstructorService>(); // Đăng ký service Instructor
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ICouponService, CouponService>(); // Đăng ký service Coupon
 
 // Đăng ký Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
@@ -216,6 +218,8 @@ builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>(); // Đăng ký repository Instructor
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>(); // Đăng ký repository Coupon
 
 
 // Đăng ký IPasswordHasher<User>

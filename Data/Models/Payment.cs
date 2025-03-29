@@ -9,6 +9,8 @@ namespace Data.Models
         [Key]
         public int PaymentId { get; set; } // Khóa chính của bảng
 
+        public string? OrderId { get; set; } // Mã đơn hàng thành công trả từ momo
+
         [Required]
         public int UserId { get; set; } // Khóa ngoại đến bảng Users
 

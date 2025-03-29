@@ -16,7 +16,7 @@ namespace API.Controllers
         public PaymentController(IPaymentService paymentService, IMomoService momoService, IVnPayService vnPayService)
         {
             _paymentService = paymentService;
-            _momoService = momoService; 
+            _momoService = momoService;
             _vnPayService = vnPayService;
         }
         // ======================= Các thành phần xử lý thanh toán ở database ===========================

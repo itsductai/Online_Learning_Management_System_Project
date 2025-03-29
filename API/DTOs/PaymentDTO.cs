@@ -14,6 +14,7 @@
 
         public class UpdatePaymentDTO
         {
+            public string OrderId { get; set; }
             public string TransactionId { get; set; }
             public string ResponseMessage { get; set; }
             public string Status { get; set; } // "success", "fail", "cancel"

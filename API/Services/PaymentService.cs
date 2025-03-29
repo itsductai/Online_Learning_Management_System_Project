@@ -1,5 +1,6 @@
 ﻿using API.Repositories;
 using Data.Models;
+using Microsoft.EntityFrameworkCore;
 using static API.DTOs.PaymentDTO;
 
 namespace API.Services
@@ -14,9 +15,11 @@ namespace API.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepo;
-        public PaymentService(IPaymentRepository paymentRepo)
+        private readonly ICouponRepository _couponRepo;
+        public PaymentService(IPaymentRepository paymentRepo, ICouponRepository couponRepo)
         {
             _paymentRepo = paymentRepo;
+            _couponRepo = couponRepo;
         }
 
         public async Task<int> CreatePaymentAsync(CreatePaymentDTO dto)
@@ -32,12 +35,24 @@ namespace API.Services
                 CreatedAt = DateTime.UtcNow.AddHours(7),
                 Status = "waiting"
             };
+
+            // Nếu có mã giảm giá => tăng UsageCount thủ công
+            if (dto.CouponId.HasValue)
+            {
+                var coupon = await _couponRepo.GetByIdAsync(dto.CouponId.Value);
+                if (coupon != null)
+                {
+                    coupon.UsageCount++;
+                }
+                await _couponRepo.UpdateAsync(coupon);
+            }
+
             return await _paymentRepo.CreatePaymentAsync(payment);
         }
 
         public async Task<bool> UpdatePaymentAsync(int paymentId, UpdatePaymentDTO dto)
         {
-            return await _paymentRepo.UpdatePaymentAsync(paymentId, dto.TransactionId, dto.ResponseMessage, dto.Status);
+            return await _paymentRepo.UpdatePaymentAsync(paymentId, dto.OrderId, dto.TransactionId, dto.ResponseMessage, dto.Status);
         }
 
         public async Task<List<object>> GetAllPaymentsAsync() => await _paymentRepo.GetAllPaymentsWithDetailsAsync();
