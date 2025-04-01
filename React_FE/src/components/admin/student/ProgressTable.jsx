@@ -1,40 +1,25 @@
 import { useMemo } from "react"
-import { Eye, Trash2 } from "lucide-react"
+import { Power } from "lucide-react"
 
 const ProgressTable = ({
   students,
-  progressStats,
   loading,
   error,
   searchTerm,
   sortField,
   sortDirection,
   activeFilter,
-  onViewClick,
-  onDeleteClick,
+  onToggleStatus,
 }) => {
-  // Get student progress data
-  const getStudentProgress = (studentId) => {
-    return (
-    //   progressStats?.find((stat) => stat.userId === studentId) ||
-       {
-        totalCourses: 0,
-        completedCourses: 0,
-        averageProgress: 0,
-        totalHoursLearned: 0,
-      }
-    )
-  }
-
   // Filter and sort students
   const filteredStudents = useMemo(() => {
-    if (!students) return []
+    if (!students || !Array.isArray(students)) return []
 
     return students
       .filter((student) => {
         // Search filter
         const matchesSearch =
-          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           student.email.toLowerCase().includes(searchTerm.toLowerCase())
 
         // Active/Inactive filter
@@ -47,20 +32,18 @@ const ProgressTable = ({
         let comparison = 0
 
         if (sortField === "name") {
-          comparison = a.name.localeCompare(b.name)
+          comparison = a.userName.localeCompare(b.userName)
         } else if (sortField === "courses") {
-          const progressA = getStudentProgress(a.userId)
-          const progressB = getStudentProgress(b.userId)
-          comparison = (progressA.totalCourses || 0) - (progressB.totalCourses || 0)
+          comparison = (a.enrollments?.length || 0) - (b.enrollments?.length || 0)
         } else if (sortField === "progress") {
-          const progressA = getStudentProgress(a.userId)
-          const progressB = getStudentProgress(b.userId)
-          comparison = (progressA.averageProgress || 0) - (progressB.averageProgress || 0)
+          const progressA = a.enrollments?.reduce((acc, curr) => acc + curr.progressPercent, 0) / (a.enrollments?.length || 1)
+          const progressB = b.enrollments?.reduce((acc, curr) => acc + curr.progressPercent, 0) / (b.enrollments?.length || 1)
+          comparison = progressA - progressB
         }
 
         return sortDirection === "asc" ? comparison : -comparison
       })
-  }, [students, searchTerm, activeFilter, sortField, sortDirection, progressStats])
+  }, [students, searchTerm, activeFilter, sortField, sortDirection])
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -97,9 +80,6 @@ const ProgressTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tiến độ trung bình
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Thời gian học
-                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Thao tác
                 </th>
@@ -107,20 +87,18 @@ const ProgressTable = ({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredStudents.map((student) => {
-                const progress = getStudentProgress(student.userId)
+                const totalCourses = student.enrollments?.length || 0
+                const completedCourses = student.enrollments?.filter(e => e.isCompleted).length || 0
+                const averageProgress = totalCourses > 0 
+                  ? student.enrollments.reduce((acc, curr) => acc + curr.progressPercent, 0) / totalCourses 
+                  : 0
+
                 return (
-                  <tr key={student.userId} className="hover:bg-gray-50">
+                  <tr key={student.userId} className={`hover:bg-gray-50 ${!student.isActive ? "opacity-50" : ""}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
-                          <img
-                            className="h-10 w-10 rounded-full object-cover"
-                            src={student.imageUrl || "/placeholder.svg?height=40&width=40"}
-                            alt={student.name}
-                          />
-                        </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{student.userName}</div>
                           <div className="text-sm text-gray-500">{student.email}</div>
                         </div>
                       </div>
@@ -134,30 +112,30 @@ const ProgressTable = ({
                         {student.isActive ? "Đang hoạt động" : "Không hoạt động"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{progress.totalCourses || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{totalCourses}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {progress.completedCourses || 0}
+                      {completedCourses}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2 max-w-[100px]">
                           <div
                             className="bg-primary h-2.5 rounded-full"
-                            style={{ width: `${progress.averageProgress || 0}%` }}
+                            style={{ width: `${averageProgress}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm text-gray-500">{Math.round(progress.averageProgress || 0)}%</span>
+                        <span className="text-sm text-gray-500">{Math.round(averageProgress)}%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {progress.totalHoursLearned ? `${progress.totalHoursLearned.toFixed(1)} giờ` : "0 giờ"}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => onViewClick(student)} className="text-blue-600 hover:text-blue-900 mr-3">
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      <button onClick={() => onDeleteClick(student)} className="text-red-600 hover:text-red-900">
-                        <Trash2 className="w-5 h-5" />
+                      <button
+                        onClick={() => onToggleStatus(student)}
+                        className={`p-1 rounded-full hover:bg-gray-100 ${
+                          student.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"
+                        }`}
+                        title={student.isActive ? "Vô hiệu hóa học viên" : "Kích hoạt học viên"}
+                      >
+                        <Power className="w-5 h-5" />
                       </button>
                     </td>
                   </tr>

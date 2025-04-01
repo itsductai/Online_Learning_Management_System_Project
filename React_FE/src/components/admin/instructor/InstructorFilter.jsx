@@ -79,29 +79,6 @@ const InstructorFilter = ({
           </button>
         </div>
       </div>
-
-      {/* Alphabet Filter */}
-      <div className="flex flex-wrap gap-1">
-        <button
-          onClick={() => setFilterLetter("")}
-          className={`px-2 py-1 text-sm rounded-md ${
-            filterLetter === "" ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          Tất cả
-        </button>
-        {alphabet.map((letter) => (
-          <button
-            key={letter}
-            onClick={() => setFilterLetter(letter)}
-            className={`px-2 py-1 text-sm rounded-md ${
-              filterLetter === letter ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {letter}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

@@ -78,8 +78,8 @@ const AddInstructorModal = ({ onClose, onSubmit, formData, setFormData }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">URL Hình ảnh</label>
             <input
               type="url"
-              value={formData.imageUrl}
-              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+              value={formData.avatarUrl}
+              onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="https://example.com/image.jpg"
             />

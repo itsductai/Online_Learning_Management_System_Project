@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaBook, FaUsers, FaComments, FaChartLine, FaCog, FaSignOutAlt, FaBars } from "react-icons/fa";
+import { FaHome, FaBook, FaUsers, FaComments, FaChartLine, FaCog, FaSignOutAlt, FaBars, FaCreditCard, FaTag } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import logo from "../../logo/logo_white_v2.png";
@@ -20,23 +20,23 @@ export default function Sidebar() {
   const menuItems = [
     { path: "/dashboard", icon: <FaHome size={20} />, label: "Tổng quan" },
     { path: "/admin/courses", icon: <FaBook size={20} />, label: "Quản lý khóa học" },
-    { path: "/admin/instructors", icon: <FaUsers size={20} />, label: "Quản lý giảng viên" }, // Đường dẫn đã được cập nhật
+    { path: "/admin/instructors", icon: <FaUsers size={20} />, label: "Quản lý giảng viên" },
     { path: "/admin/students", icon: <FaUsers size={20} />, label: "Quản lý học viên" },
+    { path: "/admin/payments", icon: <FaCreditCard size={20} />, label: "Quản lý thanh toán" }, // Thêm mục quản lý thanh toán
+    { path: "/admin/coupons", icon: <FaTag size={20} />, label: "Quản lý mã giảm giá" }, // Thêm mục quản lý mã giảm giá
     { path: "/admin/community", icon: <FaComments size={20} />, label: "Chat cộng đồng" },
     { path: "/admin/analytics", icon: <FaChartLine size={20} />, label: "Thống kê" },
     { path: "/admin/settings", icon: <FaCog size={20} />, label: "Cài đặt" },
   ];
 
   return (
-    <div className={`fixed bg-gradient-to-b from-primary to-secondary h-full min-h-screen transition-all duration-300 ${isSidebarOpen ? "w-64" : "w-16 md:w-64"}`}>
+    <div className={`fixed bg-gradient-to-b from-primary to-secondary h-full min-h-screen transition-all duration-300 ${isSidebarOpen ? "w-64" : "w-16 md:w-64"}`} >
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between h-20 px-4 border-b border-white/10">
-          {isSidebarOpen && (
-            <img src={logo || "/placeholder.svg"} alt="Logo" className="w-32" />
-          )}
-            <button onClick={toggleSidebar} className="text-white lg:hidden">
-              <FaBars size={24} />
-            </button>
+          {isSidebarOpen && <img src={logo || "/placeholder.svg"} alt="Logo" className="w-32" />}
+          <button onClick={toggleSidebar} className="text-white lg:hidden">
+            <FaBars size={24} />
+          </button>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => (

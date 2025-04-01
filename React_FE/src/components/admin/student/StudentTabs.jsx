@@ -14,7 +14,7 @@ const StudentTabs = ({ activeTab, setActiveTab }) => {
         <BarChart2 className="w-5 h-5 mr-2" />
         Tiến độ học tập
       </button>
-      <button
+      {/* <button
         onClick={() => setActiveTab("quiz")}
         className={`flex items-center px-4 py-2 rounded-t-lg ${
           activeTab === "quiz"
@@ -24,7 +24,7 @@ const StudentTabs = ({ activeTab, setActiveTab }) => {
       >
         <ListChecks className="w-5 h-5 mr-2" />
         Kết quả kiểm tra
-      </button>
+      </button> */}
     </div>
   )
 }
