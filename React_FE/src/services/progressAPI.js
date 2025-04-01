@@ -48,3 +48,47 @@ export const getUserProgressStats = async () => {
   }
 }
 
+// Lấy danh sách ghi danh của học viên
+export const getEnrollments = async () => {
+  try {
+    const res = await api.get('/progress/admin/enrollments');
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách ghi danh:", error);
+    return [];
+  }
+};
+
+// Lấy thống kê tổng quan
+export const getStatistics = async () => {
+  try {
+    const res = await api.get('/progress/admin/statistics');
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy thống kê:", error);
+    return null;
+  }
+};
+
+// Lấy thông tin tiến độ học tập của học viên
+export const getStudentProgressDetails = async () => {
+  try {
+    const res = await api.get('/progress/student-enrollments');
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin tiến độ học viên:", error);
+    return [];
+  }
+};
+
+// Vô hiệu hóa/Kích hoạt học viên
+export const toggleStudentStatus = async (userId) => {
+  try {
+    const res = await api.put(`/instructor/disable/${userId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi thay đổi trạng thái học viên:", error);
+    throw error;
+  }
+};
+

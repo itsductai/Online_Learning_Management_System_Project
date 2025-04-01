@@ -9,14 +9,19 @@ import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import CoursesPage from "./pages/CoursesPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CoursesManagement from "./pages/CoursesManagement.jsx";
+import InstructorCourseManagement from "./components/instructor/CourseManagement.jsx";
 import LessonManagement from "./pages/LessonManagement.jsx";
+import InstructorLessonManagement from "./pages/instructor/LessonManagement.jsx";
 import CourseLesson from "./pages/CourseLesson.jsx";
 import ProgressPage from "./pages/ProgressPage.jsx";
 import InstructorDashboard from "./pages/InstructorDashboard.jsx";
 import InstructorManagement from "./pages/admin/InstructorManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import CheckoutSuccess from "./pages/checkout/CheckoutSuccess.jsx";
-import CheckoutMomoSuccess from "./pages/checkout/CheckoutMomoSuccess.jsx"
+import CheckoutMomoSuccess from "./pages/checkout/CheckoutMomoSuccess.jsx";
+import PaymentManager from "./pages/admin/PaymentManager"
+import CouponManager from "./pages/admin/CouponManager"
+import InstructorStudentManagement from "./pages/instructor/StudentManagement.jsx";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -59,11 +64,14 @@ function App() {
           {/* Thêm route mới cho quản lý giảng viên và học viên */}
           <Route path="/admin/instructors" element={<ProtectedRoute roles={["Admin"]}><InstructorManagement /></ProtectedRoute>}/>
           <Route path="/admin/students" element={<ProtectedRoute roles={["Admin"]}><StudentManagement /></ProtectedRoute>}/>
+          <Route path="/admin/payments" element={<ProtectedRoute roles={["Admin"]}><PaymentManager /></ProtectedRoute>} />
+          <Route path="/admin/coupons" element={<ProtectedRoute roles={["Admin"]}><CouponManager /></ProtectedRoute>} />
 
           {/* Instructor Dashboard */}
           <Route path="/instructor/dashboard" element={<ProtectedRoute roles={["Instructor"]}><InstructorDashboard /></ProtectedRoute>} />
-          <Route path="/instructor/courses" element={<ProtectedRoute roles={["Instructor"]}><CoursesManagement /></ProtectedRoute>}/>
-          <Route path="/instructor/courses/:courseId/lessons" element={<ProtectedRoute roles={["Instructor"]}> <LessonManagement /> </ProtectedRoute>}/>
+          <Route path="/instructor/courses" element={<ProtectedRoute roles={["Instructor"]}><InstructorCourseManagement /></ProtectedRoute>}/>
+          <Route path="/instructor/courses/:courseId/lessons" element={<ProtectedRoute roles={["Instructor"]}> <InstructorLessonManagement /> </ProtectedRoute>}/>
+          <Route path="/instructor/students" element={<ProtectedRoute roles={["Instructor"]}><InstructorStudentManagement /></ProtectedRoute>}/>
 
           
           {/* Checkout routes */}
