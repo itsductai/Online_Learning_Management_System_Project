@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
-import Sidebar from '../components/admin/Sidebar';
-import InstructorSidebar from '../components/instructor/Sidebar';
-import LessonList from '../components/LessonList';
-import AddLessonModal from '../components/admin/AddLessonModal';
-import useLessons from '../hooks/useLessons';
-import useCourses from '../hooks/useCourses';
-import { useAuth } from '../context/AuthContext';
+import InstructorSidebar from '../../components/instructor/Sidebar';
+import LessonList from '../../components/LessonList';
+import AddLessonModal from '../../components/admin/AddLessonModal';
+import useLessons from '../../hooks/useLessons';
+import useCourses from '../../hooks/useCourses';
+import { useAuth } from '../../context/AuthContext';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from 'rehype-raw';
@@ -38,24 +37,6 @@ export default function LessonManagement() {
   //   setCurrentCourse(course);
   // }, [courseId, courses]);
 
-  // Thêm useEffect để xử lý lưu quiz vào localStorage khi selectedLesson thay đổi
-  useEffect(() => {
-    if (selectedLesson?.lessonType === 'quiz' && selectedLesson.questions) {
-      // Lưu quiz vào localStorage với key là lessonId
-      const quizData = selectedLesson.questions.map(question => ({
-        question: question.question,
-        options: question.options,
-        correctAnswer: question.correctAnswer,
-        imageUrl: question.imageUrl
-      }));
-      
-      localStorage.setItem(
-        `quiz_${selectedLesson.lessonId}`,
-        JSON.stringify(quizData)
-      );
-    }
-  }, [selectedLesson]);
-
 const handleSubmit = async (data) => {
     try {
         console.log("Bài học được chọn submit:", selectedLesson);
@@ -81,15 +62,13 @@ const getEmbedUrl = (url) => {
     return videoIdMatch ? `https://www.youtube.com/embed/${videoIdMatch[1]}` : '';
 };
 
-// Xác định Sidebar component dựa theo role
-const SidebarComponent = user?.role === 'Admin' ? Sidebar : InstructorSidebar;
 
   if (loading) return <div className="text-center py-8">Đang tải...</div>;
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SidebarComponent isSidebarOpen={isSidebarOpen} />
+      <InstructorSidebar isSidebarOpen={isSidebarOpen} />
       
       <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
         <div className="p-8">
@@ -156,7 +135,7 @@ const SidebarComponent = user?.role === 'Admin' ? Sidebar : InstructorSidebar;
                   }}
                   onDeleteClick={deleteLesson}  // Xóa bài học
                   selectedLessonId={selectedLesson?.lessonId} // Highlight bài học đang chọn
-                  showAdminActions={true} // Cho phép cả Admin và Instructor có quyền sửa/xóa
+                  showAdminActions={true} // Truyền quyền hạn admin để hiện nút sửa và xóa 
                 />
               </div>
             </div>
@@ -192,42 +171,34 @@ const SidebarComponent = user?.role === 'Admin' ? Sidebar : InstructorSidebar;
 
                   {selectedLesson.lessonType === 'quiz' && (
                     <div className="space-y-4">
-                      {selectedLesson.questions?.map((question, index) => {
-                        // Lấy dữ liệu quiz từ localStorage nếu có
-                        const storedQuizData = JSON.parse(
-                          localStorage.getItem(`quiz_${selectedLesson.lessonId}`)
-                        );
-                        const correctAnswer = storedQuizData?.[index]?.correctAnswer ?? question.correctAnswer;
-
-                        return (
-                          <div key={index} className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="font-medium mb-3">
-                              Câu {index + 1}: {question.question}
-                            </h3>
-                            {question.imageUrl && (
-                              <img
-                                src={question.imageUrl || "/placeholder.svg"}
-                                alt="Question"
-                                className="mb-3 rounded-lg max-w-sm"
-                              />
-                            )}
-                            <div className="grid grid-cols-2 gap-2">
-                              {question.options.map((option, optIndex) => (
-                                <div
-                                  key={optIndex}
-                                  className={`p-2 rounded ${
-                                    optIndex === correctAnswer
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100'
-                                  }`}
-                                >
-                                  {option}
-                                </div>
-                              ))}
-                            </div>
+                      {selectedLesson.questions?.map((question, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
+                          <h3 className="font-medium mb-3">
+                            Câu {index + 1}: {question.question}
+                          </h3>
+                          {question.imageUrl && (
+                            <img
+                              src={question.imageUrl || "/placeholder.svg"}
+                              alt="Question"
+                              className="mb-3 rounded-lg max-w-sm"
+                            />
+                          )}
+                          <div className="grid grid-cols-2 gap-2">
+                            {question.options.map((option, optIndex) => (
+                              <div
+                                key={optIndex}
+                                className={`p-2 rounded ${
+                                  optIndex === question.correctAnswer
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100'
+                                }`}
+                              >
+                                {option}
+                              </div>
+                            ))}
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

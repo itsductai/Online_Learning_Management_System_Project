@@ -1,5 +1,3 @@
-"use client"
-
 import { motion } from "framer-motion"
 import { FaGraduationCap } from "react-icons/fa"
 
@@ -42,25 +40,6 @@ const ProgressHeader = ({ user, stats }) => {
               <span className={`ml-2 font-semibold bg-white ${userLevel.color} px-2 py-0.5 rounded-full text-sm`}>
                 {userLevel.level}
               </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
-          <div className="text-center">
-            <p className="text-white text-opacity-90 mb-1">Mục tiêu học tập</p>
-            <div className="flex items-center justify-center gap-2">
-              <div className="text-2xl font-bold">{stats.completedCourses}</div>
-              <div className="text-white text-opacity-80 text-sm">/</div>
-              <div className="text-white text-opacity-80">{stats.totalCourses} khóa học</div>
-            </div>
-            <div className="w-full bg-white bg-opacity-30 rounded-full h-2 mt-2">
-              <div
-                className="bg-white h-2 rounded-full"
-                style={{
-                  width: `${stats.totalCourses > 0 ? (stats.completedCourses / stats.totalCourses) * 100 : 0}%`,
-                }}
-              ></div>
             </div>
           </div>
         </div>

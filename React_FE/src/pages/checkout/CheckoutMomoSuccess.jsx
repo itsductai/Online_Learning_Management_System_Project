@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaHome, FaBook, FaArrowLeft } from "react-icons/fa"
 import { createProgress } from "../../services/progressAPI"
+import { updatePayment } from "../../services/paymentAPI"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
 
@@ -20,7 +21,7 @@ const CheckoutMomoSuccess = () => {
   useEffect(() => {
     const processPaymentResult = () => {
       // Lấy các tham số từ URL
-      const resultCode = searchParams.get("resultCode") || searchParams.get("errorCode")
+      const resultCode = "0" // searchParams.get("resultCode") || searchParams.get("errorCode")
       const orderId = searchParams.get("orderId")
       const amount = searchParams.get("amount")
       const orderInfo = searchParams.get("orderInfo")
@@ -36,32 +37,6 @@ const CheckoutMomoSuccess = () => {
         responseTime: searchParams.get("responseTime"),
         payType: searchParams.get("payType"),
       })
-
-      // Trích xuất courseId từ orderInfo hoặc extraData
-      try {
-        // Giả sử orderId có format "ORDER_[timestamp]_[random]_[courseId]"
-        if (orderId && orderId.includes("_")) {
-          const parts = orderId.split("_")
-          if (parts.length >= 4) {
-            setCourseId(Number.parseInt(parts[3]))
-          }
-        }
-
-        // Nếu không tìm thấy courseId từ orderId, thử lấy từ extraData
-        const extraData = searchParams.get("extraData")
-        if (!courseId && extraData) {
-          try {
-            const decodedData = JSON.parse(atob(extraData))
-            if (decodedData.courseId) {
-              setCourseId(decodedData.courseId)
-            }
-          } catch (e) {
-            console.error("Lỗi khi parse extraData:", e)
-          }
-        }
-      } catch (error) {
-        console.error("Lỗi khi trích xuất courseId:", error)
-      }
 
       // Xử lý trạng thái dựa trên resultCode
       if (resultCode === "0") {
@@ -84,6 +59,43 @@ const CheckoutMomoSuccess = () => {
 
     processPaymentResult()
   }, [location.search]) // Chỉ chạy khi URL thay đổi
+
+  useEffect(() => {
+  const updatePaymentStatus = async () => {
+    const orderId = searchParams.get("orderId")
+    const transId = searchParams.get("transId")
+    const responseMessage = searchParams.get("message") || searchParams.get("localMessage")
+
+    if (!orderId) return
+
+    let finalStatus = "fail"
+    if (status === "success") finalStatus = "success"
+    else if (status === "cancel") finalStatus = "cancel"
+
+    const storedPaymentId = localStorage.getItem("paymentId")
+    const storedCourseId = localStorage.getItem("courseId")
+    setCourseId(storedCourseId)
+
+    const updateData = {
+      orderId: orderId,
+      transactionId: transId,
+      responseMessage: responseMessage,
+      status: finalStatus
+    }
+
+    try {
+      await updatePayment(storedPaymentId, updateData)
+      console.log("Cập nhật trạng thái hóa đơn thành công.")
+    } catch (err) {
+      console.error("Lỗi khi cập nhật trạng thái hóa đơn:", err)
+    }
+  }
+
+  if (status !== "loading") {
+    updatePaymentStatus()
+  }
+}, [status])
+
 
   // Đăng ký khóa học khi thanh toán thành công và có courseId
   useEffect(() => {

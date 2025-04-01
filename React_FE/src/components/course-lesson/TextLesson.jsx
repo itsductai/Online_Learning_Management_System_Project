@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 
 const TextLesson = ({ lesson, watchTime, onWatchTimeUpdate, onComplete }) => {
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60

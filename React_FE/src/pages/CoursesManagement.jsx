@@ -100,11 +100,11 @@ export default function CoursesManagement() {
 
   // Điều hướng đến trang quản lý bài học
   const navigateToLessons = (courseId) => {
-    if (user.role = "Admin") {
-        navigate(`/admin/courses/${courseId}/lessons`)
+    if (user.role == "Admin") {
+        navigate(`/admin/courses/${courseId}/lessons`);
     }
-    if (user.role = "Instructor"){
-         navigate(`/instructor/courses/${courseId}/lessons`)
+    else if (user.role == "Instructor"){
+         navigate(`/instructor/courses/${courseId}/lessons`);
     }
   }
 
@@ -274,12 +274,16 @@ export default function CoursesManagement() {
 
                   {/* Ngày hết hạn khóa học */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Ngày hết hạn: <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="date"
+                      required
                       value={formData.expiryDate ? new Date(formData.expiryDate).toISOString().split("T")[0] : ""}
                       onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      min={new Date().toISOString().split("T")[0]}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                     />
                   </div>
 

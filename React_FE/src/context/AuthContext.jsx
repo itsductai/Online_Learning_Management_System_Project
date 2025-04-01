@@ -6,19 +6,38 @@ export const AuthContext = createContext();
 // Provider để bọc toàn bộ ứng dụng
 export function AuthProvider({ children }) {
   // Khởi tạo state `user`
-  // Nếu trước đó kh có user trong localStorage thì user sẽ  null hoặ sẽ lấy từ localStorage nếu có tồn tại.
   const [user, setUser] = useState(() => {
     // Lấy user từ localStorage (nếu tồn tại)
     const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null; // Nếu có user thì parse từ JSON, nếu không thì null
+    return savedUser ? JSON.parse(savedUser) : null;
   });
+
+  // Lắng nghe sự thay đổi của localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      } else {
+        setUser(null);
+      }
+    };
+
+    // Đăng ký event listener
+    window.addEventListener("storage", handleStorageChange);
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   // Hàm đăng nhập - Lưu user vào state và localStorage
   const login = (userData) => {
-    setUser(userData); // yếu tố làm user thay đổi
+    setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", userData.token);
-    localStorage.setItem("refreshToken", userData.refreshToken); 
+    localStorage.setItem("refreshToken", userData.refreshToken);
   };
 
   // Hàm đăng xuất - Xóa user khỏi state và localStorage
@@ -31,7 +50,7 @@ export function AuthProvider({ children }) {
 
   return (
     // Cung cấp giá trị `user`, `login`, `logout` cho toàn bộ ứng dụng
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

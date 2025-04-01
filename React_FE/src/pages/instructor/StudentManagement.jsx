@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import Sidebar from "../../components/admin/Sidebar"
+import InstructorSidebar from "../../components/instructor/Sidebar"
 import StudentHeader from "../../components/admin/student/StudentHeader"
 import StudentFilter from "../../components/admin/student/StudentFilter"
 import StudentTabs from "../../components/admin/student/StudentTabs"
@@ -10,7 +10,7 @@ import useStudents from "../../hooks/useStudents"
 import { disableUser } from "../../services/userAPI"
 import { motion, AnimatePresence } from "framer-motion"
 
-export default function StudentManagement() {
+export default function InstructorStudentManagement() {
   const navigate = useNavigate()
   const { students, loading, error } = useStudents()
 
@@ -55,7 +55,7 @@ export default function StudentManagement() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+      <InstructorSidebar />
 
       <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
         <div className="p-8">
@@ -115,4 +115,3 @@ export default function StudentManagement() {
     </div>
   )
 }
-

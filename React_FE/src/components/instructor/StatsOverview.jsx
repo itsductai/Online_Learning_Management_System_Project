@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { getUserProgressStats } from "../../services/progressAPI";
-import { FaGraduationCap, FaBook, FaChalkboardTeacher, FaUsers } from "react-icons/fa";
+import { getEnrollments, getStatistics } from '../../services/progressAPI';
+import { FaGraduationCap, FaBook, FaUsers } from "react-icons/fa";
+import useCourses from '../../hooks/useCourses';
+import { useAuth } from '../../context/AuthContext';
 
 const StatCard = ({ icon, title, value }) => (
   <div className="bg-white rounded-lg shadow-md p-6 transition-transform duration-300 hover:transform hover:scale-105">
@@ -15,6 +17,8 @@ const StatCard = ({ icon, title, value }) => (
 );
 
 export default function StatsOverview() {
+  const { user } = useAuth();
+  const { courses } = useCourses();
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalCourses: 0,
@@ -26,23 +30,50 @@ export default function StatsOverview() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const data = await getUserProgressStats();
-        if (data) {
-          setStats({
-            totalStudents: data.totalStudents,
-            totalCourses: data.totalCourses,
-            totalLessons: data.totalLessons,
-          });
-        }
+        
+        // Lọc khóa học theo instructor
+        const filteredCourses = user.role === "Instructor"
+          ? courses.filter(course => course.instructorId === user.userId)
+          : courses;
+
+        // Lấy danh sách ghi danh
+        const enrollments = await getEnrollments();
+        
+        // Lọc enrollments theo khóa học của instructor
+        const relevantEnrollments = user.role === "Instructor"
+          ? enrollments.filter(enrollment => 
+              filteredCourses.some(course => course.courseId === enrollment.courseId)
+            )
+          : enrollments;
+
+        // Đếm số học viên unique
+        const uniqueStudents = new Set(relevantEnrollments.map(e => e.userId)).size;
+
+        // Đếm số khóa học
+        const totalCourses = filteredCourses.length;
+
+        // Tính tổng số bài học từ các khóa học đã lọc với kiểm tra số
+        const totalLessons = filteredCourses.reduce((sum, course) => 
+          sum + (course.totalLesson || 0), 0
+        );
+
+        // Lấy thống kê
+        const statistics = await getStatistics();
+        
+        setStats({
+          totalStudents: uniqueStudents,
+          totalCourses: totalCourses,
+          totalLessons: totalLessons,
+        });
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu admin:", error);
+        console.error("Lỗi khi lấy dữ liệu:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStats();
-  }, []);
+  }, [courses, user]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -52,7 +83,7 @@ export default function StatsOverview() {
         <>
           <StatCard icon={<FaUsers />} title="Tổng số học viên" value={stats.totalStudents} />
           <StatCard icon={<FaBook />} title="Tổng số khóa học" value={stats.totalCourses} />
-          <StatCard icon={<FaChalkboardTeacher />} title="Tổng số bài học" value={stats.totalLessons} />
+          <StatCard icon={<FaGraduationCap />} title="Tổng số bài học" value={stats.totalLessons} />
         </>
       )}
     </div>

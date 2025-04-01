@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import logo from "../../logo/logo_white_v2.png";
 
-export default function Sidebar() {
+export default function InstructorSidebar() {
   const location = useLocation();
   const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -20,10 +20,7 @@ export default function Sidebar() {
   const menuItems = [
     { path: "/instructor/dashboard", icon: <FaHome size={20} />, label: "Tổng quan" },
     { path: "/instructor/courses", icon: <FaBook size={20} />, label: "Quản lý khóa học" },
-    { path: "/instructor/students", icon: <FaUsers size={20} />, label: "Quản lý học viên" },
-    { path: "/instructor/community", icon: <FaComments size={20} />, label: "Chat cộng đồng" },
-    { path: "/instructor/analytics", icon: <FaChartLine size={20} />, label: "Thống kê" },
-    { path: "/instructor/settings", icon: <FaCog size={20} />, label: "Cài đặt" },
+    { path: "/instructor/students", icon: <FaUsers size={20} />, label: "Quản lý học viên" }
   ];
 
   return (

@@ -1,49 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getUserProgressStats } from "../../services/progressAPI";
 import { FaChartLine, FaGraduationCap, FaClock, FaTrophy } from "react-icons/fa";
 
-const ProgressTrackingSection = () => {
+const ProgressTrackingSection = ({stats ={}, loading}) => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalEnrolledCourses: 0, // Số khóa học đã tham gia
-    completedCourses: 0, // Số khóa học đã hoàn thành
-    totalStudyTime: [0, 0], // Thời gian học [hours, minutes]
-    averageProgress: 0, // Tiến độ trung bình (%)
-  });
-  const [loading, setLoading] = useState(true);
   const location = useLocation();
-
-  console.log("Khoi tao: ", stats)
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (user?.userId) {
-        try {
-          setLoading(true);
-          const data = await getUserProgressStats();
-          if (data) {
-            setStats({
-              totalEnrolledCourses: data.totalEnrolledCourses,
-              completedCourses: data.completedCourses,
-              totalStudyTime: data.totalStudyTime, // Mảng [hours, minutes]
-              averageProgress: data.averageProgress,
-            });
-            console.log("Lay stats: ", stats)
-          }
-        } catch (error) {
-          console.error("Lỗi khi lấy thống kê tiến độ:", error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [user]);
+  console.log("Truyen vao progress Tracking: ", stats)
 
   if (!user) {
     return null;
@@ -111,7 +74,7 @@ const ProgressTrackingSection = () => {
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-800">
-                {stats.totalStudyTime[0]}h {stats.totalStudyTime[1]}m
+                {(stats?.totalStudyTime?.[0] || 0)}h {(stats?.totalStudyTime?.[1] || 0)}m
               </div>
             </div>
 

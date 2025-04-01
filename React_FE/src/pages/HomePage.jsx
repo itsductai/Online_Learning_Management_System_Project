@@ -48,9 +48,6 @@ export default function HomePage() {
         instructors={instructors} // Truyền danh sách giảng viên
       />
 
-      {/* Progress Tracking Section - Chỉ hiển thị khi đã đăng nhập */}
-      {user && <ProgressTrackingSection />}
-
       {/* Recommended Courses Section */}
       <RecommendedCourses
         courses={courses}

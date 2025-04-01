@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Sidebar from "../../components/admin/Sidebar"
 import InstructorHeader from "../../components/admin/instructor/InstructorHeader"
@@ -6,39 +6,16 @@ import InstructorFilter from "../../components/admin/instructor/InstructorFilter
 import InstructorList from "../../components/admin/instructor/InstructorList"
 import AddInstructorModal from "../../components/admin/instructor/AddInstructorModal"
 import EditInstructorModal from "../../components/admin/instructor/EditInstructorModal"
-import DeleteConfirmModal from "../../components/admin/shared/DeleteConfirmModal"
+import DisableConfirmModal from "../../components/admin/shared/DeleteConfirmModal"
 import useInstructors from "../../hooks/useInstructors"
 import useCourses from "../../hooks/useCourses"
-// import { registerUserAPI } from "../../services/authAPI"
-
-// import { updateInstructorAPI, deleteInstructorAPI } from "../../services/instructorAPI"
+import { createInstructorAPI, updateInstructorAPI, disableInstructorAPI } from "../../services/instructorAPI"
+import { toast } from "react-hot-toast"
 
 export default function InstructorManagement() {
   const navigate = useNavigate()
-  const { instructors, loading, error } = useInstructors()
+  const { instructors, loading, error, mutate } = useInstructors()
   const { courses } = useCourses()
-
-  // Thêm hàm mock để thay thế registerUserAPI
-  const registerUserAPI = async (userData) => {
-    console.log("Đăng ký người dùng mới:", userData);
-    // Giả lập thành công
-    return { success: true, user: userData };
-  };
-
-  // Thêm hàm mock để thay thế registerUserAPI
-  const  updateInstructorAPI = async (userData) => {
-    console.log("Cập nhật người dùng mới:", userData);
-    // Giả lập thành công
-    return { success: true, user: userData };
-  };
-
-  // Thêm hàm mock để thay thế registerUserAPI
-  const deleteInstructorAPI = async (userData) => {
-    console.log("Xóa người dùng mới:", userData);
-    // Giả lập thành công
-    return { success: true, user: userData };
-  };
-
 
   // State for UI controls
   const [searchTerm, setSearchTerm] = useState("")
@@ -47,7 +24,7 @@ export default function InstructorManagement() {
   const [filterLetter, setFilterLetter] = useState("")
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDisableOpen, setIsDisableOpen] = useState(false)
   const [selectedInstructor, setSelectedInstructor] = useState(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
@@ -55,31 +32,41 @@ export default function InstructorManagement() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "123",
     bio: "",
     specialization: "",
-    imageUrl: "",
+    avatarUrl: "",
   })
+
+  // Thêm state để quản lý modal xác nhận
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [instructorToToggle, setInstructorToToggle] = useState(null);
 
   // Reset form to default values
   const resetForm = () => {
     setFormData({
       name: "",
       email: "",
+      password: "123",
       bio: "",
       specialization: "",
-      imageUrl: "",
+      avatarUrl: "",
     })
   }
 
   // Handle adding a new instructor
   const handleAddInstructor = async (instructorData) => {
     try {
-      // Call register API with instructor role
-      await registerUserAPI({
+      // Đảm bảo có password
+      const dataToSend = {
         ...instructorData,
-        password: "123", // Default password
-        role: "Instructor",
-      })
+        password: instructorData.password || "123",
+      }
+
+      // Gọi API tạo giảng viên
+      await createInstructorAPI(dataToSend)
+
+      alert("Thêm giảng viên thành công.")
 
       // Close modal and reset form
       setIsAddOpen(false)
@@ -96,7 +83,18 @@ export default function InstructorManagement() {
   // Handle editing an instructor
   const handleEditInstructor = async (instructorData) => {
     try {
-      await updateInstructorAPI(selectedInstructor.userId, instructorData)
+      // Chỉ gửi các trường cần thiết cho API cập nhật
+      const dataToUpdate = {
+        name: instructorData.name,
+        avatarUrl: instructorData.avatarUrl || "",
+        specialization: instructorData.specialization || "",
+        bio: instructorData.bio || "",
+      }
+
+      console.log("selectedInstructor.userId: ", selectedInstructor.userId, dataToUpdate)
+      await updateInstructorAPI(selectedInstructor.userId, dataToUpdate)
+
+      alert("Cập nhật giảng viên thành công.")
 
       // Close modal and reset form
       setIsEditOpen(false)
@@ -110,19 +108,32 @@ export default function InstructorManagement() {
     }
   }
 
-  // Handle deleting an instructor
-  const handleDeleteInstructor = async () => {
+  // Xử lý mở modal xác nhận
+  const handleToggleStatusClick = (instructor) => {
+    setInstructorToToggle(instructor)
+    setIsConfirmModalOpen(true)
+  }
+
+  // Xử lý khi xác nhận thay đổi trạng thái
+  const handleConfirmToggleStatus = async () => {
     try {
-      await deleteInstructorAPI(selectedInstructor.userId)
-
-      // Close modal
-      setIsDeleteOpen(false)
-
-      // Reload page to refresh instructor list
+      await disableInstructorAPI(instructorToToggle.userId)
+      
+      toast.success(
+        `${instructorToToggle.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'} giảng viên ${instructorToToggle.name} thành công`
+      )
+      
+      // Đóng modal
+      setIsConfirmModalOpen(false)
+      setInstructorToToggle(null)
+      
+      // Tải lại trang thay vì sử dụng mutate
       window.location.reload()
     } catch (error) {
-      console.error("Lỗi khi xóa giảng viên:", error)
-      alert("Không thể xóa giảng viên. Vui lòng thử lại sau.")
+      console.error("Lỗi khi thay đổi trạng thái giảng viên:", error)
+      toast.error(
+        `Không thể ${instructorToToggle.isActive ? 'vô hiệu hóa' : 'kích hoạt'} giảng viên. Vui lòng thử lại sau.`
+      )
     }
   }
 
@@ -138,17 +149,18 @@ export default function InstructorManagement() {
     setFormData({
       name: instructor.name,
       email: instructor.email,
+      password: "123", // Mặc định
       bio: instructor.bio || "",
       specialization: instructor.specialization || "",
-      imageUrl: instructor.imageUrl || "",
+      avatarUrl: instructor.avatarUrl || "",
     })
     setIsEditOpen(true)
   }
 
-  // Open delete modal
-  const openDeleteModal = (instructor) => {
+  // Open disable modal
+  const openDisableModal = (instructor) => {
     setSelectedInstructor(instructor)
-    setIsDeleteOpen(true)
+    setIsDisableOpen(true)
   }
 
   // Toggle sort direction
@@ -192,7 +204,7 @@ export default function InstructorManagement() {
             sortDirection={sortDirection}
             filterLetter={filterLetter}
             onEditClick={openEditModal}
-            onDeleteClick={openDeleteModal}
+            onToggleStatus={handleToggleStatusClick}
           />
         </div>
       </div>
@@ -217,17 +229,54 @@ export default function InstructorManagement() {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
-      {isDeleteOpen && selectedInstructor && (
-        <DeleteConfirmModal
-          title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa giảng viên "${selectedInstructor.name}"? Hành động này không thể hoàn tác.`}
-          onClose={() => setIsDeleteOpen(false)}
-          onConfirm={handleDeleteInstructor}
-          confirmText="Xóa giảng viên"
+      {/* Disable Confirmation Modal */}
+      {isDisableOpen && selectedInstructor && (
+        <DisableConfirmModal
+          title="Xác nhận vô hiệu hóa"
+          message={`Bạn có chắc chắn muốn vô hiệu hóa giảng viên "${selectedInstructor.name}"? Hành động này không thể hoàn tác.`}
+          onClose={() => setIsDisableOpen(false)}
+          onConfirm={handleToggleStatusClick}
+          confirmText="Vô hiệu hóa giảng viên"
         />
+      )}
+
+      {/* Modal xác nhận thay đổi trạng thái */}
+      {isConfirmModalOpen && instructorToToggle && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">
+              {instructorToToggle.isActive ? 'Xác nhận vô hiệu hóa' : 'Xác nhận kích hoạt'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn {instructorToToggle.isActive ? 'vô hiệu hóa' : 'kích hoạt'} giảng viên 
+              "{instructorToToggle.name}"?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setIsConfirmModalOpen(false)
+                  setInstructorToToggle(null)
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmToggleStatus}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  instructorToToggle.isActive
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
+                {instructorToToggle.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
 }
+
 

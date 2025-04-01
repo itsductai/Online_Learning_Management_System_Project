@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import useCourses from "../hooks/useCourses"
 import useInstructors from "../hooks/useInstructors" // Thêm hook useInstructors
+import { getUserProgressStats } from "../services/progressAPI";
 
 // Components
 import CoursePopup from "../components/CoursePopup"
@@ -21,12 +22,11 @@ const ProgressPage = () => {
   const { courses } = useCourses()
   const { instructors } = useInstructors() // Lấy danh sách giảng viên
   const [stats, setStats] = useState({
-    totalCourses: 0,
-    completedCourses: 0,
-    inProgressCourses: 0,
-    totalHoursLearned: 0,
-    averageProgress: 0,
-  })
+    totalEnrolledCourses: 0, // Số khóa học đã tham gia
+    completedCourses: 0, // Số khóa học đã hoàn thành
+    totalStudyTime: [0, 0], // Thời gian học [hours, minutes]
+    averageProgress: 0, // Tiến độ trung bình (%)
+  });
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filter, setFilter] = useState("all") // all, inProgress, completed
@@ -59,6 +59,33 @@ const ProgressPage = () => {
     })
   }, [courses, searchTerm, filter])
 
+    useEffect(() => {
+    const fetchStats = async () => {
+      if (user?.userId) {
+        try {
+          setLoading(true);
+          const data = await getUserProgressStats();
+          if (data) {
+            setStats({
+              totalEnrolledCourses: data.totalEnrolledCourses ?? 0,
+              completedCourses: data.completedCourses ?? 0,
+              totalStudyTime: Array.isArray(data.totalStudyTime) ? data.totalStudyTime : [0, 0],
+              averageProgress: data.averageProgress ?? 0,
+            });
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy thống kê tiến độ:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [user]);
+
   const filteredCourses = getFilteredCourses()
 
   // Thêm hàm xử lý khi click vào khóa học
@@ -88,7 +115,7 @@ const ProgressPage = () => {
           <ProgressHeader user={user} stats={stats} />
 
           {/* Stats Cards */}
-          {<ProgressTrackingSection />}
+          <ProgressTrackingSection stats={stats} loading={loading} />
 
           {/* Course Filter */}
           <CourseFilter
@@ -103,7 +130,7 @@ const ProgressPage = () => {
           <section className="py-12 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <CourseGrid
-                courses={courses}
+                courses={filteredCourses}
                 variant="progress"
                 onCourseClick={handleCourseClick}
                 instructors={instructors} // Truyền danh sách giảng viên

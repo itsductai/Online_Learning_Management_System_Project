@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
-import Sidebar from "../components/instructor/Sidebar"
+import InstructorSidebar from "../components/instructor/Sidebar"
 import StatsOverview from "../components/instructor/StatsOverview"
 import Charts from "../components/instructor/Charts"
 import CourseManagement from "../components/instructor/CourseManagement"
@@ -13,7 +13,7 @@ export default function InstructorDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+      <InstructorSidebar isSidebarOpen={isSidebarOpen} />
 
       <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
         <div className="p-8">
@@ -24,18 +24,6 @@ export default function InstructorDashboard() {
 
           <StatsOverview />
           <Charts />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="lg:col-span-2">
-              <CourseManagement />
-            </div>
-            <div className="lg:col-span-2">
-              <StudentManagement />
-            </div>
-            <div className="lg:col-span-2">
-              <CommunityChat />
-            </div>
-          </div>
         </div>
       </div>
     </div>

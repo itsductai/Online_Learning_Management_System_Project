@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaTimes, FaTag, FaCheck, FaExclamationCircle, FaCreditCard, FaWallet } from "react-icons/fa"
-import { checkPromoCode, createMomoPayment } from "../../services/paymentAPI"
+import { createMomoPayment, createPayment } from "../../services/paymentAPI"
+import { validateCoupon } from "../../services/couponAPI"
 import { useAuth } from "../../context/AuthContext"
 
-const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete }) => {
+const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete}) => {
   const { user } = useAuth()
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const [amount, setAmount] = useState(0)
+  const [selectedCoupon, setSelectedCoupon] = useState(false)
   const [isCheckingPromo, setIsCheckingPromo] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [promoError, setPromoError] = useState("")
@@ -21,19 +24,38 @@ const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete }) 
   // Format ngày hết hạn
   const formattedExpiryDate = course.expiryDate ? new Date(course.expiryDate).toLocaleDateString("vi-VN") : null
 
+  // Thêm hàm resetPromo để reset tất cả các trạng thái liên quan đến mã giảm giá
+  const resetPromo = () => {
+    setPromoCode("")
+    setDiscount(0)
+    setAmount(0)
+    setSelectedCoupon(false)
+    setPromoError("")
+    setPromoSuccess("")
+    setFinalPrice(course.price || 0)
+  }
+
   // Cập nhật giá cuối cùng khi discount thay đổi
   useEffect(() => {
     if (course.price) {
-      const discountAmount = (course.price * discount) / 100
-      setFinalPrice(course.price - discountAmount)
+      if (amount) {
+        setFinalPrice(course.price - amount)
+      } else if (discount > 0) {
+        const discountAmount = (course.price * discount) / 100
+        setFinalPrice(course.price - discountAmount)
+      } else {
+        setFinalPrice(course.price)
+      }
     }
-  }, [discount, course.price])
+  }, [discount, amount, course.price])
 
   // Xử lý kiểm tra mã giảm giá
   const handleCheckPromoCode = async () => {
     if (!promoCode.trim()) {
       setPromoError("Vui lòng nhập mã giảm giá")
-      return
+      setDiscount(0)
+      setAmount(0)
+      return 
     }
 
     setIsCheckingPromo(true)
@@ -41,17 +63,30 @@ const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete }) 
     setPromoSuccess("")
 
     try {
-      const result = await checkPromoCode(promoCode, course.courseId)
-
+      const result = await validateCoupon(promoCode, course.courseId)
       if (result.valid) {
+        // // Reset các trạng thái cũ trước khi áp dụng mã mới
+        // resetPromo()
+        
+        // Áp dụng mã mới
         setDiscount(result.discountPercent)
-        setPromoSuccess(`Áp dụng thành công: Giảm ${result.discountPercent}%`)
+        setSelectedCoupon(result)
+        if (result.discountAmount){
+          setAmount(result.discountAmount)
+          setPromoSuccess(`Áp dụng thành công: Giảm ${result.discountAmount}đ`)
+        } else {
+          setPromoSuccess(`Áp dụng thành công: Giảm ${result.discountPercent}%`)
+        }
       } else {
         setPromoError(result.message || "Mã giảm giá không hợp lệ")
+        setDiscount(0)
+        setAmount(0)
+        // Không reset khi mã không hợp lệ
       }
     } catch (error) {
       setPromoError("Lỗi khi kiểm tra mã giảm giá. Vui lòng thử lại.")
       console.error("Lỗi kiểm tra mã giảm giá:", error)
+      // Không reset khi có lỗi
     } finally {
       setIsCheckingPromo(false)
     }
@@ -74,20 +109,40 @@ const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete }) 
       setIsProcessingPayment(true)
 
       // Tạo mã đơn hàng ngẫu nhiên với courseId để có thể trích xuất sau này
-      const orderId = `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}_${course.courseId}`
+      const orderId = `${Date.now()}_${Math.floor(Math.random() * 1000)}_${course.courseId}`
 
-      // Chuẩn bị dữ liệu thanh toán
-      const paymentData = {
-        fullName: user?.name || "Học viên",
+      // Dữ liệu chung dùng cho cả 2 API
+      const orderInfo = `Thanh toán khóa học: ${course.title}`
+      const amount = finalPrice.toString()
+
+      const paymentPayload = {
+        userId: user.userId,
         orderId: orderId,
-        orderInfo: `Thanh toán khóa học: ${course.title}`,
-        amount: finalPrice.toString(),
+        courseId: course.courseId,
+        couponId: selectedCoupon?.couponId || null,
+        method: "momo",
+        orderInfo: orderInfo,
+        amount: finalPrice
       }
 
-      // Gọi API tạo thanh toán MoMo
-      const response = await createMomoPayment(paymentData)
+      const momoPayload = {
+        fullName: user?.name || "Học viên",
+        orderId: orderId,
+        orderInfo: orderInfo,
+        amount: amount
+      }
 
-      // Chuyển hướng người dùng đến URL thanh toán MoMo
+      // Gọi đồng thời: tạo hóa đơn trong DB và tạo paymentUrl Momo
+      const [resPaymentIdObj, response] = await Promise.all([
+        createPayment(paymentPayload),
+        createMomoPayment(momoPayload)
+      ])
+
+      // Lưu vào localStorage (ghi đè nếu đã tồn tại)
+      localStorage.setItem("paymentId", resPaymentIdObj.paymentId)
+      localStorage.setItem("courseId", course.courseId)
+
+      // Điều hướng sang URL thanh toán Momo nếu có
       if (response && response.paymentUrl) {
         window.location.href = response.paymentUrl
       } else {
@@ -205,10 +260,14 @@ const PaymentPopup = ({ course, onClose, instructors = [], onPaymentComplete }) 
               <span className="font-medium">{course.price?.toLocaleString()}đ</span>
             </div>
 
-            {discount > 0 && (
+            {selectedCoupon && (discount > 0) && (
               <div className="flex justify-between items-center mb-1 text-green-600 text-sm">
-                <span>Giảm giá ({discount}%):</span>
-                <span>-{((course.price * discount) / 100).toLocaleString()}đ</span>
+                <span>Giảm giá:</span>
+                {amount ? (
+                  <span>-{amount.toLocaleString()}đ</span>
+                ) : discount > 0 ? (
+                  <span>-{((course.price * discount) / 100).toLocaleString()}đ ({discount}%)</span>
+                ) : null}
               </div>
             )}
 

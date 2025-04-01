@@ -1,6 +1,8 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 const VideoLesson = ({ lesson, watchTime, onWatchTimeUpdate, onComplete }) => {
+  const [completed, setCompleted] = useState(false)
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -24,17 +26,19 @@ const VideoLesson = ({ lesson, watchTime, onWatchTimeUpdate, onComplete }) => {
       if (onWatchTimeUpdate) {
         const newTime = onWatchTimeUpdate()
 
-        // Nếu đã xem đủ 50% thời gian, đánh dấu hoàn thành
-        const requiredTime = lesson.duration * 30 // 50% thời gian tính bằng giây
-        if (newTime >= requiredTime && onComplete) {
-          onComplete(lesson.lessonId)
+        const requiredTime = lesson.duration * 30 // 50% thời gian
+
+        // Nếu đủ điều kiện và chưa gọi complete lần nào
+        if (newTime >= requiredTime && !completed) {
+          onComplete?.(lesson.lessonId)
+          setCompleted(true)
           clearInterval(timer)
         }
       }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [lesson, onWatchTimeUpdate, onComplete])
+  }, [lesson, onWatchTimeUpdate, onComplete, completed])
 
   if (!lesson) return null
 

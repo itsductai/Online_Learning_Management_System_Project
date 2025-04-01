@@ -3,17 +3,18 @@ import { useAuth } from "../context/AuthContext"
 import useCourses from "../hooks/useCourses"
 import { Edit, MapPin, Mail, Phone, Calendar, Camera, X, Lock } from "lucide-react"
 import Navbar from "../components/Navbar"
+import { updateProfile, changePassword } from "../services/userAPI"
 
 export default function ProfilePage() {
-    const { user } = useAuth() // Lấy thông tin user từ AuthContext từ localstorage
+    const { user, setUser } = useAuth() // Lấy thông tin user từ AuthContext từ localstorage
     const { courses } = useCourses() // Lấy thông tin course (trước mắt là các course chưa phân loại)
     const [isEditOpen, setIsEditOpen] = useState(false) // Quản lý trạng thái của menu editedit
     const [isPasswordOpen, setIsPasswordOpen] = useState(false) // QUản lý trạng thái của menu thay đổi mật khẩu 
+    const [showPasswordSuccess, setShowPasswordSuccess] = useState(false)
     const [formData, setFormData] = useState({ // Set trạng thái cho form dữ liệu 
-      Name: user?.name,
+      name: user?.name,
       email: user?.email,
-      phone: user?.phone || "012345678",
-      location: user?.location || "Việt Nam",
+      avatarUrl: user?.avatarUrl || ""
     })
     const [passwordData, setPasswordData] = useState({ // Set trạng thái cho form password
       currentPassword: "",
@@ -21,23 +22,97 @@ export default function ProfilePage() {
       confirmPassword: "",
     })
   
-    const handleUpdateProfile = (e) => {
+    const handleUpdateProfile = async (e) => {
       e.preventDefault()
-      // Xử lý cập nhật profile
-      setIsEditOpen(false)
+      try {
+        const response = await updateProfile({
+          name: formData.name,
+          email: formData.email,
+          avatarUrl: formData.avatarUrl
+        })
+        
+        // Cập nhật thông tin user trong context và localStorage với dữ liệu từ response
+        const updatedUser = {
+          ...user,
+          name: response.name,
+          email: response.email,
+          avatarUrl: response.avatarUrl
+        }
+        
+        // Cập nhật vào localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+        
+        // Cập nhật vào context
+        setUser(updatedUser)
+        
+        alert("Cập nhật thông tin thành công!")
+        setIsEditOpen(false)
+      } catch (error) {
+        alert(error.response?.data?.message || "Lỗi khi cập nhật thông tin")
+      }
     }
   
-    const handleUpdatePassword = (e) => {
+    const handleUpdatePassword = async (e) => {
       e.preventDefault()
-      // Xử lý đổi mật khẩu
-      setIsPasswordOpen(false)
+      
+      // Kiểm tra các trường bắt buộc
+      if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+        alert("Vui lòng điền đầy đủ thông tin!")
+        return
+      }
+
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        alert("Mật khẩu mới không khớp!")
+        return
+      }
+
+      if (passwordData.newPassword.length < 6) {
+        alert("Mật khẩu mới phải có ít nhất 6 ký tự!")
+        return
+      }
+
+      try {
+        console.log("Gửi request đổi mật khẩu:", passwordData) // Thêm log để debug
+        const response = await changePassword({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+          confirmPassword: passwordData.confirmPassword
+        })
+        
+        console.log("Response từ API:", response) // Thêm log để debug
+        
+        setIsPasswordOpen(false)
+        setShowPasswordSuccess(true)
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+      } catch (error) {
+        console.error("Lỗi khi đổi mật khẩu:", error)
+        alert(error.response?.data?.message || "Lỗi khi đổi mật khẩu. Vui lòng kiểm tra lại mật khẩu hiện tại.")
+      }
     }
   
-    const handleAvatarChange = (e) => {
+    const handleAvatarChange = async (e) => {
       const file = e.target.files?.[0]
       if (file) {
-        // Xử lý upload avatar (cần xử lý thêm vị trí lưu trong api backend, hiện tại chỉ lưu link)
-        console.log("Upload file:", file)
+        try {
+          // Tạo FormData để upload file
+          const formData = new FormData()
+          formData.append("file", file)
+          
+          // Cập nhật avatarUrl trong form
+          setFormData(prev => ({
+            ...prev,
+            avatarUrl: URL.createObjectURL(file) // Tạm thời hiển thị ảnh local
+          }))
+          
+          alert("Tải ảnh lên thành công!")
+          window.location.reload() // Reload trang sau khi upload ảnh thành công
+        } catch (error) {
+          alert("Lỗi khi tải ảnh lên")
+        }
       }
     }
   
@@ -61,7 +136,10 @@ export default function ProfilePage() {
                         alt="Profile"
                         className="w-24 h-24 rounded-full object-cover ring-4 ring-primary/10"
                       />
-                      <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <div 
+                        className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                        onClick={() => setIsEditOpen(true)}
+                      >
                         <Edit className="w-6 h-6 text-white" />
                       </div>
                     </div>
@@ -88,36 +166,9 @@ export default function ProfilePage() {
                     <span>{user?.email}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-gray-600">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <span>{user?.phone || "Chưa cập nhật"}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <span>{formData.location}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
                     <Calendar className="w-5 h-5 text-primary" />
                     <span>{user?.createdAt || "Chưa cập nhật"}</span>
                   </div>
-                </div>
-              </div>
-  
-              {/* Stats Card */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm hover:bg-white transition-colors duration-300">
-                  <div className="text-secondary text-sm font-medium">Khóa học</div>
-                  <div className="text-2xl font-bold mt-2">12</div>
-                  <div className="text-gray-500 text-sm mt-1">Đang học</div>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm hover:bg-white transition-colors duration-300">
-                  <div className="text-tertiary text-sm font-medium">Chứng chỉ</div>
-                  <div className="text-2xl font-bold mt-2">5</div>
-                  <div className="text-gray-500 text-sm mt-1">Đã đạt được</div>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm hover:bg-white transition-colors duration-300">
-                  <div className="text-accent3 text-sm font-medium">Điểm số</div>
-                  <div className="text-2xl font-bold mt-2">856</div>
-                  <div className="text-gray-500 text-sm mt-1">Tổng điểm</div>
                 </div>
               </div>
             </div>
@@ -209,9 +260,9 @@ export default function ProfilePage() {
                   <div className="flex justify-center mb-6">
                     <div className="relative">
                       <img
-                        src={user?.avatarUrl || "/placeholder.svg"}
+                        src={formData.avatarUrl || "/placeholder.svg"}
                         alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover"
+                        className="w-24 h-24 rounded-full object-cover ring-4 ring-primary/10"
                       />
                       <label className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
                         <Camera className="w-4 h-4" />
@@ -220,16 +271,14 @@ export default function ProfilePage() {
                     </div>
                   </div>
   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Họ và Tên</label>
-                      <input
-                        type="text"
-                        value={formData.Name}
-                        onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Họ và Tên</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    />
                   </div>
   
                   <div>
@@ -243,21 +292,12 @@ export default function ProfilePage() {
                   </div>
   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    />
-                  </div>
-  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Link ảnh đại diện</label>
                     <input
                       type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      value={formData.avatarUrl}
+                      onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+                      placeholder="Nhập URL ảnh đại diện"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                     />
                   </div>
@@ -310,6 +350,7 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu hiện tại</label>
                     <input
                       type="password"
+                      required
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -320,6 +361,8 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
                     <input
                       type="password"
+                      required
+                      minLength={6}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -330,6 +373,7 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu mới</label>
                     <input
                       type="password"
+                      required
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -352,6 +396,23 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+  
+          {/* Popup thông báo đổi mật khẩu thành công */}
+          {showPasswordSuccess && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Success" className="w-20 h-20 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-green-600 mb-2">Đổi mật khẩu thành công!</h3>
+                <p className="mb-6">Mật khẩu của bạn đã được cập nhật thành công.</p>
+                <button
+                  onClick={() => setShowPasswordSuccess(false)}
+                  className="w-full bg-primary text-white py-3 rounded-full font-bold transition duration-300 hover:bg-opacity-90"
+                >
+                  Đóng
+                </button>
               </div>
             </div>
           )}
