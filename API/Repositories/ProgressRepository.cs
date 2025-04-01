@@ -33,6 +33,16 @@ namespace API.Repositories
         Task<int> GetTotalStudentsAsync(); // Lấy tổng số học viên
         Task<int> GetTotalCoursesAsync(); // Lấy tổng số khóa học
         Task<int> GetTotalLessonsAsync(); // Lấy tổng số bài học
+
+        Task<IEnumerable<Enrollment>> GetEnrollmentsByInstructorIdAsync(int instructorId);
+        Task<int> GetTotalEnrollmentsByInstructorIdAsync(int instructorId);
+        Task<int> GetCompletedEnrollmentsByInstructorIdAsync(int instructorId);
+
+        Task<List<User>> GetAllStudentsAsync();
+        Task<List<Enrollment>> GetEnrollmentsByUserIdAsync(int userId);
+        Task<List<Enrollment>> GetEnrollmentsByUserId(int userId);
+        Task<List<Enrollment>> GetEnrollmentsByCourseIdsAsync(List<int> courseIds);
+
     }
 
     public class ProgressRepository : IProgressRepository
@@ -124,11 +134,11 @@ namespace API.Repositories
                 .FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
         }
 
-        // Lấy danh sách bài học đã hoàn thành của học viên
+        // Lấy danh sách bài học đã hoàn thành của học viên trong một khóa học
         public async Task<List<int>> GetCompletedLessonsAsync(int userId, int courseId)
         {
             return await _context.LessonProgress
-                .Where(lp => lp.UserId == userId && lp.IsCompleted)
+                .Where(lp => lp.UserId == userId && lp.IsCompleted && lp.Lesson != null && lp.Lesson.CourseId == courseId)
                 .Select(lp => lp.LessonId)
                 .ToListAsync();
         }
@@ -237,5 +247,57 @@ namespace API.Repositories
             return await _context.Enrollments.CountAsync(e => e.UserId == userId && e.IsCompleted);
         }
 
+        public async Task<IEnumerable<Enrollment>> GetEnrollmentsByInstructorIdAsync(int instructorId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Course)
+                .Where(e => e.Course.InstructorId == instructorId)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTotalEnrollmentsByInstructorIdAsync(int instructorId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Course)
+                .Where(e => e.Course.InstructorId == instructorId)
+                .CountAsync();
+        }
+
+        public async Task<int> GetCompletedEnrollmentsByInstructorIdAsync(int instructorId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Course)
+                .Where(e => e.Course.InstructorId == instructorId && e.IsCompleted)
+                .CountAsync();
+        }
+
+        public async Task<List<User>> GetAllStudentsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role == "Student")
+                .ToListAsync();
+        }
+
+        public async Task<List<Enrollment>> GetEnrollmentsByUserIdAsync(int userId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Course)
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Enrollment>> GetEnrollmentsByUserId(int userId)
+        {
+            return await _context.Enrollments
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Enrollment>> GetEnrollmentsByCourseIdsAsync(List<int> courseIds)
+        {
+            return await _context.Enrollments
+                .Where(e => courseIds.Contains(e.CourseId))
+                .ToListAsync();
+        }
     }
 }

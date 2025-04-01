@@ -14,6 +14,8 @@ namespace API.Repositories
         Task<Course?> CreateCourse(Course course);
         Task<Course?> UpdateCourse(Course courseDto);
         Task<bool> DeleteCourse(int id);
+        Task<List<Course>> GetCoursesByInstructorIdAsync(int instructorId);
+        Task<Dictionary<int, int>> GetLessonCountsForAllCourses();
     }
 
     public class CoursesRepository : ICoursesRepository
@@ -77,5 +79,21 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<Course>> GetCoursesByInstructorIdAsync(int instructorId)
+        {
+            return await _context.Courses
+                .Where(c => c.InstructorId == instructorId)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<int, int>> GetLessonCountsForAllCourses()
+        {
+            return await _context.Lessons
+                .GroupBy(l => l.CourseId)
+                .Select(g => new { CourseId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(g => g.CourseId, g => g.Count);
+        }
+
     }
 }

@@ -7,7 +7,7 @@ namespace API.Services
 {
     public interface ILessonService
     {
-        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool isAdmin);
+        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool hasManagePermission);
         Task AddLessonAsync(AddLessonDto lessonDto);
         Task UpdateLessonAsync(int lessonId, UpdateLessonDto lessonDto);
         Task DeleteLessonAsync(int lessonId);
@@ -24,7 +24,7 @@ namespace API.Services
             _quizRepository = quizRepository; //  Inject repository quiz
         }
 
-        public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool isAdmin)
+        public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, bool hasManagePermission)
         {
             var lessons = await _lessonRepository.GetLessonsByCourseAsync(courseId);
             var lessonDtos = new List<LessonDto>();
@@ -64,8 +64,8 @@ namespace API.Services
                         QuizId = q.QuizId,
                         Question = q.Question,
                         Options = new List<string> { q.OptionA, q.OptionB, q.OptionC, q.OptionD },
-                        CorrectAnswer = isAdmin ? q.CorrectAnswer : -1, // Ẩn đáp án nếu không phải admin
-                        ImageUrl = q.ImageUrl  
+                        CorrectAnswer = hasManagePermission ? q.CorrectAnswer : -1, // Ẩn đáp án nếu không phải admin
+                        ImageUrl = q.ImageUrl
                     }).ToList();
                 }
 

@@ -51,5 +51,21 @@
             public int TotalLessons { get; set; }        // Tổng số bài học
         }
 
+        public class EnrollmentInfoDto
+        {
+            public int CourseId { get; set; }
+            public bool IsCompleted { get; set; }
+            public float ProgressPercent { get; set; }
+        }
+
+        public class StudentEnrollmentDto
+        {
+            public int UserId { get; set; }
+            public string UserName { get; set; }
+            public bool IsActive { get; set; }
+            public string Email { get; set; }
+            public List<EnrollmentInfoDto> Enrollments { get; set; } = new List<EnrollmentInfoDto>();
+        }
+
     }
 }

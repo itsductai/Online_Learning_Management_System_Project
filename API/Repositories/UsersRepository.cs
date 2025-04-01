@@ -16,6 +16,9 @@ namespace API.Repositories
 
         // Xóa người dùng theo ID
         Task<bool> DeleteUser(int userId);
+
+        // Cập nhật mật khẩu người dùng
+        Task<bool> UpdateUserPassword(int userId, string newPasswordHash);
     }
 
     public class UsersRepository : IUsersRepository
@@ -58,6 +61,23 @@ namespace API.Repositories
 
             _context.Users.Remove(user);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateUserPassword(int userId, string newPasswordHash)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                user.PasswordHash = newPasswordHash;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

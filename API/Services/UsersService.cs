@@ -4,15 +4,17 @@ using Data.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using static API.DTOs.UsersDTO;
+using BCrypt.Net;
 
 namespace API.Services
 {
     public interface IUsersService
     {
-        Task<bool> UpdateProfile(int userId, UpdateProfileDTO updateProfileDto);
-        Task<bool> ChangePassword(int userId, ChangePasswordDTO changePasswordDto);
+        Task<UpdateProfileDTO> UpdateProfile(int userId, UpdateProfileDTO updateProfileDto);
         Task<bool> DeleteAccount(int currentUserId, int userIdToDelete, string role);
         Task<bool> UploadAvatar(int userId, UploadAvatarDTO uploadAvatarDto);
+        Task<bool> ToggleUserStatus(int currentUserId, int userIdToToggle, string role);
+        Task<bool> ChangePassword(int userId, ChangePasswordDTO changePasswordDto);
     }
 
     public class UsersService : IUsersService
@@ -27,33 +29,56 @@ namespace API.Services
         }
 
         // ✅ Cập nhật thông tin cá nhân
-        public async Task<bool> UpdateProfile(int userId, UpdateProfileDTO updateProfileDto)
+        public async Task<UpdateProfileDTO> UpdateProfile(int userId, UpdateProfileDTO updateProfileDto)
         {
             var user = await _usersRepository.GetUserById(userId);
-            if (user == null) return false;
+            if (user == null) return null;
 
             user.Name = updateProfileDto.Name;
             user.Email = updateProfileDto.Email;
+            user.AvatarUrl = updateProfileDto.AvatarUrl;
 
-            return await _usersRepository.UpdateUser(userId, user);
+            var success = await _usersRepository.UpdateUser(userId, user);
+            if (!success) return null;
+
+            return new UpdateProfileDTO
+            {
+                Name = user.Name,
+                Email = user.Email,
+                AvatarUrl = user.AvatarUrl
+            };
         }
 
         // ✅ Thay đổi mật khẩu
         public async Task<bool> ChangePassword(int userId, ChangePasswordDTO changePasswordDto)
         {
-            var user = await _usersRepository.GetUserById(userId);
-            if (user == null) return false;
+            try
+            {
+                var user = await _usersRepository.GetUserById(userId);
+                if (user == null) return false;
 
-            // Kiểm tra mật khẩu cũ
-            var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, changePasswordDto.OldPassword);
-            if (verify == PasswordVerificationResult.Failed) return false;
+                // Kiểm tra mật khẩu cũ
+                if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.OldPassword, user.PasswordHash))
+                {
+                    return false;
+                }
 
-            // Không cho phép đặt lại mật khẩu cũ
-            if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, changePasswordDto.NewPassword) == PasswordVerificationResult.Success)
+                // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+                if (changePasswordDto.NewPassword != changePasswordDto.ConfirmPassword)
+                {
+                    return false;
+                }
+
+                // Băm mật khẩu mới bằng BCrypt
+                string newPasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+
+                // Cập nhật mật khẩu mới
+                return await _usersRepository.UpdateUserPassword(userId, newPasswordHash);
+            }
+            catch (Exception)
+            {
                 return false;
-
-            user.PasswordHash = _passwordHasher.HashPassword(user, changePasswordDto.NewPassword);
-            return await _usersRepository.UpdateUser(userId, user);
+            }
         }
 
         // ✅ Upload ảnh đại diện
@@ -93,6 +118,24 @@ namespace API.Services
                 return false;
 
             return await _usersRepository.DeleteUser(userIdToDelete);
+        }
+
+        public async Task<bool> ToggleUserStatus(int currentUserId, int userIdToToggle, string role)
+        {
+            // Kiểm tra quyền
+            if (role != "Admin" && currentUserId != userIdToToggle)
+                return false;
+
+            // Lấy user cần vô hiệu hóa
+            var user = await _usersRepository.GetUserById(userIdToToggle);
+            if (user == null)
+                return false;
+
+            // Đảo ngược trạng thái isActive
+            user.IsActive = !user.IsActive;
+
+            // Cập nhật vào database
+            return await _usersRepository.UpdateUser(currentUserId, user);
         }
     }
 }

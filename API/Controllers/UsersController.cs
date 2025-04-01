@@ -28,9 +28,9 @@ namespace API.Controllers
                 return Unauthorized("Không thể xác định danh tính người dùng!");
 
             var result = await _usersService.UpdateProfile(userId, updateProfileDto);
-            if (!result) return BadRequest("Không thể cập nhật thông tin!");
+            if (result == null) return BadRequest("Không thể cập nhật thông tin!");
 
-            return Ok("Cập nhật thông tin thành công!");
+            return Ok(result);
         }
 
         // ✅ API đổi mật khẩu
@@ -61,9 +61,9 @@ namespace API.Controllers
             return Ok(new { message = "Ảnh đại diện đã cập nhật!" });
         }
 
-        // ✅ API xóa tài khoản (Admin có thể xóa bất kỳ user, Student chỉ xóa chính mình)
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAccount(int id)
+        // API vô hiệu hóa/kích hoạt tài khoản (Admin có thể vô hiệu hóa bất kỳ user, Student chỉ vô hiệu hóa chính mình)
+        [HttpPut("disable/{id}")]
+        public async Task<IActionResult> ToggleUserStatus(int id)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -71,10 +71,10 @@ namespace API.Controllers
             if (!int.TryParse(userIdClaim, out var currentUserId))
                 return Unauthorized("Không thể xác định danh tính người dùng!");
 
-            var result = await _usersService.DeleteAccount(currentUserId, id, roleClaim);
-            if (!result) return Forbid("Bạn không có quyền xóa tài khoản này!");
+            var result = await _usersService.ToggleUserStatus(currentUserId, id, roleClaim);
+            if (!result) return Forbid("Bạn không có quyền vô hiệu hóa tài khoản này!");
 
-            return Ok("Xóa tài khoản thành công!");
+            return Ok("Thay đổi trạng thái tài khoản thành công!");
         }
     }
 }

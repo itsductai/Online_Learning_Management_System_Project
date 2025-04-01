@@ -32,10 +32,10 @@ namespace API.Controllers
             //var isAdmin = User.IsInRole("Admin"); // Kiểm tra quyền admin
             // Kiểm tra role có phải là Admin hay không
             var roleClaim = User.FindFirst(ClaimTypes.Role);
-            bool isAdmin = roleClaim != null && roleClaim.Value == "Admin";
+            bool hasManagePermission = roleClaim != null && (roleClaim.Value == "Admin" || roleClaim.Value == "Instructor");
 
-            // Gọi service với biến isAdmin
-            var lessons = await _lessonService.GetLessonsByCourseAsync(courseId, isAdmin);
+            // Gọi service với tên biến mới
+            var lessons = await _lessonService.GetLessonsByCourseAsync(courseId, hasManagePermission);
             return Ok(lessons);
         }
 

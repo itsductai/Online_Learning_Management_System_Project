@@ -64,21 +64,27 @@ namespace API.Controllers
             return Ok(progress);
         }
 
-        // Admin - Lấy danh sách học viên đã ghi danh
-        [Authorize(Roles = "Admin")]
+        // Admin và Instructor - Lấy danh sách học viên đã ghi danh
+        [Authorize(Roles = "Admin,Instructor")]
         [HttpGet("admin/enrollments")]
         public async Task<IActionResult> GetEnrollments()
         {
-            var enrollments = await _progressService.GetEnrollmentsAsync();
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var enrollments = await _progressService.GetEnrollmentsAsync(userId, role);
             return Ok(enrollments);
         }
 
-        // Admin - Thống kê tiến trình học viên
-        [Authorize(Roles = "Admin")]
+        // Admin và Instructor - Thống kê tiến trình học viên
+        [Authorize(Roles = "Admin,Instructor")]
         [HttpGet("admin/statistics")]
         public async Task<IActionResult> GetProgressStatistics()
         {
-            var stats = await _progressService.GetProgressStatisticsAsync();
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var stats = await _progressService.GetProgressStatisticsAsync(userId, role);
             return Ok(stats);
         }
 
@@ -99,6 +105,26 @@ namespace API.Controllers
             {
                 return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
             }
+        }
+
+        [HttpGet("student-enrollments")]
+        [Authorize(Roles = "Admin,Instructor")]
+        public async Task<ActionResult<List<StudentEnrollmentDto>>> GetStudentEnrollments()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _progressService.GetStudentEnrollmentsAsync(
+                int.Parse(userId),
+                role
+            );
+
+            return Ok(result);
         }
     }
 

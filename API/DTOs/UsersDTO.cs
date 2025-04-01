@@ -7,23 +7,16 @@ namespace API.DTOs
         // DTO cho cập nhật thông tin cá nhân
         public class UpdateProfileDTO
         {
-            [Required, MaxLength(100)]
             public string Name { get; set; }
-
-            [Required, EmailAddress, MaxLength(100)]
             public string Email { get; set; }
+            public string AvatarUrl { get; set; }
         }
 
         // DTO cho thay đổi mật khẩu
         public class ChangePasswordDTO
         {
-            [Required, MaxLength(255)]
             public string OldPassword { get; set; }
-
-            [Required, MaxLength(255)]
             public string NewPassword { get; set; }
-
-            [Required, MaxLength(255), Compare("NewPassword", ErrorMessage = "Mật khẩu nhập lại không khớp!")]
             public string ConfirmPassword { get; set; }
         }
 
@@ -32,6 +25,14 @@ namespace API.DTOs
         {
             [Required]
             public IFormFile Avatar { get; set; } // Nhận file ảnh từ form-data
+        }
+
+        public class UserResponseDTO
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string AvatarUrl { get; set; }
+            public bool IsActive { get; set; }
         }
     }
 }

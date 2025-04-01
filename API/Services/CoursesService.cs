@@ -26,24 +26,17 @@ namespace API.Services
         public async Task<List<CoursesDto>> GetAllCourses(int? userId, bool isStudent)
         {
             List<Course> courses = await _coursesRepository.GetAllCourses();
-            List<Enrollment> enrollments = new List<Enrollment>();
-            Dictionary<int, int> lessonCounts = new Dictionary<int, int>(); // Lưu tổng số bài học từng khóa
 
-            // Nếu là Student, lấy danh sách Enrollments của User
-            if (isStudent && userId.HasValue)
-            {
-                enrollments = await _coursesRepository.GetEnrollmentsByUserId(userId.Value);
-            }
+            List<Enrollment> enrollments = isStudent && userId.HasValue
+                ? await _coursesRepository.GetEnrollmentsByUserId(userId.Value)
+                : new List<Enrollment>();
 
-            // Lấy tổng số bài học của từng khóa học
-            foreach (var course in courses)
-            {
-                lessonCounts[course.CourseId] = await _coursesRepository.GetTotalLessonsByCourseId(course.CourseId);
-            }
+            // 🟢 Gọi duy nhất 1 truy vấn GroupBy để lấy tổng bài học
+            Dictionary<int, int> lessonCounts = await _coursesRepository.GetLessonCountsForAllCourses();
 
             return courses.Select(c =>
             {
-                var enrollment = enrollments.FirstOrDefault(e => e.CourseId == c.CourseId); // Tìm Enrollment theo CourseId
+                var enrollment = enrollments.FirstOrDefault(e => e.CourseId == c.CourseId);
 
                 return new CoursesDto
                 {
@@ -56,13 +49,14 @@ namespace API.Services
                     CreatedAt = c.CreatedAt,
                     ExpiryDate = c.ExpiryDate,
                     InstructorId = c.InstructorId,
-                    IsComplete = isStudent && enrollment != null ? enrollment.IsCompleted : false,
-                    IsJoin = isStudent && enrollment != null, // Nếu có Enrollment, nghĩa là đã tham gia
-                    ProgressPercent = isStudent && enrollment != null ? enrollment.ProgressPercent : 0, // Tiến trình học
-                    TotalLesson = lessonCounts.ContainsKey(c.CourseId) ? lessonCounts[c.CourseId] : 0 // Tổng số bài học
+                    IsComplete = isStudent && enrollment != null && enrollment.IsCompleted,
+                    IsJoin = isStudent && enrollment != null,
+                    ProgressPercent = isStudent && enrollment != null ? enrollment.ProgressPercent : 0,
+                    TotalLesson = lessonCounts.ContainsKey(c.CourseId) ? lessonCounts[c.CourseId] : 0
                 };
             }).ToList();
         }
+
 
 
 
@@ -110,7 +104,7 @@ namespace API.Services
             existingCourse.Description = courseDto.Description;
             existingCourse.Price = courseDto.Price;
             existingCourse.IsPaid = courseDto.IsPaid;
-            existingCourse.ExpiryDate = courseDto.ExpiryDate;
+            existingCourse.ExpiryDate = courseDto.ExpiryDate != null ? DateTime.Parse(courseDto.ExpiryDate) : null;
             existingCourse.InstructorId = courseDto.InstructorId; // Gán InstructorId khi cập nhật khóa học
 
             return await _coursesRepository.UpdateCourse(existingCourse);
