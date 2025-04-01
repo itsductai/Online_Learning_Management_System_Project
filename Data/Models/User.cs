@@ -29,6 +29,7 @@ namespace Data.Models
 
         public DateTime? RefreshTokenExpiry { get; set; }
 
-        public string? AvatarUrl { get; set; } = "default-avt.jpg"; // Thêm đường dẫn ảnh đại diện
+        public string? AvatarUrl { get; set; } = "https://i.pinimg.com/736x/71/f3/51/71f3519243d136361d81df71724c60a0.jpg"; 
+        public Instructor? InstructorProfile { get; set; } // Điều hướng 1-1
     }
 }

@@ -16,6 +16,12 @@ namespace Data.Models
                 .Property(c => c.Price)
                 .HasColumnType("decimal(10,2)") // Đảm bảo kiểu dữ liệu đúng với SQL Server
                 .HasPrecision(10, 2); // Đảm bảo độ chính xác và tỷ lệ chính xác
+
+            modelBuilder.Entity<Instructor>() // Định nghĩa quan hệ 1-1 giữa User và Instructor
+                .HasOne(i => i.User) // Một Instructor chỉ thuộc về một User
+                .WithOne(u => u.InstructorProfile) // Một User chỉ có một Instructor
+                .HasForeignKey<Instructor>(i => i.UserId); // Khóa ngoại tham chiếu đến UserId trong bảng User
+
         }
 
 
@@ -33,6 +39,7 @@ namespace Data.Models
 
         // Khai báo các bảng trong database
         public DbSet<User> Users { get; set; }
+        public DbSet<Instructor> Instructors { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<TextLesson> TextLessons { get; set; }

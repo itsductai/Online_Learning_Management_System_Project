@@ -47,5 +47,29 @@ namespace API.Controllers
             if (!result) return BadRequest("Không thể gán giảng viên vào khóa học.");
             return Ok("Giảng viên đã được gán vào khóa học.");
         }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateInstructor([FromBody] CreateInstructorDTO dto)
+        {
+            var result = await _instructorService.CreateInstructorAsync(dto);
+            if (!result) return BadRequest("Email đã tồn tại.");
+            return Ok("Tạo giảng viên thành công.");
+        }
+
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateInstructor(int userId, [FromBody] UpdateInstructorDTO dto)
+        {
+            var result = await _instructorService.UpdateInstructorAsync(userId, dto);
+            if (!result) return NotFound("Không tìm thấy giảng viên hoặc không hợp lệ.");
+            return Ok("Cập nhật giảng viên thành công.");
+        }
+
+        [HttpPut("disable/{userId}")]
+        public async Task<IActionResult> DisableInstructor(int userId)
+        {
+            var result = await _instructorService.DisableInstructorAsync(userId);
+            if (!result) return NotFound("Không tìm thấy giảng viên hoặc không hợp lệ.");
+            return Ok("Đã vô hiệu hóa giảng viên.");
+        }
     }
 }
