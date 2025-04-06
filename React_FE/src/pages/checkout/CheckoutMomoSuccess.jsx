@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaHome, FaBook, FaArrowLeft } from "react-icons/fa"
 import { createProgress } from "../../services/progressAPI"
 import { updatePayment } from "../../services/paymentAPI"
-import Navbar from "../../components/Navbar"
+import NavBar from "../../components/NavBar"
 import Footer from "../../components/Footer"
 
 const CheckoutMomoSuccess = () => {
@@ -151,7 +151,7 @@ const CheckoutMomoSuccess = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <Navbar />
+      <NavBar />
 
       <div className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
