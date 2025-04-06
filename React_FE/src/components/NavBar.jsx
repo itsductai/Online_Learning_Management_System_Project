@@ -19,7 +19,7 @@ import {
 import logo from "../logo/logo_white_v2.png" // Import ảnh
 import { motion, AnimatePresence } from "framer-motion" // Hiệu ứng động
 
-export default function Navbar() {
+export default function NavBar() {
   const { user, logout } = useAuth() // Lấy user và lấy hàm logout từ AuthContext
   const navigate = useNavigate()
   const location = useLocation()

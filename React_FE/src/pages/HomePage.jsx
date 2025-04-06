@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
-import Navbar from "../components/Navbar" // sửa 
+import Navbar from "../components/NavBar" // sửa 
 import Footer from "../components/Footer"
 import useCourses from "../hooks/useCourses"
 import useInstructors from "../hooks/useInstructors" // Thêm hook useInstructors
