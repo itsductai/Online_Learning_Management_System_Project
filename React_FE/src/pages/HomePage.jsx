@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
-import Navbar from "../components/NavBar" // sửa 
+import NavBar from "../components/NavBar" // sửa 
 import Footer from "../components/Footer"
 import useCourses from "../hooks/useCourses"
 import useInstructors from "../hooks/useInstructors" // Thêm hook useInstructors
@@ -35,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
+      <NavBar />
 
       {/* Hero Section - Đã được cải tạo */}
       <HeroSection user={user} />

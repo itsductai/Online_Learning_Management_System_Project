@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { FaExclamationTriangle } from "react-icons/fa"
-import Navbar from "../components/Navbar"
+import NavBar from "../components/NavBar"
 import Footer from "../components/Footer"
 import useStudentLessons from "../hooks/useStudentLessons"
 import useCourses from "../hooks/useCourses"
@@ -174,7 +174,7 @@ export default function CourseLesson() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <Navbar />
+      <NavBar />
 
       <div className="flex-grow container mx-auto px-4 py-8">
         {/* Course Info & Progress */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext"
 import useCourses from "../hooks/useCourses"
 import { Edit, MapPin, Mail, Phone, Calendar, Camera, X, Lock } from "lucide-react"
-import Navbar from "../components/Navbar"
+import NavBar from "../components/NavBar"
 import { updateProfile, changePassword } from "../services/userAPI"
 
 export default function ProfilePage() {
@@ -118,7 +118,7 @@ export default function ProfilePage() {
   
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-tertiary to-accent2">
-        <Navbar />
+        <NavBar />
         <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Profile Section */}

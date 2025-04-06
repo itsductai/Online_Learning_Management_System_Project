@@ -6,7 +6,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/autoplay";
-import Navbar from "../components/Navbar";
+import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseGrid from "../components/CourseGrid";
 import CoursePopup from "../components/CoursePopup";
@@ -82,7 +82,7 @@ const CoursesPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <NavBar />
       <main className="flex-grow bg-gray-100">
         {/* Top-rated Courses Slider */}
         <section className="bg-gradient-to-r from-primary to-secondary py-12">
