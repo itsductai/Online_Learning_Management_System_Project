@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { FaArrowRight } from "react-icons/fa"
-import logo from "../../logo/logo_white_v2.png" // Đảm bảo đường dẫn đúng
+import logo from "../../logo/logo_white_v2.png" 
 
 const HeroSection = ({ user }) => {
   const navigate = useNavigate()

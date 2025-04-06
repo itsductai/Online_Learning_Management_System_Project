@@ -19,6 +19,7 @@ namespace API.Repositories
 
         // Cập nhật mật khẩu người dùng
         Task<bool> UpdateUserPassword(int userId, string newPasswordHash);
+        Task<bool> ToggleIsActiveAsync(int userId, bool isActive);
     }
 
     public class UsersRepository : IUsersRepository
@@ -79,5 +80,17 @@ namespace API.Repositories
                 return false;
             }
         }
+
+        public async Task<bool> ToggleIsActiveAsync(int userId, bool isActive)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            user.IsActive = isActive;
+            _context.Users.Update(user);
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
     }
 }

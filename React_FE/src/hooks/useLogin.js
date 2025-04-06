@@ -40,10 +40,21 @@ const useLogin = () => {
             navigate("/");
           }
         } catch (error) {
-          setError("Sai email hoặc mật khẩu!");
-          setLoading(false);
-        }
-      };
+            if (error.response) {
+              const status = error.response.status;
+
+              if (status === 403) {
+                setError(error.response.data.message || "Tài khoản bị vô hiệu hóa.");
+              } else {
+                setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+              }
+            } else {
+              setError("Không thể kết nối tới server.");
+            }
+
+            setLoading(false);
+          }
+        };
 
   return {handleLogin,loading,error}; // Trả về login và các trạng thái cần thiết 
 }

@@ -46,6 +46,20 @@ namespace API.Services
                 return new UnauthorizedObjectResult(new { message = "Email hoặc mật khẩu không đúng!" });
             }
 
+            // Kiểm tra tài khoản bị vô hiệu hóa
+            if (!user.IsActive)
+            {
+                return new ObjectResult(new
+                {
+                    message = "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.",
+                    code = "ACCOUNT_DISABLED"
+                })
+                {
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
+
+            }
+
             var token = _jwtService.GenerateToken(user.UserId.ToString(), user.Role);
             var refreshToken = _jwtService.GenerateRefreshToken(); // Sinh Refresh Token
             user.RefreshToken = refreshToken;

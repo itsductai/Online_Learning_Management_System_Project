@@ -122,20 +122,16 @@ namespace API.Services
 
         public async Task<bool> ToggleUserStatus(int currentUserId, int userIdToToggle, string role)
         {
-            // Kiểm tra quyền
             if (role != "Admin" && currentUserId != userIdToToggle)
                 return false;
 
-            // Lấy user cần vô hiệu hóa
             var user = await _usersRepository.GetUserById(userIdToToggle);
             if (user == null)
                 return false;
 
-            // Đảo ngược trạng thái isActive
-            user.IsActive = !user.IsActive;
-
             // Cập nhật vào database
-            return await _usersRepository.UpdateUser(currentUserId, user);
+            bool newStatus = !user.IsActive;
+            return await _usersRepository.ToggleIsActiveAsync(userIdToToggle, newStatus);
         }
     }
 }
