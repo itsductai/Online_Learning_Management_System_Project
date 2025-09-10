@@ -96,14 +96,6 @@ builder.Services.AddAuthentication(options =>
     //options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme; // Dùng Google để xác thực
     //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme; // Dùng Cookies để lưu state
 })
-//.AddCookie("Cookies", options =>
-//{
-//    //options.Cookie.Name = "GoogleAuthCookie";
-//    options.Cookie.SameSite = SameSiteMode.None; // Bắt buộc phải là None nếu chạy khác cổng
-//    options.Cookie.HttpOnly = true;
-//    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;    // Nếu HTTPS, đổi thành Always
-
-//})
 .AddJwtBearer(options => // Thêm cấu hình JWT Auth, JWT chỉ dùng để xác thực token, không hỗ trợ việc SignIn Google.
 {
     options.TokenValidationParameters = new TokenValidationParameters // Cấu hình Token Validation
@@ -116,74 +108,8 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"], // Audience là thông tin của người nhận Token
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"])) // Issuer Signing Key là thông tin mã hóa của người tạo Token
     };
-
-    //options.Events = new JwtBearerEvents
-    //{
-    //    OnAuthenticationFailed = context =>
-    //    {
-    //        if (context.Exception is SecurityTokenExpiredException)
-    //        {
-    //            var response = context.Response;
-    //            response.StatusCode = StatusCodes.Status401Unauthorized;
-    //            response.ContentType = "application/json";
-
-    //            var result = System.Text.Json.JsonSerializer.Serialize(new { message = "Token của bạn đã hết hạn. Vui lòng đăng nhập lại." });
-
-    //            // Cũ: return context.Response.WriteAsync(result);
-    //            // Mới: Gọi context.Fail() để ASP.NET Core biết đây là lỗi xác thực
-    //            context.Fail("Token expired");
-    //            return response.WriteAsync(result);
-    //        }
-    //        return Task.CompletedTask;
-    //    }
-    //};
 });
-//.AddGoogle(options =>
-//{
-//    var googleSettings = builder.Configuration.GetSection("Authentication:Google"); // Lấy thông tin Google Auth từ appsettings.json
-//    options.ClientId = googleSettings["ClientId"];
-//    options.ClientSecret = googleSettings["ClientSecret"];
-//    options.CallbackPath = new PathString("/api/auth/google-callback");
 
-//    options.SignInScheme = "Cookies"; // Google sử dụng Cookies để lưu state
-//    options.SaveTokens = true; // Lưu token sau khi đăng nhập
-
-//    options.CorrelationCookie.SameSite = SameSiteMode.None; // Sửa từ Lax thành None
-//    options.CorrelationCookie.HttpOnly = true;
-//    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always; // None nếu chạy http, Always nếu chạy https   
-
-//    // 🔥 XÓA CORRELATION COOKIE TRƯỚC KHI REDIRECT
-//    options.Events.OnRedirectToAuthorizationEndpoint = context =>
-//    {
-//        var correlationCookies = context.HttpContext.Request.Cookies.Keys
-//            .Where(k => k.StartsWith(".AspNetCore.Correlation"));
-//        foreach (var cookie in correlationCookies)
-//        {
-//            context.HttpContext.Response.Cookies.Delete(cookie);
-//            Console.WriteLine($"🗑️ Deleted Correlation Cookie: {cookie} before redirect");
-//        }
-
-//        Console.WriteLine("🚀 Redirecting to Google: " + context.RedirectUri);
-//        context.Response.Redirect(context.RedirectUri);
-//        return Task.CompletedTask;
-//    };
-
-//    // 🔥 XÓA CORRELATION COOKIE SAU KHI CALLBACK
-//    options.Events.OnTicketReceived = context =>
-//    {
-//        Console.WriteLine($"📢 OAuth Ticket Received: {context.Principal?.Identity?.Name}");
-
-//        var correlationCookies = context.HttpContext.Request.Cookies.Keys
-//            .Where(k => k.StartsWith(".AspNetCore.Correlation"));
-//        foreach (var cookie in correlationCookies)
-//        {
-//            context.HttpContext.Response.Cookies.Delete(cookie);
-//            Console.WriteLine($"🗑️ Deleted Correlation Cookie: {cookie} after callback");
-//        }
-
-//        return Task.CompletedTask;
-//    };
-//});
 
 
 

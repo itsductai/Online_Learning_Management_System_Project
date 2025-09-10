@@ -70,65 +70,6 @@ namespace API.Controllers
             return result;
         }
 
-
-
-
-        //[AllowAnonymous]
-        //[HttpGet("google-login")]
-        //public IActionResult GoogleLogin()
-        //{
-        //    var redirectUri = Url.Action("GoogleCallback", "Auth", null, Request.Scheme);
-
-        //    var properties = new AuthenticationProperties
-        //    {
-        //        RedirectUri = redirectUri
-        //    };
-
-        //    // 🔥 Debug: Kiểm tra trước khi gọi Challenge()
-        //    var correlationKeysBefore = HttpContext.Request.Cookies.Keys
-        //        .Where(k => k.StartsWith(".AspNetCore.Correlation"));
-        //    Console.WriteLine($"🛑 Before Challenge - Correlation Cookies: {string.Join(", ", correlationKeysBefore)}");
-
-        //    var result = Challenge(properties, GoogleDefaults.AuthenticationScheme);
-
-        //    // 🔥 Debug: Kiểm tra sau khi gọi Challenge()
-        //    var correlationKeysAfter = HttpContext.Request.Cookies.Keys
-        //        .Where(k => k.StartsWith(".AspNetCore.Correlation"));
-        //    Console.WriteLine($"✅ After Challenge - Correlation Cookies: {string.Join(", ", correlationKeysAfter)}");
-
-        //    return result;
-        //}
-
-
-
-
-        //[HttpGet("google-callback")]
-        //public async Task<IActionResult> GoogleCallback()
-        //{
-        //    var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme); // Nhận thông tin sau khi Google xác thực
-
-        //    if (!result.Succeeded)
-        //    {
-        //        Console.WriteLine(result.Failure?.Message);
-        //        return Unauthorized("Xác thực Google thất bại: " + result.Failure?.Message);
-        //    }
-
-        //    var claims = result.Principal.Identities.FirstOrDefault()?.Claims.Select(claim => new
-        //    {
-        //        //claim.Issuer,
-        //        //claim.OriginalIssuer,
-        //        claim.Type,
-        //        claim.Value
-        //    });
-
-        //    var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value; // Lấy email từ Google
-        //    var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;   // Lấy tên từ Google
-
-        //    // TODO: Tìm user trong DB, nếu chưa có thì tạo mới, sau đó sinh JWT Token và trả về client
-
-        //    return Ok(new { email, name, claims }); // Tạm thời trả về thông tin để kiểm tra
-        //}
-
     }
 
 }

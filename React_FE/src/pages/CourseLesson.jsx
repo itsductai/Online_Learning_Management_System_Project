@@ -85,7 +85,7 @@ export default function CourseLesson() {
   if (!currentCourse) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-100">
-        <Navbar />
+        <NavBar />
         <div className="flex-grow container mx-auto px-4 py-8">
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <FaExclamationTriangle className="text-yellow-500 text-5xl mx-auto mb-4" />
@@ -108,7 +108,7 @@ export default function CourseLesson() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-100">
-        <Navbar />
+        <NavBar />
         <div className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
@@ -124,7 +124,7 @@ export default function CourseLesson() {
   if (lessonError) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-100">
-        <Navbar />
+        <NavBar />
         <div className="flex-grow container mx-auto px-4 py-8">
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <FaExclamationTriangle className="text-red-500 text-5xl mx-auto mb-4" />
@@ -147,7 +147,7 @@ export default function CourseLesson() {
   if (lessons.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-100">
-        <Navbar />
+        <NavBar />
         <div className="flex-grow container mx-auto px-4 py-8">
           <CourseHeader
             course={currentCourse}
