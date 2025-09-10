@@ -12,6 +12,13 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
 using API.DTOs;
 
+using Data.Chat;
+using API.Chat.Repositories;
+using API.Chat.Services;
+using API.Chat.Hubs;
+using Microsoft.AspNetCore.SignalR;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen(c =>
@@ -108,6 +115,21 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"], // Audience là thông tin của người nhận Token
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"])) // Issuer Signing Key là thông tin mã hóa của người tạo Token
     };
+
+    // Cấu hình để JWT có thể dùng cho SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+            {
+                context.Token = accessToken; // cho SignalR
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 
@@ -124,6 +146,19 @@ builder.Services.AddSingleton<JwtService>();
 // Đăng ký DbContext với Connection String từ appsettings.json
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký DbContext cho Chat module
+builder.Services.AddDbContext<ChatDbContext>(opt =>
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký SignalR
+builder.Services.AddSignalR();
+
+// DI cho module chat
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 // Đăng ký Service
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -181,6 +216,7 @@ app.UseAuthorization();  // Bật Authorization
 
 // Định nghĩa API Controllers
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat").RequireCors("AllowReactApp"); // Hub dùng policy có AllowCredentials
 
 // Chạy ứng dụng
 app.Run();

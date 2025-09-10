@@ -22,6 +22,7 @@ import CheckoutMomoSuccess from "./pages/checkout/CheckoutMomoSuccess.jsx";
 import PaymentManager from "./pages/admin/PaymentManager"
 import CouponManager from "./pages/admin/CouponManager"
 import InstructorStudentManagement from "./pages/instructor/StudentManagement.jsx";
+import ChatPage from "./pages/chat/ChatPage.jsx";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -78,6 +79,8 @@ function App() {
           <Route path="/checkout/momo-success" element={<CheckoutMomoSuccess />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
 
+          {/* Chat route */}
+          <Route  path="/chat"  element={  <ProtectedRoute roles={["Admin", "Instructor", "Student"]}>  <ChatPage />   </ProtectedRoute> } />
         </Routes>
       </Router>
     </AuthProvider>
