@@ -1,8 +1,13 @@
 # 📚 Online Learning Management System (OLMS)
 
-Hi there 👋, thank you for visiting the official repository of my **Online Learning Management System (OLMS)** – a capstone project I built over **3+ months** as a final-year student at **Can Tho University**. This project demonstrates my skills in **.NET backend, frontend ReactJS**, and **MoMo payment integration**, with the goal of becoming a **Fullstack .NET Developer**.
+Hi there 👋, thank you for visiting the official repository of my **Online Learning Management System (OLMS)** – a capstone project I built over **3+ months** as a final-year student at **Can Tho University**.
 
-Demo: https://www.youtube.com/watch?v=UG29qXINSHI&t=33s
+👉 This repository currently contains **2 branches**:
+
+* **`master`** → Base version (Niên luận đã hoàn thành).
+* **`LuanVan`** → Extended version (Luận văn tốt nghiệp – currently in development).
+
+Demo (master branch): [YouTube](https://www.youtube.com/watch?v=UG29qXINSHI&t=33s)
 
 ---
 
@@ -10,10 +15,31 @@ Demo: https://www.youtube.com/watch?v=UG29qXINSHI&t=33s
 
 **OLMS** is a full-stack platform that enables:
 
-- 👨‍🎓 Students to register, enroll, learn through video/text lessons, take quizzes, and pay securely.
-- 👨‍🏫 Instructors to manage courses, track students, and monitor learning progress.
-- 👩‍💼 Admins to handle all data, revenue, users, coupons, and overall statistics.
+* 👨‍🎓 Students to register, enroll, learn through video/text lessons, take quizzes, and pay securely.
+* 👨‍🏫 Instructors to manage courses, track students, and monitor learning progress.
+* 👩‍💼 Admins to handle all data, revenue, users, coupons, and overall statistics.
 
+---
+
+## 🎯 Thesis Development (Branch `LuanVan`)
+
+The graduation thesis branch (`LuanVan`) extends the base OLMS with new features focusing on **demo-ready, visible functionalities**:
+
+* 🔍 **Advanced Search with ElasticSearch**:
+  Search lessons by keywords inside video subtitles, with jump-to-time functionality.
+
+* 💬 **Realtime Chat (SignalR)**:
+  One-to-one and group messaging with online status and friend invitations.
+
+* 🔥 **Learning Streaks**:
+  Track continuous learning days, maintain streaks with friends.
+
+* 📅 **Progress Calendar**:
+  Display daily learning activities in a calendar view.
+
+* 🤖 **AI Chatbot Assistant** (experimental):
+  Provide learning support and act as a teaching assistant using OpenAI.
+  
 ---
 
 ## 🎨 Interface Showcase
