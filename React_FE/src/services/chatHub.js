@@ -6,9 +6,7 @@ const HUB_BASE =
   import.meta.env.VITE_API_ORIGIN?.replace(/\/+$/, "") || "http://localhost:7025";
 
 // Lấy access token giống api.js đang dùng
-function getAccessToken() {
-  return localStorage.getItem("token");
-}
+const getAccessToken = () => localStorage.getItem("token");
 
 let connection = null;
 
@@ -23,7 +21,7 @@ export function getChatConnection() {
     .withAutomaticReconnect()
     .build();
 
-  // (tuỳ chọn) log trạng thái
+  // optional logs
   connection.onclose((err) => console.log("SignalR closed", err));
   connection.onreconnected((id) => console.log("SignalR reconnected", id));
   connection.onreconnecting((err) => console.log("SignalR reconnecting", err));
@@ -49,14 +47,21 @@ export async function sendMessage(conversationId, content, attachments = []) {
   await conn.invoke("SendMessage", conversationId, content, attachments);
 }
 
+//  Thêm export này để phát sự kiện đang gõ
+export async function sendTyping(conversationId) {
+  const conn = await startChat();
+  await conn.invoke("Typing", conversationId);
+}
+
 export function onMessage(handler) {
   const conn = getChatConnection();
   conn.on("MessageCreated", handler);
   return () => conn.off("MessageCreated", handler);
 }
 
+//  Lắng đúng tên sự kiện server phát: "UserTyping"
 export function onTyping(handler) {
   const conn = getChatConnection();
-  conn.on("Typing", handler);
-  return () => conn.off("Typing", handler);
+  conn.on("UserTyping", handler);
+  return () => conn.off("UserTyping", handler);
 }

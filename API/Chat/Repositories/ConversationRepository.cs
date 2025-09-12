@@ -1,4 +1,4 @@
-using Data.Chat;
+﻿using Data.Chat;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Chat.Repositories;
@@ -34,5 +34,17 @@ public class ConversationRepository : IConversationRepository
         _db.Conversations.Add(c);
         await _db.SaveChangesAsync();
         return c;
+    }
+
+    // Thêm mới
+    public async Task SaveChangesAsync()
+    {
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Conversation c)
+    {
+        _db.Conversations.Remove(c);
+        await _db.SaveChangesAsync();
     }
 }

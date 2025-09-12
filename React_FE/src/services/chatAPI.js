@@ -27,3 +27,18 @@ export function getMessages(conversationId, before, pageSize = 30) {
 export function postMessage(conversationId, content, attachments = []) {
   return api.post(`/chat/messages/${conversationId}`, { content, attachments });
 }
+
+// Tìm người để bắt chuyện
+export function searchPeople(q, take = 10) {
+  return api.get("/chat/people/search", { params: { q, take } });
+}
+
+// Gửi tin trực tiếp (auto-create conversation nếu chưa có)
+export function sendDirect(targetUserId, content, attachments = []) {
+  return api.post("/chat/messages/direct", { targetUserId, content, attachments });
+}
+
+// Rời hội thoại
+export function leaveConversation(conversationId) {
+  return api.delete(`/chat/conversations/${conversationId}`);
+}

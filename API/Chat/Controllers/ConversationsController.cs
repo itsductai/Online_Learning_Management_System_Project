@@ -21,4 +21,12 @@ public class ConversationsController : ControllerBase
     [HttpPost("direct")]
     public async Task<IActionResult> CreateDirect([FromBody] int otherUserId)
         => Ok(await _service.CreateDirectAsync(User.RequireUserId(), otherUserId));
+
+    [HttpDelete("{conversationId:guid}")]
+    public async Task<IActionResult> Leave(Guid conversationId)
+    {
+        var ok = await _service.LeaveAsync(conversationId, User.RequireUserId());
+        return ok ? NoContent() : NotFound();
+    }
+
 }
