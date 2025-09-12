@@ -16,6 +16,8 @@ using Data.Chat;
 using API.Chat.Repositories;
 using API.Chat.Services;
 using API.Chat.Hubs;
+using API.Chat.Notifications;
+using API.Chat.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
 
@@ -153,6 +155,7 @@ builder.Services.AddDbContext<ChatDbContext>(opt =>
 
 // Đăng ký SignalR
 builder.Services.AddSignalR();
+builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
 
 // DI cho module chat
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();

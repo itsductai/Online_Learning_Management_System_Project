@@ -14,6 +14,8 @@ namespace API.Chat.Hubs
         private readonly IMessageService _messageService;
         private readonly IConversationService _convService;
         private readonly ApplicationDbContext _usersDb;
+        private static string UG(int userId) => $"user:{userId}";
+
 
         public ChatHub(IMessageService messageService, IConversationService convService, ApplicationDbContext usersDb)
         {
@@ -58,6 +60,21 @@ namespace API.Chat.Hubs
                 await Clients.OthersInGroup(conversationId.ToString())
                     .SendAsync("UserTyping", u);
             }
+        }
+
+
+        public override async Task OnConnectedAsync()
+        {
+            var me = Context.User!.RequireUserId();
+            await Groups.AddToGroupAsync(Context.ConnectionId, UG(me));
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var me = Context.User!.RequireUserId();
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, UG(me));
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }

@@ -3,6 +3,7 @@ using API.Chat.Repositories;
 using Data.Chat;
 using Data.Models;             // <--- để map sang Users
 using Microsoft.EntityFrameworkCore;
+using API.Chat.Notifications;
 
 namespace API.Chat.Services;
 
@@ -10,11 +11,16 @@ public class ConversationService : IConversationService
 {
     private readonly IConversationRepository _repo;
     private readonly ApplicationDbContext _usersDb;
+    private readonly IChatNotifier _notify;
 
-    public ConversationService(IConversationRepository repo, ApplicationDbContext usersDb)
+    public ConversationService(
+        IConversationRepository repo,
+        ApplicationDbContext usersDb,
+        IChatNotifier notify)
     {
         _repo = repo;
         _usersDb = usersDb;
+        _notify = notify;
     }
 
     public async Task<List<ConversationDTO>> GetMyAsync(int userId)
@@ -81,7 +87,16 @@ public class ConversationService : IConversationService
 
         // map lại theo DTO enrich để FE có ngay OtherUser
         var myCons = await GetMyAsync(me);
-        return myCons.First(x => x.Id == c.Id);
+        var myView = myCons.First(x => x.Id == c.Id);
+
+        //  bắn cho cả 2 phía: tôi và đối phương
+        var theyCons = await GetMyAsync(otherUserId);
+        var theirView = theyCons.First(x => x.Id == c.Id);
+
+        await _notify.ConversationUpsertedAsync(myView, new[] { me });
+        await _notify.ConversationUpsertedAsync(theirView, new[] { otherUserId });
+
+        return myView;
     }
 
     public async Task<bool> EnsureMemberAsync(Guid conversationId, int userId)
@@ -104,7 +119,76 @@ public class ConversationService : IConversationService
         if (!c.Members.Any())
         {
             await _repo.DeleteAsync(c);
+            //  gỡ khỏi sidebar của người rời
+            await _notify.ConversationRemovedAsync(conversationId, new[] { userId });
         }
+        else
+        {
+            //  gỡ khỏi sidebar phía người rời
+            await _notify.ConversationRemovedAsync(conversationId, new[] { userId });
+
+            // (tuỳ chọn) upsert cho những người còn lại (cập nhật member list)
+            var remainIds = c.Members.Select(x => x.UserId).ToList();
+            if (remainIds.Count > 0)
+            {
+                var any = remainIds[0];
+                var view = (await GetMyAsync(any)).First(x => x.Id == c.Id);
+                await _notify.ConversationUpsertedAsync(view, remainIds);
+            }
+        }
+        return true;
+    }
+
+    // ==== Group phần dưới giữ nguyên như bạn đã viết ====
+
+    public async Task<ConversationDTO> CreateGroupAsync(int creatorId, string title, IEnumerable<int> memberIds)
+    {
+        var c = await _repo.CreateGroupAsync(creatorId, title.Trim(), memberIds ?? Array.Empty<int>());
+        var my = await GetMyAsync(creatorId);
+        return my.First(x => x.Id == c.Id);
+    }
+
+    public async Task<ConversationDTO?> RenameGroupAsync(Guid conversationId, int userId, string newTitle)
+    {
+        var c = await _repo.GetAsync(conversationId);
+        if (c == null || c.Type != "Group") return null;
+        var me = c.Members.FirstOrDefault(x => x.UserId == userId);
+        if (me?.Role != "Admin") return null;
+
+        c.Title = (newTitle ?? "").Trim();
+        await _repo.SaveChangesAsync();
+
+        var my = await GetMyAsync(userId);
+        return my.FirstOrDefault(x => x.Id == c.Id);
+    }
+
+    public async Task<bool> AddMembersAsync(Guid conversationId, int userId, IEnumerable<int> memberIds)
+    {
+        var c = await _repo.GetAsync(conversationId);
+        if (c == null || c.Type != "Group") return false;
+
+        var me = c.Members.FirstOrDefault(x => x.UserId == userId);
+        if (me?.Role != "Admin") return false;
+
+        await _repo.AddMembersAsync(conversationId, memberIds);
+        return true;
+    }
+
+    public async Task<bool> RemoveMemberAsync(Guid conversationId, int requesterId, int targetUserId)
+    {
+        var c = await _repo.GetAsync(conversationId);
+        if (c == null || c.Type != "Group") return false;
+
+        var req = c.Members.FirstOrDefault(x => x.UserId == requesterId);
+        if (req?.Role != "Admin") return false;
+
+        var m = c.Members.FirstOrDefault(x => x.UserId == targetUserId);
+        if (m == null) return false;
+
+        c.Members.Remove(m);
+        await _repo.SaveChangesAsync();
+
+        if (!c.Members.Any()) await _repo.DeleteAsync(c);
         return true;
     }
 }

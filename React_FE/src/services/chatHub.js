@@ -65,3 +65,17 @@ export function onTyping(handler) {
   conn.on("UserTyping", handler);
   return () => conn.off("UserTyping", handler);
 }
+
+// src/services/chatHub.js
+export function onConversationUpserted(handler) {
+  const conn = getChatConnection();
+  conn.on("ConversationUpserted", handler);
+  return () => conn.off("ConversationUpserted", handler);
+}
+
+export function onConversationRemoved(handler) {
+  const conn = getChatConnection();
+  conn.on("ConversationRemoved", handler);
+  return () => conn.off("ConversationRemoved", handler);
+}
+

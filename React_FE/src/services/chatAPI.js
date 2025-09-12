@@ -42,3 +42,23 @@ export function sendDirect(targetUserId, content, attachments = []) {
 export function leaveConversation(conversationId) {
   return api.delete(`/chat/conversations/${conversationId}`);
 }
+
+// Tạo nhóm
+export function createGroup(title, memberIds = []) {
+  return api.post("/chat/conversations/group", { title, memberIds });
+}
+
+// Đổi tên nhóm
+export function renameGroup(conversationId, title) {
+  return api.patch(`/chat/conversations/${conversationId}/title`, { title });
+}
+
+// Thêm thành viên
+export function addMembers(conversationId, memberIds = []) {
+  return api.post(`/chat/conversations/${conversationId}/members`, { memberIds });
+}
+
+// Gỡ thành viên
+export function removeMember(conversationId, userId) {
+  return api.delete(`/chat/conversations/${conversationId}/members/${userId}`);
+}
