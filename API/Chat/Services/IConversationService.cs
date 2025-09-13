@@ -13,5 +13,5 @@ public interface IConversationService
     Task<ConversationDTO?> RenameGroupAsync(Guid conversationId, int userId, string newTitle);
     Task<bool> AddMembersAsync(Guid conversationId, int userId, IEnumerable<int> memberIds);
     Task<bool> RemoveMemberAsync(Guid conversationId, int requesterId, int targetUserId);
-
+    Task MarkReadAsync(Guid conversationId, int userId);
 }

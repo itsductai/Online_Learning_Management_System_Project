@@ -128,4 +128,36 @@ public class ConversationRepository : IConversationRepository
         _db.ConversationMembers.AnyAsync(m => m.ConversationId == conversationId && m.UserId == userId && m.Role == "Admin");
     public Task<int> GetMemberCountAsync(Guid conversationId) =>
         _db.ConversationMembers.CountAsync(m => m.ConversationId == conversationId);
+
+    public async Task MarkReadAsync(Guid conversationId, int userId, DateTime at)
+    {
+        var m = await _db.ConversationMembers
+            .FirstOrDefaultAsync(x => x.ConversationId == conversationId && x.UserId == userId);
+        if (m != null)
+        {
+            m.LastReadAt = at;
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    public async Task<int> CountUnreadAsync(Guid conversationId, int userId)
+    {
+        var last = await _db.ConversationMembers
+            .Where(x => x.ConversationId == conversationId && x.UserId == userId)
+            .Select(x => x.LastReadAt)
+            .FirstOrDefaultAsync();
+
+        var q = _db.Messages.Where(x => x.ConversationId == conversationId && x.SenderId != userId);
+        if (last.HasValue) q = q.Where(x => x.CreatedAt > last.Value);
+        return await q.CountAsync();
+    }
+
+    public Task<Message?> GetLastMessageAsync(Guid conversationId)
+    {
+        return _db.Messages
+            .Where(x => x.ConversationId == conversationId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
 }

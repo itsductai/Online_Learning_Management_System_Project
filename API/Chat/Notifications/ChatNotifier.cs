@@ -26,5 +26,27 @@ namespace API.Chat.Notifications
             foreach (var g in groups)
                 await _hub.Clients.Group(g).SendAsync("ConversationRemoved", conversationId);
         }
+
+        public async Task UnreadChangedAsync(int userId, Guid conversationId, int unreadTotal, int unreadForConversation)
+        {
+            await _hub.Clients.Group($"user:{userId}")
+                .SendAsync("UnreadChanged", new
+                {
+                    conversationId,
+                    unreadTotal,
+                    unreadForConversation
+                });
+        }
+
+        public async Task MessageReadAsync(Guid conversationId, int userId, DateTime readAt)
+        {
+            await _hub.Clients.Group(conversationId.ToString())
+                .SendAsync("MessageRead", new
+                {
+                    conversationId,
+                    userId,
+                    readAt
+                });
+        }
     }
 }

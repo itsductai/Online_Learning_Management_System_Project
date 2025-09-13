@@ -62,3 +62,8 @@ export function addMembers(conversationId, memberIds = []) {
 export function removeMember(conversationId, userId) {
   return api.delete(`/chat/conversations/${conversationId}/members/${userId}`);
 }
+
+// Đánh dấu đã đọc
+export function markConversationRead(conversationId, at) {
+  return api.post(`/chat/conversations/${conversationId}/read`);
+}

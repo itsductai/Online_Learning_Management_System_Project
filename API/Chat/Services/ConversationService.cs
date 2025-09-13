@@ -12,15 +12,18 @@ public class ConversationService : IConversationService
     private readonly IConversationRepository _repo;
     private readonly ApplicationDbContext _usersDb;
     private readonly IChatNotifier _notify;
+    private readonly IMessageRepository _msgRepo;
 
     public ConversationService(
         IConversationRepository repo,
         ApplicationDbContext usersDb,
-        IChatNotifier notify)
+        IChatNotifier notify,
+        IMessageRepository msgRepo)
     {
         _repo = repo;
         _usersDb = usersDb;
         _notify = notify;
+        _msgRepo = msgRepo;
     }
 
     public async Task<List<ConversationDTO>> GetMyAsync(int userId)
@@ -71,6 +74,20 @@ public class ConversationService : IConversationService
                     .Where(x => x != null)
                     .ToList();
             }
+            // ----------  LastMessage + UnreadCount ----------
+            var last = await _repo.GetLastMessageAsync(c.Id);
+            if (last != null)
+            {
+                dto.LastMessage = new LastMessageDTO
+                {
+                    Id = last.Id,
+                    Content = last.Content,
+                    CreatedAt = last.CreatedAt,
+                    Sender = MapUser(last.SenderId)
+                };
+            }
+            dto.UnreadCount = await _repo.CountUnreadAsync(c.Id, userId);
+            // ----------------------------------------------------
 
             result.Add(dto);
         }
@@ -190,5 +207,32 @@ public class ConversationService : IConversationService
 
         if (!c.Members.Any()) await _repo.DeleteAsync(c);
         return true;
+    }
+
+    // ------------------- Đánh dấu đã đọc -------------------
+    public async Task MarkReadAsync(Guid conversationId, int userId)
+    {
+        await _repo.MarkReadAsync(conversationId, userId, DateTime.UtcNow);
+
+        // phát UnreadChanged (cần tổng chưa đọc)
+        var myConvs = await _repo.GetForUserAsync(userId);
+        var total = 0;
+        foreach (var conv in myConvs)
+            total += await _repo.CountUnreadAsync(conv.Id, userId);
+
+        var unreadForThis = await _repo.CountUnreadAsync(conversationId, userId);
+        await _notify.UnreadChangedAsync(userId, conversationId, total, unreadForThis);
+
+        // nếu đã vượt lastMessage -> phát MessageRead cho group
+        var last = await _repo.GetLastMessageAsync(conversationId);
+        if (last != null)
+        {
+            var list = await _repo.GetForUserAsync(userId); // tận dụng để confirm member
+            var thisConv = list.FirstOrDefault(x => x.Id == conversationId);
+            if (thisConv != null)
+            {
+                await _notify.MessageReadAsync(conversationId, userId, DateTime.UtcNow);
+            }
+        }
     }
 }

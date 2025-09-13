@@ -62,4 +62,11 @@ public class ConversationsController : ControllerBase
         return ok ? NoContent() : Forbid();
     }
 
+    [HttpPost("{conversationId:guid}/read")]
+    public async Task<IActionResult> Read(Guid conversationId)
+    {
+        await _service.MarkReadAsync(conversationId, User.RequireUserId());
+        return NoContent();
+    }
+
 }

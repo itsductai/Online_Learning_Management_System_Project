@@ -14,4 +14,6 @@ public class ConversationDTO
 
     // Direct: đối phương
     public UserSummaryDTO? OtherUser { get; set; }
+    public LastMessageDTO? LastMessage { get; set; }   // MỚI: preview tin nhắn cuối
+    public int UnreadCount { get; set; }               // MỚI: số tin chưa đọc (theo user)
 }

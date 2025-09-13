@@ -20,5 +20,8 @@ namespace API.Chat.Repositories
         Task<bool> IsUserInConversationAsync(Guid conversationId, int userId);
         Task<bool> IsUserAdminAsync(Guid conversationId, int userId);
         Task<int> GetMemberCountAsync(Guid conversationId);
+        Task MarkReadAsync(Guid conversationId, int userId, DateTime at);
+        Task<int> CountUnreadAsync(Guid conversationId, int userId);
+        Task<Message?> GetLastMessageAsync(Guid conversationId);
     }
 }

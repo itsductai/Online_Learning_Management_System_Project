@@ -6,6 +6,7 @@ import {
   createDirect,
   leaveConversation,
   createGroup,
+  markConversationRead, // Chức năng mới: API đánh dấu đã đọc tin nhắn
 } from "../../services/chatAPI"
 import {
   joinConversation,
@@ -15,11 +16,14 @@ import {
   sendTyping,
   onConversationUpserted,
   onConversationRemoved,
+  onUnreadChanged, // Chức năng mới: Lắng nghe thay đổi số tin nhắn chưa đọc
+  onMessageRead, // Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc
+  startChat, // Chức năng mới: Khởi tạo kết nối SignalR
 } from "../../services/chatHub"
 import { useAuth } from "../../context/AuthContext"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
-import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X } from "lucide-react"
+import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X, Clock } from 'lucide-react'
 
 export default function ChatPage() {
   // Lấy thông tin user hiện tại từ context xác thực
@@ -27,7 +31,7 @@ export default function ChatPage() {
   const myId = user?.userId
 
   // State chính quản lý dữ liệu chat
-  const [cons, setCons] = useState([]) // Danh sách cuộc trò chuyện
+  const [cons, setCons] = useState([]) // Danh sách cuộc trò chuyện với thông tin unreadCount
   const [active, setActive] = useState(null) // Cuộc trò chuyện đang được chọn
   const [msgs, setMsgs] = useState([]) // Danh sách tin nhắn của cuộc trò chuyện hiện tại
   const [text, setText] = useState("") // Nội dung tin nhắn đang soạn
@@ -40,6 +44,9 @@ export default function ChatPage() {
   const [typingUsers, setTypingUsers] = useState([]) // Danh sách người đang gõ
   const typingTimersRef = useRef({}) // Ref lưu trữ timer để clear typing status
 
+  // Chức năng mới: State quản lý read receipts (ai đã đọc tin nhắn)
+  const [readReceipts, setReadReceipts] = useState({}) // {messageId: [{userId, name, readAt}]}
+
   // State cho tính năng phân trang tin nhắn (load tin nhắn cũ hơn)
   const [hasMore, setHasMore] = useState(true) // Còn tin nhắn cũ hơn để load không
   const scrollRef = useRef(null) // Ref cho container scroll tin nhắn
@@ -50,6 +57,8 @@ export default function ChatPage() {
   const unsubTypingRef = useRef(null)
   const unsubUpsertRef = useRef(null)
   const unsubRemoveRef = useRef(null)
+  const unsubUnreadRef = useRef(null) // Chức năng mới: Unsubscribe UnreadChanged event
+  const unsubReadRef = useRef(null) // Chức năng mới: Unsubscribe MessageRead event
 
   // State cho modal tạo nhóm
   const [showCreate, setShowCreate] = useState(false)
@@ -57,6 +66,24 @@ export default function ChatPage() {
   const [memberQuery, setMemberQuery] = useState("")
   const [memberResult, setMemberResult] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
+
+  // Chức năng mới: Hàm format thời gian relative cho preview tin nhắn
+  const formatRelativeTime = (dateString) => {
+    const now = new Date()
+    const messageTime = new Date(dateString)
+    const diffInMinutes = Math.floor((now - messageTime) / (1000 * 60))
+
+    if (diffInMinutes < 1) return "Vừa xong"
+    if (diffInMinutes < 60) return `${diffInMinutes} phút`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} giờ`
+    return `${Math.floor(diffInMinutes / 1440)} ngày`
+  }
+
+  // Chức năng mới: Hàm cắt nội dung tin nhắn cho preview
+  const truncateMessage = (content, maxLength = 40) => {
+    if (!content) return ""
+    return content.length > maxLength ? content.substring(0, maxLength) + "..." : content
+  }
 
   // Hàm tìm kiếm người dùng để chat trực tiếp
   const doSearch = async (q) => {
@@ -91,36 +118,88 @@ export default function ChatPage() {
     }
   }
 
+  // Chức năng mới: Effect khởi tạo kết nối SignalR khi component mount
+  useEffect(() => {
+    if (!user) return
+
+    const initializeSignalR = async () => {
+      try {
+        console.log("🔄 Khởi tạo kết nối SignalR cho ChatPage...")
+        await startChat()
+        console.log("✅ Kết nối SignalR thành công")
+      } catch (error) {
+        console.error("❌ Lỗi khi khởi tạo SignalR:", error)
+      }
+    }
+
+    initializeSignalR()
+  }, [user])
+
   // Effect load danh sách cuộc trò chuyện khi component mount
   useEffect(() => {
     const loadConversations = async () => {
       try {
+        console.log("🔄 Đang tải danh sách cuộc trò chuyện...")
         const res = await getMyConversations()
-        setCons(res.data || [])
+        const conversations = res.data || []
+        console.log("📋 Danh sách cuộc trò chuyện:", conversations)
+        
+        // Chức năng mới: Log chi tiết thông tin từng cuộc trò chuyện để debug
+        conversations.forEach((conv, index) => {
+          console.log(`📝 Cuộc trò chuyện ${index + 1}:`, {
+            id: conv.id,
+            type: conv.type,
+            title: conv.title,
+            memberIds: conv.memberIds,
+            members: conv.members,
+            otherUser: conv.otherUser,
+            lastMessage: conv.lastMessage,
+            unreadCount: conv.unreadCount
+          })
+          
+          if (conv.lastMessage) {
+            console.log(`💬 Tin nhắn cuối của cuộc trò chuyện ${conv.id}:`, {
+              messageId: conv.lastMessage.id,
+              senderId: conv.lastMessage.senderId,
+              content: conv.lastMessage.content,
+              sender: conv.lastMessage.sender,
+              createdAt: conv.lastMessage.createdAt
+            })
+          }
+        })
+        
+        setCons(conversations)
       } catch (error) {
-        console.error("Lỗi khi tải danh sách cuộc trò chuyện:", error)
+        console.error("❌ Lỗi khi tải danh sách cuộc trò chuyện:", error)
       }
     }
 
     loadConversations()
   }, [])
 
-  // Effect lắng nghe sự kiện ConversationUpserted/Removed từ SignalR Hub
-  // Xử lý khi có cuộc trò chuyện mới, đổi tên, thêm thành viên, hoặc bị xóa
+  // Chức năng mới: Effect lắng nghe tất cả sự kiện SignalR Hub
   useEffect(() => {
+    if (!user) return
+
     // Cleanup các listener cũ
     unsubUpsertRef.current && unsubUpsertRef.current()
     unsubRemoveRef.current && unsubRemoveRef.current()
+    unsubUnreadRef.current && unsubUnreadRef.current()
+    unsubReadRef.current && unsubReadRef.current()
+    unsubMessageRef.current && unsubMessageRef.current()
 
-    // Lắng nghe sự kiện cập nhật cuộc trò chuyện
+    console.log("🎧 Đăng ký lắng nghe các sự kiện SignalR...")
+
+    // 1. Lắng nghe sự kiện cập nhật cuộc trò chuyện
     unsubUpsertRef.current = onConversationUpserted((conv) => {
+      console.log("🔄 Nhận sự kiện ConversationUpserted:", conv)
       setCons((prev) => {
         const idx = prev.findIndex((x) => x.id === conv.id)
         if (idx === -1) {
-          // Cuộc trò chuyện mới, thêm vào đầu danh sách
+          console.log("➕ Thêm cuộc trò chuyện mới vào sidebar")
           return [conv, ...prev]
         } else {
-          // Cập nhật cuộc trò chuyện hiện có
+          console.log("🔄 Cập nhật cuộc trò chuyện hiện có")
           const clone = [...prev]
           clone[idx] = conv
           return clone
@@ -131,19 +210,124 @@ export default function ChatPage() {
       setActive((prev) => (prev?.id === conv.id ? conv : prev))
     })
 
-    // Lắng nghe sự kiện xóa cuộc trò chuyện
+    // 2. Lắng nghe sự kiện xóa cuộc trò chuyện
     unsubRemoveRef.current = onConversationRemoved((conversationId) => {
+      console.log("🗑️ Nhận sự kiện ConversationRemoved:", conversationId)
       setCons((prev) => prev.filter((c) => c.id !== conversationId))
       // Nếu đang mở cuộc trò chuyện bị xóa, reset về null
       setActive((prev) => (prev?.id === conversationId ? null : prev))
       setMsgs((prev) => (active?.id === conversationId ? [] : prev))
     })
 
+    // 3. Chức năng mới: Lắng nghe thay đổi số tin nhắn chưa đọc
+    unsubUnreadRef.current = onUnreadChanged((data) => {
+      console.log("🔔 Nhận sự kiện UnreadChanged:", data)
+      // data = { conversationId, unreadCount, totalUnread }
+      setCons((prev) => {
+        const updated = [...prev]
+        const idx = updated.findIndex((c) => c.id === data.conversationId)
+        if (idx !== -1) {
+          console.log(`📊 Cập nhật unreadCount cho cuộc trò chuyện ${data.conversationId}: ${data.unreadCount}`)
+          updated[idx] = { ...updated[idx], unreadCount: data.unreadCount }
+        }
+        return updated
+      })
+    })
+
+    // 4. Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc tin nhắn
+    unsubReadRef.current = onMessageRead((data) => {
+      console.log("👁️ Nhận sự kiện MessageRead:", data)
+      // data = { conversationId, messageId, userId, at }
+      if (active?.id === data.conversationId) {
+        // Cập nhật read receipts cho tin nhắn
+        setReadReceipts((prev) => {
+          const messageReceipts = prev[data.messageId] || []
+          const existingIdx = messageReceipts.findIndex((r) => r.userId === data.userId)
+
+          let updatedReceipts
+          if (existingIdx !== -1) {
+            updatedReceipts = [...messageReceipts]
+            updatedReceipts[existingIdx] = {
+              ...updatedReceipts[existingIdx],
+              readAt: data.at,
+            }
+          } else {
+            // Tìm thông tin user từ danh sách members
+            const userInfo =
+              active.members?.find((m) => m.userId === data.userId) ||
+              (active.otherUser?.userId === data.userId ? active.otherUser : null)
+            if (userInfo) {
+              updatedReceipts = [
+                ...messageReceipts,
+                {
+                  userId: data.userId,
+                  name: userInfo.name,
+                  avatarUrl: userInfo.avatarUrl,
+                  readAt: data.at,
+                },
+              ]
+            } else {
+              updatedReceipts = messageReceipts
+            }
+          }
+
+          return {
+            ...prev,
+            [data.messageId]: updatedReceipts,
+          }
+        })
+      }
+    })
+
+    // 5. Chức năng mới: Lắng nghe tin nhắn mới TOÀN CỤC (không chỉ cuộc trò chuyện đang mở)
+    unsubMessageRef.current = onMessage((messageDto) => {
+      console.log("💬 Nhận tin nhắn mới:", messageDto)
+      console.log("👤 Thông tin người gửi:", messageDto.sender)
+      console.log("🆔 ID cuộc trò chuyện:", messageDto.conversationId)
+      console.log("🎯 Cuộc trò chuyện đang mở:", active?.id)
+
+      // Nếu tin nhắn thuộc cuộc trò chuyện đang mở
+      if (active?.id === messageDto.conversationId) {
+        console.log("➕ Thêm tin nhắn vào cuộc trò chuyện đang mở")
+        setMsgs((prev) => [...prev, messageDto])
+        setTimeout(scrollToBottom, 0)
+
+        // Tự động đánh dấu đã đọc nếu đang focus
+        if (document.hasFocus()) {
+          setTimeout(() => markAsRead(active.id), 500)
+        }
+      } else {
+        // Chức năng mới: Cập nhật preview và unreadCount cho cuộc trò chuyện khác
+        console.log("🔄 Cập nhật preview tin nhắn cho cuộc trò chuyện khác")
+        setCons((prev) => {
+          const updated = [...prev]
+          const idx = updated.findIndex((c) => c.id === messageDto.conversationId)
+          if (idx !== -1) {
+            console.log(`📝 Cập nhật lastMessage và tăng unreadCount cho cuộc trò chuyện ${messageDto.conversationId}`)
+            updated[idx] = {
+              ...updated[idx],
+              lastMessage: messageDto,
+              unreadCount: (updated[idx].unreadCount || 0) + 1
+            }
+            
+            // Di chuyển cuộc trò chuyện lên đầu danh sách
+            const updatedConv = updated.splice(idx, 1)[0]
+            updated.unshift(updatedConv)
+          }
+          return updated
+        })
+      }
+    })
+
     return () => {
+      console.log("🧹 Cleanup các SignalR listeners")
       unsubUpsertRef.current && unsubUpsertRef.current()
       unsubRemoveRef.current && unsubRemoveRef.current()
+      unsubUnreadRef.current && unsubUnreadRef.current()
+      unsubReadRef.current && unsubReadRef.current()
+      unsubMessageRef.current && unsubMessageRef.current()
     }
-  }, [active])
+  }, [active, user])
 
   // Hàm scroll xuống cuối danh sách tin nhắn
   const scrollToBottom = () => {
@@ -151,43 +335,65 @@ export default function ChatPage() {
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }
 
+  // Chức năng mới: Hàm đánh dấu cuộc trò chuyện đã đọc
+  const markAsRead = async (conversationId) => {
+    try {
+      console.log(`👁️ Đánh dấu đã đọc cuộc trò chuyện: ${conversationId}`)
+      await markConversationRead(conversationId)
+      // Cập nhật local state để UI phản hồi ngay lập tức
+      setCons((prev) => prev.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)))
+    } catch (error) {
+      console.error("❌ Lỗi khi đánh dấu đã đọc:", error)
+    }
+  }
+
   // Effect xử lý khi chọn cuộc trò chuyện khác
   useEffect(() => {
     if (!active) return
 
+    console.log("🎯 Chọn cuộc trò chuyện:", active.id)
+
     // Join vào room SignalR của cuộc trò chuyện
     joinConversation(active.id)
+
+    // Chức năng mới: Đánh dấu đã đọc ngay khi vào cuộc trò chuyện
+    if (active.unreadCount > 0) {
+      markAsRead(active.id)
+    }
 
     // Load tin nhắn mới nhất của cuộc trò chuyện
     const loadMessages = async () => {
       try {
+        console.log(`📥 Đang tải tin nhắn cho cuộc trò chuyện: ${active.id}`)
         const res = await getMessages(active.id)
         const arr = Array.isArray(res.data) ? [...res.data].reverse() : []
+        console.log(`💬 Đã tải ${arr.length} tin nhắn`)
+        
+        // Log thông tin tin nhắn để debug
+        arr.forEach((msg, index) => {
+          console.log(`📝 Tin nhắn ${index + 1}:`, {
+            id: msg.id,
+            senderId: msg.senderId,
+            content: msg.content,
+            sender: msg.sender,
+            createdAt: msg.createdAt
+          })
+        })
+        
         setMsgs(arr)
         setHasMore(arr.length > 0)
         setTimeout(scrollToBottom, 0) // Scroll xuống cuối sau khi render
       } catch (error) {
-        console.error("Lỗi khi tải tin nhắn:", error)
+        console.error("❌ Lỗi khi tải tin nhắn:", error)
         setMsgs([])
       }
     }
 
     loadMessages()
 
-    // Cleanup các listener cũ
-    unsubMessageRef.current && unsubMessageRef.current()
-    unsubTypingRef.current && unsubTypingRef.current()
-
-    // Lắng nghe tin nhắn mới từ SignalR
-    unsubMessageRef.current = onMessage((dto) => {
-      if (dto.conversationId === active.id) {
-        setMsgs((prev) => [...prev, dto])
-        setTimeout(scrollToBottom, 0)
-      }
-    })
-
-    // Lắng nghe sự kiện typing từ SignalR (nhiều người có thể gõ cùng lúc)
-    unsubTypingRef.current = onTyping((u) => {
+    // Cleanup các listener cũ cho typing
+    const unsubTyping = onTyping((u) => {
+      console.log("⌨️ Nhận sự kiện typing:", u)
       // Bỏ qua nếu không có user hoặc là chính mình
       if (!u || !u.userId || u.userId === myId) return
 
@@ -209,8 +415,7 @@ export default function ChatPage() {
 
     return () => {
       // Cleanup khi đổi cuộc trò chuyện
-      unsubMessageRef.current && unsubMessageRef.current()
-      unsubTypingRef.current && unsubTypingRef.current()
+      unsubTyping && unsubTyping()
 
       // Clear tất cả timer typing
       Object.values(typingTimersRef.current).forEach(clearTimeout)
@@ -218,6 +423,35 @@ export default function ChatPage() {
       setTypingUsers([])
     }
   }, [active, myId])
+
+  // Chức năng mới: Effect để đánh dấu đã đọc khi scroll đến cuối hoặc focus vào tab
+  useEffect(() => {
+    if (!active || active.unreadCount === 0) return
+
+    const handleFocus = () => {
+      if (active.unreadCount > 0) {
+        markAsRead(active.id)
+      }
+    }
+
+    const handleScroll = () => {
+      if (!scrollRef.current) return
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10
+
+      if (isAtBottom && active.unreadCount > 0) {
+        markAsRead(active.id)
+      }
+    }
+
+    window.addEventListener("focus", handleFocus)
+    scrollRef.current?.addEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+      scrollRef.current?.removeEventListener("scroll", handleScroll)
+    }
+  }, [active])
 
   // Effect xử lý infinite scroll để load tin nhắn cũ hơn
   useEffect(() => {
@@ -252,7 +486,7 @@ export default function ChatPage() {
             scrollRef.current.scrollTop = newHeight - prevHeight
           }, 0)
         } catch (error) {
-          console.error("Lỗi khi tải tin nhắn cũ hơn:", error)
+          console.error("❌ Lỗi khi tải tin nhắn cũ hơn:", error)
         }
       },
       { threshold: 1 },
@@ -268,10 +502,11 @@ export default function ChatPage() {
     if (!content || !active) return
 
     try {
+      console.log(`📤 Gửi tin nhắn: "${content}" đến cuộc trò chuyện ${active.id}`)
       await sendMessage(active.id, content, [])
       setText("") // Clear input sau khi gửi
     } catch (error) {
-      console.error("Lỗi khi gửi tin nhắn:", error)
+      console.error("❌ Lỗi khi gửi tin nhắn:", error)
     }
   }
 
@@ -289,18 +524,21 @@ export default function ChatPage() {
     if (!active) return
 
     try {
+      console.log(`🚪 Rời khỏi cuộc trò chuyện: ${active.id}`)
       await leaveConversation(active.id)
       // Server sẽ gửi sự kiện ConversationRemoved, nhưng cập nhật optimistic
       setCons((prev) => prev.filter((c) => c.id !== active.id))
       setActive(null)
       setMsgs([])
     } catch (error) {
-      console.error("Lỗi khi rời cuộc trò chuyện:", error)
+      console.error("❌ Lỗi khi rời cuộc trò chuyện:", error)
     }
   }
 
   // Hàm render item cuộc trò chuyện trong sidebar
   const renderConversationItem = (c) => {
+    const isUnread = c.unreadCount > 0 // Chức năng mới: Kiểm tra có tin nhắn chưa đọc
+
     if (c.type === "Direct" && c.otherUser) {
       // Cuộc trò chuyện trực tiếp
       return (
@@ -314,9 +552,24 @@ export default function ChatPage() {
             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-gray-900 truncate">{c.otherUser.name}</div>
-            <div className="text-xs text-gray-500">Trò chuyện trực tiếp</div>
+            {/* Chức năng mới: In đậm tên nếu có tin nhắn chưa đọc */}
+            <div className={`truncate ${isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+              {c.otherUser.name}
+            </div>
+            {/* Chức năng mới: Hiển thị preview tin nhắn cuối */}
+            {c.lastMessage && (
+              <div className="text-xs text-gray-500 truncate">
+                {truncateMessage(c.lastMessage.content)} • {formatRelativeTime(c.lastMessage.createdAt)}
+              </div>
+            )}
+            {!c.lastMessage && <div className="text-xs text-gray-500">Trò chuyện trực tiếp</div>}
           </div>
+          {/* Chức năng mới: Badge hiển thị số tin nhắn chưa đọc */}
+          {isUnread && (
+            <div className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+              {c.unreadCount > 99 ? "99+" : c.unreadCount}
+            </div>
+          )}
         </div>
       )
     }
@@ -328,15 +581,55 @@ export default function ChatPage() {
           <Users className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-gray-900 truncate">{c.title || "Nhóm chat"}</div>
-          <div className="text-xs text-gray-500">{c.memberIds?.length || 0} thành viên</div>
+          {/* Chức năng mới: In đậm tên nhóm nếu có tin nhắn chưa đọc */}
+          <div className={`truncate ${isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+            {c.title || "Nhóm chat"}
+          </div>
+          {/* Chức năng mới: Hiển thị preview tin nhắn cuối */}
+          {c.lastMessage && (
+            <div className="text-xs text-gray-500 truncate">
+              {c.lastMessage.sender?.name}: {truncateMessage(c.lastMessage.content)} •{" "}
+              {formatRelativeTime(c.lastMessage.createdAt)}
+            </div>
+          )}
+          {!c.lastMessage && <div className="text-xs text-gray-500">{c.memberIds?.length || 0} thành viên</div>}
         </div>
+        {/* Chức năng mới: Badge hiển thị số tin nhắn chưa đọc */}
+        {isUnread && (
+          <div className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+            {c.unreadCount > 99 ? "99+" : c.unreadCount}
+          </div>
+        )}
       </div>
     )
   }
 
   // Hàm kiểm tra tin nhắn có phải của mình không
   const isMine = (m) => m.senderId === myId
+
+  // Chức năng mới: Hàm render read receipts cho tin nhắn
+  const renderReadReceipts = (messageId, messageTime) => {
+    const receipts = readReceipts[messageId] || []
+    if (receipts.length === 0) return null
+
+    return (
+      <div className="flex items-center gap-1 mt-1 justify-end">
+        <div className="flex -space-x-1">
+          {receipts.slice(0, 3).map((receipt) => (
+            <img
+              key={receipt.userId}
+              src={receipt.avatarUrl || "/placeholder.svg?height=16&width=16"}
+              alt={receipt.name}
+              className="w-4 h-4 rounded-full border border-white object-cover"
+              title={`${receipt.name} đã xem lúc ${new Date(receipt.readAt).toLocaleTimeString()}`}
+            />
+          ))}
+        </div>
+        {receipts.length > 3 && <span className="text-xs text-gray-400">+{receipts.length - 3}</span>}
+        <Clock className="w-3 h-3 text-gray-400" />
+      </div>
+    )
+  }
 
   // State và hàm cho modal tạo nhóm
   const doSearchMember = async (q) => {
@@ -349,7 +642,7 @@ export default function ChatPage() {
       const chosen = new Set(selectedUsers.map((x) => x.userId))
       setMemberResult((res.data || []).filter((u) => !chosen.has(u.userId)))
     } catch (error) {
-      console.error("Lỗi khi tìm kiếm thành viên:", error)
+      console.error("❌ Lỗi khi tìm kiếm thành viên:", error)
       setMemberResult([])
     }
   }
@@ -375,6 +668,7 @@ export default function ChatPage() {
     try {
       const title = groupTitle.trim() || "Nhóm mới"
       const memberIds = selectedUsers.map((x) => x.userId)
+      console.log(`👥 Tạo nhóm mới: "${title}" với thành viên:`, memberIds)
       const res = await createGroup(title, memberIds)
       const conv = res.data
 
@@ -385,7 +679,7 @@ export default function ChatPage() {
       setShowCreate(false)
       resetCreate()
     } catch (error) {
-      console.error("Lỗi khi tạo nhóm:", error)
+      console.error("❌ Lỗi khi tạo nhóm:", error)
     }
   }
 
@@ -445,7 +739,7 @@ export default function ChatPage() {
                       {results.map((u) => (
                         <div
                           key={u.userId}
-                          className="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
+                          className="p-3 hover:bg-gray-100 cursor-pointer flex items-center gap-3 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
                           onClick={() => startChatWith(u)}
                         >
                           <img
@@ -563,40 +857,49 @@ export default function ChatPage() {
                 )}
 
                 {active &&
-                  msgs.map((m) => (
-                    <div key={m.id} className={`flex ${isMine(m) ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[70%] ${isMine(m) ? "order-2" : "order-1"}`}>
-                        {/* Avatar và tên người gửi - chỉ hiển thị cho tin nhắn không phải của mình */}
-                        {!isMine(m) && (
-                          <div className="flex items-center gap-2 mb-1">
-                            <img
-                              src={m.sender?.avatarUrl || "/placeholder.svg?height=24&width=24"}
-                              alt={m.sender?.name || "User"}
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
-                            <span className="text-xs font-medium text-gray-600">{m.sender?.name || "Unknown"}</span>
-                          </div>
-                        )}
+                  msgs.map((m, index) => {
+                    const isLastMessage = index === msgs.length - 1
+                    return (
+                      <div key={m.id} className={`flex ${isMine(m) ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[70%] ${isMine(m) ? "order-2" : "order-1"}`}>
+                          {/* Avatar và tên người gửi - chỉ hiển thị cho tin nhắn không phải của mình */}
+                          {!isMine(m) && (
+                            <div className="flex items-center gap-2 mb-1">
+                              <img
+                                src={m.sender?.avatarUrl || "/placeholder.svg?height=24&width=24"}
+                                alt={m.sender?.name || "User"}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                              <span className="text-xs font-medium text-gray-600">{m.sender?.name || "Unknown"}</span>
+                            </div>
+                          )}
 
-                        {/* Bubble tin nhắn */}
-                        <div
-                          className={`px-4 py-3 rounded-2xl shadow-sm ${
-                            isMine(m)
-                              ? "bg-primary text-white rounded-br-md"
-                              : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
-                          }`}
-                        >
-                          <div className="break-words">{m.content}</div>
-                          <div className={`text-xs mt-2 ${isMine(m) ? "text-white/80" : "text-gray-500"}`}>
-                            {new Date(m.createdAt).toLocaleTimeString("vi-VN", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                          {/* Bubble tin nhắn */}
+                          <div
+                            className={`px-4 py-3 rounded-2xl shadow-sm ${
+                              isMine(m)
+                                ? "bg-primary text-white rounded-br-md"
+                                : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
+                            }`}
+                          >
+                            <div className="break-words">{m.content}</div>
+                            <div className={`text-xs mt-2 ${isMine(m) ? "text-white/80" : "text-gray-500"}`}>
+                              {new Date(m.createdAt).toLocaleTimeString("vi-VN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
                           </div>
+
+                          {/* Chức năng mới: Hiển thị read receipts cho tin nhắn cuối cùng của mình */}
+                          {isMine(m) &&
+                            isLastMessage &&
+                            active.type === "Group" &&
+                            renderReadReceipts(m.id, m.createdAt)}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
 
                 {/* Typing indicator */}
                 {active && typingUsers.length > 0 && (

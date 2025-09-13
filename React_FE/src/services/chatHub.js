@@ -79,3 +79,18 @@ export function onConversationRemoved(handler) {
   return () => conn.off("ConversationRemoved", handler);
 }
 
+// Chức năng mới: Lắng nghe thay đổi số tin nhắn chưa đọc
+export function onUnreadChanged(handler) {
+  const conn = getChatConnection()
+  conn.on("UnreadChanged", handler)
+  return () => conn.off("UnreadChanged", handler)
+}
+
+// Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc tin nhắn
+export function onMessageRead(handler) {
+  const conn = getChatConnection()
+  conn.on("MessageRead", handler)
+  return () => conn.off("MessageRead", handler)
+}
+
+
