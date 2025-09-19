@@ -24,6 +24,8 @@ import { useAuth } from "../../context/AuthContext"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
 import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X, Clock } from 'lucide-react'
+import { useUnread } from "../../context/UnreadContext";
+
 
 export default function ChatPage() {
   // Lấy thông tin user hiện tại từ context xác thực
@@ -35,6 +37,8 @@ export default function ChatPage() {
   const [active, setActive] = useState(null) // Cuộc trò chuyện đang được chọn
   const [msgs, setMsgs] = useState([]) // Danh sách tin nhắn của cuộc trò chuyện hiện tại
   const [text, setText] = useState("") // Nội dung tin nhắn đang soạn
+  const { setFromConversations, setConversationUnread } = useUnread();
+
 
   // State cho tính năng tìm kiếm người dùng để chat trực tiếp
   const [query, setQuery] = useState("") // Từ khóa tìm kiếm
@@ -117,6 +121,10 @@ export default function ChatPage() {
       console.error("Lỗi khi tạo cuộc trò chuyện trực tiếp:", error)
     }
   }
+// Đồng bộ danh sách conv với UnreadContext
+useEffect(() => {
+  setFromConversations(cons || []);
+}, [cons, setFromConversations]);
 
   // Chức năng mới: Effect khởi tạo kết nối SignalR khi component mount
   useEffect(() => {
@@ -169,6 +177,7 @@ export default function ChatPage() {
         })
         
         setCons(conversations)
+        setFromConversations(conversations)   // Đồng bộ với UnreadContext
       } catch (error) {
         console.error("❌ Lỗi khi tải danh sách cuộc trò chuyện:", error)
       }
@@ -342,6 +351,9 @@ export default function ChatPage() {
       await markConversationRead(conversationId)
       // Cập nhật local state để UI phản hồi ngay lập tức
       setCons((prev) => prev.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)))
+      
+      // Cập nhật trong UnreadContext để Navbar phản ứng
+      setConversationUnread(active.id, 0);
     } catch (error) {
       console.error("❌ Lỗi khi đánh dấu đã đọc:", error)
     }

@@ -23,6 +23,7 @@ import PaymentManager from "./pages/admin/PaymentManager"
 import CouponManager from "./pages/admin/CouponManager"
 import InstructorStudentManagement from "./pages/instructor/StudentManagement.jsx";
 import ChatPage from "./pages/chat/ChatPage.jsx";
+import { UnreadProvider, useUnread } from "./context/UnreadContext.jsx";
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -45,8 +46,9 @@ const DefaultRoute = () => {
 
 
 function App() {
-  return (
+  return (<UnreadProvider>
     <AuthProvider>
+    
       <Router>
         <Routes>
           <Route path="/" element={<ProtectedRoute roles={["Student"]}><DefaultRoute /></ProtectedRoute>} />
@@ -83,7 +85,7 @@ function App() {
           <Route  path="/chat"  element={  <ProtectedRoute roles={["Admin", "Instructor", "Student"]}>  <ChatPage />   </ProtectedRoute> } />
         </Routes>
       </Router>
-    </AuthProvider>
+    </AuthProvider></UnreadProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext" // Import hook useAuth để lấy user từ localstorage
+import { useUnread } from "../context/UnreadContext" // Chức năng mới: Import hook useUnread để lấy số tin nhắn chưa đọc
 import {
   FaBook,
   FaChalkboardTeacher,
@@ -18,11 +19,6 @@ import {
 } from "react-icons/fa"
 import logo from "../logo/logo_white_v2.png" // Import ảnh
 import { motion, AnimatePresence } from "framer-motion" // Hiệu ứng động
-import {
-  onUnreadChanged, // Chức năng mới: Import hàm lắng nghe thay đổi tin nhắn chưa đọc
-  onMessage, // Chức năng mới: Import hàm lắng nghe tin nhắn mới
-  startChat,
-} from "../services/chatHub"
 
 export default function NavBar() {
   const { user, logout } = useAuth() // Lấy user và lấy hàm logout từ AuthContext
@@ -36,8 +32,8 @@ export default function NavBar() {
   const [isDarkMode, setIsDarkMode] = useState(false); // Toggle dark mode
 
   // Chức năng mới: State quản lý số tin nhắn chưa đọc
-  const [totalUnread, setTotalUnread] = useState(0)
-  const [hasNewMessage, setHasNewMessage] = useState(false) // Chức năng mới: Trạng thái có tin nhắn mới
+  const { totalUnread } = useUnread();
+  const hasNewMessage = totalUnread > 0;
   const unsubUnreadRef = useRef(null) // Ref để cleanup listener
   const unsubMessageRef = useRef(null) // Chức năng mới: Ref để cleanup message listener
 
@@ -50,65 +46,65 @@ export default function NavBar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Chức năng mới: Effect khởi tạo kết nối SignalR và lắng nghe tin nhắn chưa đọc
-  useEffect(() => {
-    if (!user) return
+  // // Chức năng mới: Effect khởi tạo kết nối SignalR và lắng nghe tin nhắn chưa đọc
+  // useEffect(() => {
+  //   if (!user) return
 
-    const initChatConnection = async () => {
-      try {
-        console.log("🔄 [Navbar] Khởi tạo kết nối SignalR...")
-        // Khởi tạo kết nối SignalR
-        await startChat()
+  //   const initChatConnection = async () => {
+  //     try {
+  //       console.log("🔄 [Navbar] Khởi tạo kết nối SignalR...")
+  //       // Khởi tạo kết nối SignalR
+  //       await startChat()
 
-        // 1. Lắng nghe sự kiện thay đổi tin nhắn chưa đọc
-        unsubUnreadRef.current = onUnreadChanged((data) => {
-          console.log("🔔 [Navbar] Nhận sự kiện UnreadChanged:", data)
-          // data có thể là { conversationId, unreadCount, totalUnread } hoặc { total, items }
-          if (data.totalUnread !== undefined) {
-            setTotalUnread(data.totalUnread)
-          } else if (data.total !== undefined) {
-            setTotalUnread(data.total)
-          }
-        })
+  //       // 1. Lắng nghe sự kiện thay đổi tin nhắn chưa đọc
+  //       unsubUnreadRef.current = onUnreadChanged((data) => {
+  //         console.log("🔔 [Navbar] Nhận sự kiện UnreadChanged:", data)
+  //         // data có thể là { conversationId, unreadCount, totalUnread } hoặc { total, items }
+  //         if (data.totalUnread !== undefined) {
+  //           setTotalUnread(data.totalUnread)
+  //         } else if (data.total !== undefined) {
+  //           setTotalUnread(data.total)
+  //         }
+  //       })
 
-        // 2. Chức năng mới: Lắng nghe tin nhắn mới để tạo hiệu ứng
-        unsubMessageRef.current = onMessage((messageDto) => {
-          console.log("💬 [Navbar] Nhận tin nhắn mới:", messageDto)
+  //       // 2. Chức năng mới: Lắng nghe tin nhắn mới để tạo hiệu ứng
+  //       unsubMessageRef.current = onMessage((messageDto) => {
+  //         console.log("💬 [Navbar] Nhận tin nhắn mới:", messageDto)
           
-          // Chỉ tạo hiệu ứng nếu tin nhắn không phải của mình
-          if (messageDto.senderId !== user.userId) {
-            console.log("✨ [Navbar] Kích hoạt hiệu ứng tin nhắn mới")
-            setHasNewMessage(true)
-            setTotalUnread(prev => prev + 1) // Tăng tạm thời, sẽ được đồng bộ bởi UnreadChanged
+  //         // Chỉ tạo hiệu ứng nếu tin nhắn không phải của mình
+  //         if (messageDto.senderId !== user.userId) {
+  //           console.log("✨ [Navbar] Kích hoạt hiệu ứng tin nhắn mới")
+  //           setHasNewMessage(true)
+  //           setTotalUnread(prev => prev + 1) // Tăng tạm thời, sẽ được đồng bộ bởi UnreadChanged
             
-            // Tự động tắt hiệu ứng sau 3 giây
-            setTimeout(() => {
-              setHasNewMessage(false)
-            }, 3000)
-          }
-        })
+  //           // Tự động tắt hiệu ứng sau 3 giây
+  //           setTimeout(() => {
+  //             setHasNewMessage(false)
+  //           }, 3000)
+  //         }
+  //       })
 
-        console.log("✅ [Navbar] Kết nối SignalR thành công")
-      } catch (error) {
-        console.error("❌ [Navbar] Lỗi khi khởi tạo kết nối chat:", error)
-      }
-    }
+  //       console.log("✅ [Navbar] Kết nối SignalR thành công")
+  //     } catch (error) {
+  //       console.error("❌ [Navbar] Lỗi khi khởi tạo kết nối chat:", error)
+  //     }
+  //   }
 
-    initChatConnection()
+  //   initChatConnection()
 
-    // Cleanup khi component unmount hoặc user thay đổi
-    return () => {
-      console.log("🧹 [Navbar] Cleanup SignalR listeners")
-      if (unsubUnreadRef.current) {
-        unsubUnreadRef.current()
-        unsubUnreadRef.current = null
-      }
-      if (unsubMessageRef.current) {
-        unsubMessageRef.current()
-        unsubMessageRef.current = null
-      }
-    }
-  }, [user])
+  //   // Cleanup khi component unmount hoặc user thay đổi
+  //   return () => {
+  //     console.log("🧹 [Navbar] Cleanup SignalR listeners")
+  //     if (unsubUnreadRef.current) {
+  //       unsubUnreadRef.current()
+  //       unsubUnreadRef.current = null
+  //     }
+  //     if (unsubMessageRef.current) {
+  //       unsubMessageRef.current()
+  //       unsubMessageRef.current = null
+  //     }
+  //   }
+  // }, [user])
 
   // Danh sách menu điều hướng
   const menuItems = [
@@ -121,8 +117,8 @@ export default function NavBar() {
       path: "/chat",
       icon: <FaComments />,
       label: "Chat",
-      badge: totalUnread > 0 ? (totalUnread >= 10 ? "9+" : totalUnread.toString()) : null, // Chức năng mới: Hiển thị 9+ nếu >= 10
-      hasNewMessage: hasNewMessage, // Chức năng mới: Trạng thái có tin nhắn mới
+      badge: totalUnread > 0 ? (totalUnread >= 10 ? "9+" : String(totalUnread)) : null, // Chức năng mới: Hiển thị 9+ nếu >= 10
+      hasNewMessage, // Chức năng mới: Trạng thái có tin nhắn mới
     },
     { path: "/contact", icon: <FaEnvelope />, label: "Liên hệ" },
   ]

@@ -2,6 +2,8 @@
 using API.Chat.DTOs;
 using API.Chat.Repositories;
 using Data.Chat;
+using Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Chat.Services;
 
@@ -9,9 +11,14 @@ public class MessageService : IMessageService
 {
     private readonly IConversationRepository _convRepo;
     private readonly IMessageRepository _msgRepo;
+    private readonly ApplicationDbContext _usersDb;
 
-    public MessageService(IConversationRepository convRepo, IMessageRepository msgRepo)
-    { _convRepo = convRepo; _msgRepo = msgRepo; }
+    public MessageService(IConversationRepository convRepo, IMessageRepository msgRepo, ApplicationDbContext usersDb)
+    {
+        _convRepo = convRepo;
+        _msgRepo = msgRepo;
+        _usersDb = usersDb;
+    }
 
     public async Task<MessageDTO> SendAsync(int userId, Guid conversationId, string content, IEnumerable<AttachmentDTO>? atts = null)
     {
@@ -43,6 +50,12 @@ public class MessageService : IMessageService
             }).ToList();
         }
 
+        // --- load Sender cho DTO (tránh Unknown trên FE)
+        var u = await _usersDb.Users
+            .Where(x => x.UserId == msg.SenderId)
+            .Select(x => new { x.UserId, x.Name, x.AvatarUrl, x.Role })
+            .FirstOrDefaultAsync();
+
         return new MessageDTO
         {
             Id = msg.Id,
@@ -59,7 +72,14 @@ public class MessageService : IMessageService
                 FileName = a.FileName,
                 FileSize = a.FileSize,
                 ContentType = a.ContentType
-            }).ToList()
+            }).ToList(),
+            Sender = u == null ? null : new UserSummaryDTO
+            {
+                UserId = u.UserId,
+                Name = u.Name,
+                AvatarUrl = u.AvatarUrl,
+                Role = u.Role
+            }
         };
     }
 
@@ -70,6 +90,15 @@ public class MessageService : IMessageService
             throw new UnauthorizedAccessException("Not a member");
 
         var list = await _msgRepo.GetPageAsync(conversationId, before, pageSize);
+
+        // --- batch load senders để tránh N+1
+        var senderIds = list.Select(m => m.SenderId).Distinct().ToList();
+        var senders = await _usersDb.Users
+            .Where(x => senderIds.Contains(x.UserId))
+            .Select(x => new { x.UserId, x.Name, x.AvatarUrl, x.Role })
+            .ToListAsync();
+        var sd = senders.ToDictionary(x => x.UserId, x => x);
+
         return list.Select(m => new MessageDTO
         {
             Id = m.Id,
@@ -86,7 +115,10 @@ public class MessageService : IMessageService
                 FileName = a.FileName,
                 FileSize = a.FileSize,
                 ContentType = a.ContentType
-            }).ToList()
+            }).ToList(),
+            Sender = sd.TryGetValue(m.SenderId, out var su)
+                ? new UserSummaryDTO { UserId = su.UserId, Name = su.Name, AvatarUrl = su.AvatarUrl, Role = su.Role }
+                : null
         }).ToList();
     }
 }
