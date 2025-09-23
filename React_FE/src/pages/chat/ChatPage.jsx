@@ -16,12 +16,10 @@ import {
   sendTyping,
   onConversationUpserted,
   onConversationRemoved,
-  onUnreadChanged, // Chức năng mới: Lắng nghe thay đổi số tin nhắn chưa đọc
   onMessageRead, // Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc
-  startChat, // Chức năng mới: Khởi tạo kết nối SignalR
 } from "../../services/chatHub"
 import { useAuth } from "../../context/AuthContext"
-import Navbar from "../../components/Navbar"
+import Navbar from "../../components/NavBar"
 import Footer from "../../components/Footer"
 import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X, Clock } from 'lucide-react'
 import { useUnread } from "../../context/UnreadContext";
@@ -37,7 +35,7 @@ export default function ChatPage() {
   const [active, setActive] = useState(null) // Cuộc trò chuyện đang được chọn
   const [msgs, setMsgs] = useState([]) // Danh sách tin nhắn của cuộc trò chuyện hiện tại
   const [text, setText] = useState("") // Nội dung tin nhắn đang soạn
-  const { setFromConversations, setConversationUnread } = useUnread();
+  const { setFromConversations, setConversationUnread, getUnreadFor } = useUnread();
 
 
   // State cho tính năng tìm kiếm người dùng để chat trực tiếp
@@ -61,7 +59,6 @@ export default function ChatPage() {
   const unsubTypingRef = useRef(null)
   const unsubUpsertRef = useRef(null)
   const unsubRemoveRef = useRef(null)
-  const unsubUnreadRef = useRef(null) // Chức năng mới: Unsubscribe UnreadChanged event
   const unsubReadRef = useRef(null) // Chức năng mới: Unsubscribe MessageRead event
 
   // State cho modal tạo nhóm
@@ -121,27 +118,6 @@ export default function ChatPage() {
       console.error("Lỗi khi tạo cuộc trò chuyện trực tiếp:", error)
     }
   }
-// Đồng bộ danh sách conv với UnreadContext
-useEffect(() => {
-  setFromConversations(cons || []);
-}, [cons, setFromConversations]);
-
-  // Chức năng mới: Effect khởi tạo kết nối SignalR khi component mount
-  useEffect(() => {
-    if (!user) return
-
-    const initializeSignalR = async () => {
-      try {
-        console.log("🔄 Khởi tạo kết nối SignalR cho ChatPage...")
-        await startChat()
-        console.log("✅ Kết nối SignalR thành công")
-      } catch (error) {
-        console.error("❌ Lỗi khi khởi tạo SignalR:", error)
-      }
-    }
-
-    initializeSignalR()
-  }, [user])
 
   // Effect load danh sách cuộc trò chuyện khi component mount
   useEffect(() => {
@@ -193,7 +169,6 @@ useEffect(() => {
     // Cleanup các listener cũ
     unsubUpsertRef.current && unsubUpsertRef.current()
     unsubRemoveRef.current && unsubRemoveRef.current()
-    unsubUnreadRef.current && unsubUnreadRef.current()
     unsubReadRef.current && unsubReadRef.current()
     unsubMessageRef.current && unsubMessageRef.current()
 
@@ -226,21 +201,6 @@ useEffect(() => {
       // Nếu đang mở cuộc trò chuyện bị xóa, reset về null
       setActive((prev) => (prev?.id === conversationId ? null : prev))
       setMsgs((prev) => (active?.id === conversationId ? [] : prev))
-    })
-
-    // 3. Chức năng mới: Lắng nghe thay đổi số tin nhắn chưa đọc
-    unsubUnreadRef.current = onUnreadChanged((data) => {
-      console.log("🔔 Nhận sự kiện UnreadChanged:", data)
-      // data = { conversationId, unreadCount, totalUnread }
-      setCons((prev) => {
-        const updated = [...prev]
-        const idx = updated.findIndex((c) => c.id === data.conversationId)
-        if (idx !== -1) {
-          console.log(`📊 Cập nhật unreadCount cho cuộc trò chuyện ${data.conversationId}: ${data.unreadCount}`)
-          updated[idx] = { ...updated[idx], unreadCount: data.unreadCount }
-        }
-        return updated
-      })
     })
 
     // 4. Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc tin nhắn
@@ -316,7 +276,6 @@ useEffect(() => {
             updated[idx] = {
               ...updated[idx],
               lastMessage: messageDto,
-              unreadCount: (updated[idx].unreadCount || 0) + 1
             }
             
             // Di chuyển cuộc trò chuyện lên đầu danh sách
@@ -332,7 +291,6 @@ useEffect(() => {
       console.log("🧹 Cleanup các SignalR listeners")
       unsubUpsertRef.current && unsubUpsertRef.current()
       unsubRemoveRef.current && unsubRemoveRef.current()
-      unsubUnreadRef.current && unsubUnreadRef.current()
       unsubReadRef.current && unsubReadRef.current()
       unsubMessageRef.current && unsubMessageRef.current()
     }
@@ -549,7 +507,8 @@ useEffect(() => {
 
   // Hàm render item cuộc trò chuyện trong sidebar
   const renderConversationItem = (c) => {
-    const isUnread = c.unreadCount > 0 // Chức năng mới: Kiểm tra có tin nhắn chưa đọc
+    const unread = getUnreadFor(c.id);
+    const isUnread = unread > 0; // Chức năng mới: Kiểm tra có tin nhắn chưa đọc
 
     if (c.type === "Direct" && c.otherUser) {
       // Cuộc trò chuyện trực tiếp
@@ -579,7 +538,7 @@ useEffect(() => {
           {/* Chức năng mới: Badge hiển thị số tin nhắn chưa đọc */}
           {isUnread && (
             <div className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-              {c.unreadCount > 99 ? "99+" : c.unreadCount}
+              {unread > 99 ? "99+" : unread}
             </div>
           )}
         </div>
@@ -609,7 +568,7 @@ useEffect(() => {
         {/* Chức năng mới: Badge hiển thị số tin nhắn chưa đọc */}
         {isUnread && (
           <div className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-            {c.unreadCount > 99 ? "99+" : c.unreadCount}
+            {unread > 99 ? "99+" : unread}
           </div>
         )}
       </div>

@@ -46,9 +46,9 @@ const DefaultRoute = () => {
 
 
 function App() {
-  return (<UnreadProvider>
+  return (
     <AuthProvider>
-    
+    <UnreadProvider>
       <Router>
         <Routes>
           <Route path="/" element={<ProtectedRoute roles={["Student"]}><DefaultRoute /></ProtectedRoute>} />
@@ -85,7 +85,8 @@ function App() {
           <Route  path="/chat"  element={  <ProtectedRoute roles={["Admin", "Instructor", "Student"]}>  <ChatPage />   </ProtectedRoute> } />
         </Routes>
       </Router>
-    </AuthProvider></UnreadProvider>
+      </UnreadProvider>
+    </AuthProvider>
   );
 }
 
