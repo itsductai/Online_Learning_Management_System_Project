@@ -4,8 +4,8 @@ Hi there 👋, thank you for visiting the official repository of my **Online Lea
 
 👉 This repository currently contains **2 branches**:
 
-* **`master`** → Base version (Niên luận đã hoàn thành).
-* **`LuanVan`** → Extended version (Luận văn tốt nghiệp – currently in development).
+- **`master`** → Base version (Niên luận đã hoàn thành).
+- **`LuanVan`** → Extended version (Luận văn tốt nghiệp – currently in development).
 
 Demo (master branch): [YouTube](https://www.youtube.com/watch?v=UG29qXINSHI&t=33s)
 
@@ -15,9 +15,9 @@ Demo (master branch): [YouTube](https://www.youtube.com/watch?v=UG29qXINSHI&t=33
 
 **OLMS** is a full-stack platform that enables:
 
-* 👨‍🎓 Students to register, enroll, learn through video/text lessons, take quizzes, and pay securely.
-* 👨‍🏫 Instructors to manage courses, track students, and monitor learning progress.
-* 👩‍💼 Admins to handle all data, revenue, users, coupons, and overall statistics.
+- 👨‍🎓 Students to register, enroll, learn through video/text lessons, take quizzes, and pay securely.
+- 👨‍🏫 Instructors to manage courses, track students, and monitor learning progress.
+- 👩‍💼 Admins to handle all data, revenue, users, coupons, and overall statistics.
 
 ---
 
@@ -25,19 +25,40 @@ Demo (master branch): [YouTube](https://www.youtube.com/watch?v=UG29qXINSHI&t=33
 
 The graduation thesis branch (`LuanVan`) extends the base OLMS with new features focusing on **demo-ready, visible functionalities**:
 
-* 🔍 **Advanced Search with ElasticSearch**:
+- 🔍 **Advanced Search with ElasticSearch**:
   Search lessons by keywords inside video subtitles, with jump-to-time functionality.
 
-* 💬 **Realtime Chat (SignalR)**:
+- 💬 **Realtime Chat (SignalR)**:
   One-to-one and group messaging with online status and friend invitations.
 
-* 🔥 **Learning Streaks**:
+- 🔥 **Learning Streaks**:
   Track continuous learning days, maintain streaks with friends.
 
-* 📅 **Progress Calendar**:
+- 📅 **Progress Calendar**:
   Display daily learning activities in a calendar view.
 
-* 🤖 **AI Chatbot Assistant** (experimental):
+- 🤖 **AI Chatbot Assistant** (experimental):
+  Provide learning support and act as a teaching assistant using OpenAI.
+
+---
+
+## 🎯 Thesis Development (Branch `LuanVan`)
+
+The graduation thesis branch (`LuanVan`) extends the base OLMS with new features focusing on **demo-ready, visible functionalities**:
+
+- 🔍 **Advanced Search with ElasticSearch**:
+  Search lessons by keywords inside video subtitles, with jump-to-time functionality.
+
+- 💬 **Realtime Chat (SignalR)**:
+  One-to-one and group messaging with online status and friend invitations.
+
+- 🔥 **Learning Streaks**:
+  Track continuous learning days, maintain streaks with friends.
+
+- 📅 **Progress Calendar**:
+  Display daily learning activities in a calendar view.
+
+- 🤖 **AI Chatbot Assistant** (experimental):
   Provide learning support and act as a teaching assistant using OpenAI.
 
 ---
@@ -45,55 +66,59 @@ The graduation thesis branch (`LuanVan`) extends the base OLMS with new features
 ## 🎨 Interface Showcase
 
 ### 👨‍🎓 Student Role – Learning Experience
-| Home Page (Courses) | Course Detail |
-|---------------------|----------------------------|
-| ![student-home](https://github.com/user-attachments/assets/97a48631-b659-4ba2-8b49-53c3f4006c24) | ![student-course-detail](https://github.com/user-attachments/assets/8e00219b-20e9-4088-b5fc-e899922f8efa)|
 
-| Learning Progress | Quizzes |
-|--------------------|------------------------|
-| ![progress](https://github.com/user-attachments/assets/6d874e20-7858-4068-8853-4bbf5fc09e1a)|![image](https://github.com/user-attachments/assets/0e9ed3fb-1de6-4ef2-97ee-9f3e55fc8718)|
+| Home Page (Courses)                                                                              | Course Detail                                                                                             |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| ![student-home](https://github.com/user-attachments/assets/97a48631-b659-4ba2-8b49-53c3f4006c24) | ![student-course-detail](https://github.com/user-attachments/assets/8e00219b-20e9-4088-b5fc-e899922f8efa) |
 
-| Payment & coupon | Momo API |
-|--------------------|------------------------|
-|![image](https://github.com/user-attachments/assets/5d31c450-e5c2-4fa1-b3e2-d3ad56daef63)|![image](https://github.com/user-attachments/assets/d003ec8b-484b-49a2-b71c-33b01fc6288a)|
+| Learning Progress                                                                            | Quizzes                                                                                   |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ![progress](https://github.com/user-attachments/assets/6d874e20-7858-4068-8853-4bbf5fc09e1a) | ![image](https://github.com/user-attachments/assets/0e9ed3fb-1de6-4ef2-97ee-9f3e55fc8718) |
+
+| Payment & coupon                                                                          | Momo API                                                                                  |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ![image](https://github.com/user-attachments/assets/5d31c450-e5c2-4fa1-b3e2-d3ad56daef63) | ![image](https://github.com/user-attachments/assets/d003ec8b-484b-49a2-b71c-33b01fc6288a) |
 
 ---
 
-| Manage Payments | Manage Coupons|
-|---------------------------|---------------------------|
-| ![image](https://github.com/user-attachments/assets/45bb205d-1661-447e-acfd-50eea48e0d33)|![image](https://github.com/user-attachments/assets/aa826c52-aef7-4fb3-9def-3a60db7bbb19)|
-
+| Manage Payments                                                                           | Manage Coupons                                                                            |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ![image](https://github.com/user-attachments/assets/45bb205d-1661-447e-acfd-50eea48e0d33) | ![image](https://github.com/user-attachments/assets/aa826c52-aef7-4fb3-9def-3a60db7bbb19) |
 
 ### 👩‍💼 Admin Role - Full Control Dashboard
-| Dashboard Overview |
-|--------------------|
+
+| Dashboard Overview                                                                        |
+| ----------------------------------------------------------------------------------------- |
 | ![image](https://github.com/user-attachments/assets/b6b15a46-20f3-4daa-86d9-f2ced3f433f4) |
 
-| Manage Users |Manage Courses |
-|------------------------|------------------------|
-|![image](https://github.com/user-attachments/assets/4a8e0747-fca4-4158-aca4-7a6bfd6779fd)|![image](https://github.com/user-attachments/assets/5097edc6-79b4-49ca-9abd-a97d006b5619)|
+| Manage Users                                                                              | Manage Courses                                                                            |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ![image](https://github.com/user-attachments/assets/4a8e0747-fca4-4158-aca4-7a6bfd6779fd) | ![image](https://github.com/user-attachments/assets/5097edc6-79b4-49ca-9abd-a97d006b5619) |
 
 ---
 
 ## 🛠 Technology Stack
 
 ### ⚛️ Frontend: `ReactJS + Tailwind CSS`
+
 - ReactJS (Hooks + Axios)
 - React Router DOM
 - Tailwind CSS
 
 ### 🔧 Backend: `ASP.NET Core Web API`
+
 - ASP.NET Core 8
 - 3 Layer Architecture: Controller – Service – Repository
 - Entity Framework Core
 - JWT Authentication
 - MoMo Sandbox Payment
 
-
 ### 🗄️ Database:
+
 - SQL Server (Code First with EF Core)
 
 ### 🧰 Tools:
+
 - Visual Studio 2022
 - Postman
 - Git + GitHub
@@ -113,7 +138,9 @@ The graduation thesis branch (`LuanVan`) extends the base OLMS with new features
 ---
 
 ## 📦 Architecture Overview
+
 ![image](https://github.com/user-attachments/assets/98540e56-858a-4b4e-bd90-10345d8c36e1)
+
 ## 🧭 System Architecture Overview
 
 The following diagram illustrates the entire request-response flow of the **Online Learning Management System (OLMS)** — from the **Frontend (ReactJS)** to the **Backend (ASP.NET Core Web API)**, connected to **SQL Server** and integrated with the **MoMo Payment Gateway**.
@@ -184,6 +211,7 @@ Payment processing flow:
 - ✅ Real-world payment integration (MoMo) mimics commercial products and enhances user experience.
 
 ---
+
 ## 🧩 ASP.NET Core Dependency Injection Flow
 
 This diagram shows how **Dependency Injection (DI)** works in the ASP.NET Core Web API project:
@@ -204,7 +232,8 @@ This diagram shows how **Dependency Injection (DI)** works in the ASP.NET Core W
 - Makes components easier to test and maintain.
 - Separates concerns clearly between layers.
 
------
+---
+
 ## 👨‍💻 About Me
 
 - 🎓 Final-year IT student @ Can Tho University (CTU)
