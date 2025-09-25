@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from "react"
 import {
   getMyConversations,
@@ -6,7 +8,7 @@ import {
   createDirect,
   leaveConversation,
   createGroup,
-  markConversationRead, // Chức năng mới: API đánh dấu đã đọc tin nhắn
+  markConversationRead,
 } from "../../services/chatAPI"
 import {
   joinConversation,
@@ -16,14 +18,15 @@ import {
   sendTyping,
   onConversationUpserted,
   onConversationRemoved,
-  onMessageRead, // Chức năng mới: Lắng nghe sự kiện đánh dấu đã đọc
+  onMessageRead,
 } from "../../services/chatHub"
 import { useAuth } from "../../context/AuthContext"
 import Navbar from "../../components/NavBar"
 import Footer from "../../components/Footer"
-import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X, Clock } from 'lucide-react'
-import { useUnread } from "../../context/UnreadContext";
-
+import { Search, Plus, Send, Users, MessageCircle, Phone, Video, UserPlus, LogOut, X, Clock } from "lucide-react"
+import { useUnread } from "../../context/UnreadContext"
+import UserProfilePopup from "../../components/chat/UserProfilePopup"
+import GroupMembersPopup from "../../components/chat/GroupMembersPopup"
 
 export default function ChatPage() {
   // Lấy thông tin user hiện tại từ context xác thực
@@ -35,8 +38,7 @@ export default function ChatPage() {
   const [active, setActive] = useState(null) // Cuộc trò chuyện đang được chọn
   const [msgs, setMsgs] = useState([]) // Danh sách tin nhắn của cuộc trò chuyện hiện tại
   const [text, setText] = useState("") // Nội dung tin nhắn đang soạn
-  const { setFromConversations, setConversationUnread, getUnreadFor } = useUnread();
-
+  const { setFromConversations, setConversationUnread, getUnreadFor } = useUnread()
 
   // State cho tính năng tìm kiếm người dùng để chat trực tiếp
   const [query, setQuery] = useState("") // Từ khóa tìm kiếm
@@ -67,6 +69,10 @@ export default function ChatPage() {
   const [memberQuery, setMemberQuery] = useState("")
   const [memberResult, setMemberResult] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
+
+  // Chức năng mới: State cho profile popups
+  const [showUserProfile, setShowUserProfile] = useState(null)
+  const [showGroupMembers, setShowGroupMembers] = useState(null)
 
   // Chức năng mới: Hàm format thời gian relative cho preview tin nhắn
   const formatRelativeTime = (dateString) => {
@@ -119,6 +125,31 @@ export default function ChatPage() {
     }
   }
 
+  // Chức năng mới: Hàm xử lý khi click vào header để mở popup
+  const handleHeaderClick = () => {
+    if (!active) return
+
+    if (active.type === "Direct" && active.otherUser) {
+      setShowUserProfile(active.otherUser.userId)
+    } else if (active.type === "Group") {
+      setShowGroupMembers(active.id)
+    }
+  }
+
+  // Chức năng mới: Hàm xử lý khi click vào tên người gửi tin nhắn
+  const handleSenderClick = (senderId) => {
+    if (senderId !== myId) {
+      setShowUserProfile(senderId)
+    }
+  }
+
+  // Chức năng mới: Hàm xử lý khi bắt đầu chat từ profile popup
+  const handleStartChatFromProfile = (conversation) => {
+    setCons((prev) => (prev.some((c) => c.id === conversation.id) ? prev : [conversation, ...prev]))
+    setActive(conversation)
+    setShowUserProfile(null)
+  }
+
   // Effect load danh sách cuộc trò chuyện khi component mount
   useEffect(() => {
     const loadConversations = async () => {
@@ -127,7 +158,7 @@ export default function ChatPage() {
         const res = await getMyConversations()
         const conversations = res.data || []
         console.log("📋 Danh sách cuộc trò chuyện:", conversations)
-        
+
         // Chức năng mới: Log chi tiết thông tin từng cuộc trò chuyện để debug
         conversations.forEach((conv, index) => {
           console.log(`📝 Cuộc trò chuyện ${index + 1}:`, {
@@ -138,22 +169,22 @@ export default function ChatPage() {
             members: conv.members,
             otherUser: conv.otherUser,
             lastMessage: conv.lastMessage,
-            unreadCount: conv.unreadCount
+            unreadCount: conv.unreadCount,
           })
-          
+
           if (conv.lastMessage) {
             console.log(`💬 Tin nhắn cuối của cuộc trò chuyện ${conv.id}:`, {
               messageId: conv.lastMessage.id,
               senderId: conv.lastMessage.senderId,
               content: conv.lastMessage.content,
               sender: conv.lastMessage.sender,
-              createdAt: conv.lastMessage.createdAt
+              createdAt: conv.lastMessage.createdAt,
             })
           }
         })
-        
+
         setCons(conversations)
-        setFromConversations(conversations)   // Đồng bộ với UnreadContext
+        setFromConversations(conversations) // Đồng bộ với UnreadContext
       } catch (error) {
         console.error("❌ Lỗi khi tải danh sách cuộc trò chuyện:", error)
       }
@@ -277,7 +308,7 @@ export default function ChatPage() {
               ...updated[idx],
               lastMessage: messageDto,
             }
-            
+
             // Di chuyển cuộc trò chuyện lên đầu danh sách
             const updatedConv = updated.splice(idx, 1)[0]
             updated.unshift(updatedConv)
@@ -309,9 +340,9 @@ export default function ChatPage() {
       await markConversationRead(conversationId)
       // Cập nhật local state để UI phản hồi ngay lập tức
       setCons((prev) => prev.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)))
-      
+
       // Cập nhật trong UnreadContext để Navbar phản ứng
-      setConversationUnread(active.id, 0);
+      setConversationUnread(active.id, 0)
     } catch (error) {
       console.error("❌ Lỗi khi đánh dấu đã đọc:", error)
     }
@@ -338,7 +369,7 @@ export default function ChatPage() {
         const res = await getMessages(active.id)
         const arr = Array.isArray(res.data) ? [...res.data].reverse() : []
         console.log(`💬 Đã tải ${arr.length} tin nhắn`)
-        
+
         // Log thông tin tin nhắn để debug
         arr.forEach((msg, index) => {
           console.log(`📝 Tin nhắn ${index + 1}:`, {
@@ -346,10 +377,10 @@ export default function ChatPage() {
             senderId: msg.senderId,
             content: msg.content,
             sender: msg.sender,
-            createdAt: msg.createdAt
+            createdAt: msg.createdAt,
           })
         })
-        
+
         setMsgs(arr)
         setHasMore(arr.length > 0)
         setTimeout(scrollToBottom, 0) // Scroll xuống cuối sau khi render
@@ -507,8 +538,8 @@ export default function ChatPage() {
 
   // Hàm render item cuộc trò chuyện trong sidebar
   const renderConversationItem = (c) => {
-    const unread = getUnreadFor(c.id);
-    const isUnread = unread > 0; // Chức năng mới: Kiểm tra có tin nhắn chưa đọc
+    const unread = getUnreadFor(c.id)
+    const isUnread = unread > 0 // Chức năng mới: Kiểm tra có tin nhắn chưa đọc
 
     if (c.type === "Direct" && c.otherUser) {
       // Cuộc trò chuyện trực tiếp
@@ -768,7 +799,10 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div
+                      className="flex items-center gap-4 cursor-pointer hover:bg-gray-100 rounded-lg p-2 -m-2 transition-colors"
+                      onClick={handleHeaderClick}
+                    >
                       {active.type === "Direct" && active.otherUser ? (
                         <>
                           <img
@@ -839,9 +873,15 @@ export default function ChatPage() {
                               <img
                                 src={m.sender?.avatarUrl || "/placeholder.svg?height=24&width=24"}
                                 alt={m.sender?.name || "User"}
-                                className="w-6 h-6 rounded-full object-cover"
+                                className="w-6 h-6 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                                onClick={() => handleSenderClick(m.senderId)}
                               />
-                              <span className="text-xs font-medium text-gray-600">{m.sender?.name || "Unknown"}</span>
+                              <span
+                                className="text-xs font-medium text-gray-600 cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => handleSenderClick(m.senderId)}
+                              >
+                                {m.sender?.name || "Unknown"}
+                              </span>
                             </div>
                           )}
 
@@ -1047,7 +1087,20 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Profile Popups */}
+      {showUserProfile && (
+        <UserProfilePopup
+          userId={showUserProfile}
+          onClose={() => setShowUserProfile(null)}
+          onStartChat={handleStartChatFromProfile}
+        />
+      )}
+
+      {showGroupMembers && (
+        <GroupMembersPopup conversationId={showGroupMembers} onClose={() => setShowGroupMembers(null)} />
+      )}
+
       <Footer />
     </div>
-  );
+  )
 }

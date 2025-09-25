@@ -23,6 +23,7 @@ import PaymentManager from "./pages/admin/PaymentManager"
 import CouponManager from "./pages/admin/CouponManager"
 import InstructorStudentManagement from "./pages/instructor/StudentManagement.jsx";
 import ChatPage from "./pages/chat/ChatPage.jsx";
+import UserProfilePage from "./pages/UserProfilePage.jsx"
 import { UnreadProvider, useUnread } from "./context/UnreadContext.jsx";
 
 const DefaultRoute = () => {
@@ -59,7 +60,8 @@ function App() {
 
           <Route path="/profile" element={<ProtectedRoute roles={["Student", "Instructor"]}><ProfilePage /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute roles={["Student"]}> <ProgressPage /> </ProtectedRoute>} />
-
+          {/* User Profile Route */}
+          <Route path="/u/:userId" element={ <ProtectedRoute roles={["Admin", "Instructor", "Student"]}> <UserProfilePage />  </ProtectedRoute> }/>
           {/* Admin Dashboard */}
           <Route path="/dashboard" element={<ProtectedRoute roles={["Admin"]}><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute roles={["Admin"]}><CoursesManagement /></ProtectedRoute>}/>
