@@ -4,6 +4,7 @@ using API.Chat.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using API.Chat.DTOs;
+using System.Security.Claims;
 
 namespace API.Chat.Controllers;
 
@@ -67,6 +68,22 @@ public class ConversationsController : ControllerBase
     {
         await _service.MarkReadAsync(conversationId, User.RequireUserId());
         return NoContent();
+    }
+
+    [HttpGet("{conversationId:guid}/members/mini")]
+    public async Task<IActionResult> MembersMini(Guid conversationId)
+    {
+        var me = User.RequireUserId();
+        var res = await _service.GetMembersMiniAsync(conversationId, me);
+        return res == null ? Forbid() : Ok(res);
+    }
+
+    [HttpGet("{conversationId:guid}/my-role")]
+    public async Task<IActionResult> MyRole(Guid conversationId)
+    {
+        var me = User.RequireUserId();
+        var role = await _service.GetMyGroupRoleAsync(conversationId, me);
+        return role == null ? Forbid() : Ok(new { role });
     }
 
 }
