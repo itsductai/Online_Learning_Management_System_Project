@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# ==== Find IMG data (ignore all generated stuff) ====
+API/AI/data/frames/
+API/AI/data/videos/
+API/AI/data/queries/
+API/AI/data/index/
+
+
 # User-specific files
 *.rsuser
 *.suo
