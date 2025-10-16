@@ -370,3 +370,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 API/appsettings.json
+API/AI/API/AI/data/
