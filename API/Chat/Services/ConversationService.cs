@@ -235,4 +235,51 @@ public class ConversationService : IConversationService
             }
         }
     }
+
+    // ------------------- Lấy danh sách thành viên nhóm (mini) -------------------
+    public async Task<GroupMembersMiniResult?> GetMembersMiniAsync(Guid conversationId, int userId)
+    {
+        var c = await _repo.GetAsync(conversationId);
+        if (c == null) return null;
+
+        // caller không phải member => Forbid
+        var me = c.Members.FirstOrDefault(m => m.UserId == userId);
+        if (me == null) return null;
+
+        var ids = c.Members.Select(m => m.UserId).ToList();
+        var users = await _usersDb.Users
+            .Where(u => ids.Contains(u.UserId))
+            .Select(u => new { u.UserId, u.Name, u.AvatarUrl })
+            .ToListAsync();
+
+        var items = c.Members
+            .Select(m =>
+            {
+                var u = users.First(x => x.UserId == m.UserId);
+                return new GroupMemberMiniDTO
+                {
+                    UserId = u.UserId,
+                    Name = u.Name,
+                    AvatarUrl = u.AvatarUrl,
+                    MemberRole = m.Role
+                };
+            })
+            .ToList();
+
+        return new GroupMembersMiniResult
+        {
+            ConversationId = conversationId,
+            Count = items.Count,
+            MyRole = me.Role,
+            Items = items
+        };
+    }
+    // ------------------- Lấy role của tôi trong nhóm -------------------
+    public async Task<string?> GetMyGroupRoleAsync(Guid conversationId, int userId)
+    {
+        var c = await _repo.GetAsync(conversationId);
+        if (c == null) return null;
+        var me = c.Members.FirstOrDefault(x => x.UserId == userId);
+        return me?.Role; // null => không phải member
+    }
 }

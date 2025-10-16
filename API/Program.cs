@@ -173,6 +173,8 @@ builder.Services.AddScoped<IProgressService, ProgressService>(); // Đăng ký s
 builder.Services.AddScoped<IInstructorService, InstructorService>(); // Đăng ký service Instructor
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICouponService, CouponService>(); // Đăng ký service Coupon
+// DI mới cho module hồ sơ chat
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 // Đăng ký Repositories
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
