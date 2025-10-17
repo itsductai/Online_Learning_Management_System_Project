@@ -371,3 +371,4 @@ FodyWeavers.xsd
 
 API/appsettings.json
 API/AI/API/AI/data/
+API/AI/use-my-text-to-sql/.env
