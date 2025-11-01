@@ -1,45 +1,88 @@
 # mssql_operations.py
-from mssql_connection import get_connection
-import pyodbc
 
-# Lấy schema ở dạng "CREATE TABLE ..." (gọn, đủ cho model hiểu).
+from mssql_connection import get_connection
+import os
+
+# [FIX] Bảng hệ thống/metadata cần loại bỏ khỏi context cho model
+_DENY_TABLES = {
+    "__EFMigrationsHistory".lower(),
+    "sysdiagrams".lower(),
+}
+
+# [FIX] Bảng cốt lõi ưu tiên đứng trước (giống dataset train: users, instructors, courses)
+_CORE_ORDER = [
+    "users", "instructors", "courses", "enrollments",
+    "lessons", "textlessons", "videolessons", "lessonprogress",
+    "quizzes", "quizresults", "payments", "coupons"
+]
+
 def get_schema(max_chars: int = 8000) -> str:
     """
-    Build schema text friendly cho LLM từ INFORMATION_SCHEMA của SQL Server.
-    Giữ ngắn gọn (cắt ở max_chars) để khỏi vượt 512 token khi ghép prompt.
+    Xuất schema đúng format dataset đã train (mỗi dòng 1 bảng):
+      CREATE TABLE users (UserId INT, Name NVARCHAR(100), ...);
+    - BỎ schema prefix (dbo.)
+    - TÊN BẢNG: lowercase (users, instructors, ...)
+    - CỘT/KIỂU: GIỮ NGUYÊN (UserId, CreatedAt, NVARCHAR, ...)
+    - Loại bỏ bảng hệ thống (migrations, sysdiagrams)
+    - Ưu tiên in ra nhóm CORE trước để bám đúng domain OLMS
+    - Cho phép whitelist qua ENV `SCHEMA_ALLOW` (danh sách tên bảng, phẩy ngăn)
     """
     conn = get_connection()
-    cur = conn.cursor()
+    cur  = conn.cursor()
 
-    # Lấy danh sách bảng
     cur.execute("""
         SELECT TABLE_SCHEMA, TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
         WHERE TABLE_TYPE='BASE TABLE'
         ORDER BY TABLE_SCHEMA, TABLE_NAME
     """)
-    tables = cur.fetchall()
+    rows = cur.fetchall()
 
-    parts = []
-    for schema, table in tables:
-        # Lấy cột của bảng
+    # [FIX] Whitelist optional (không bắt buộc). Nếu không set → lấy tất cả (trừ deny).
+    allow_env = os.getenv("SCHEMA_ALLOW", "")  # ví dụ: "users,instructors,courses"
+    allow_set = {x.strip().lower() for x in allow_env.split(",") if x.strip()} if allow_env else None
+
+    # Thu thập bảng hợp lệ
+    tables = []
+    for schema, table in rows:
+        tname = table.lower()
+        if tname in _DENY_TABLES:
+            continue
+        if allow_set is not None and tname not in allow_set:
+            continue
+        tables.append((schema, tname))
+
+    # [FIX] Ưu tiên nhóm CORE đứng trước, sau đó tới các bảng còn lại (ổn định đầu vào cho model)
+    core = [t for t in tables if t[1] in _CORE_ORDER]
+    rest = [t for t in tables if t[1] not in _CORE_ORDER]
+    # sắp xếp phần còn lại theo tên để deterministic
+    rest.sort(key=lambda x: x[1])
+    ordered = core + rest
+
+    parts, total = [], 0
+    for schema, tname in ordered:
+        # lấy cột
         cur.execute("""
             SELECT COLUMN_NAME, DATA_TYPE
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
             ORDER BY ORDINAL_POSITION
-        """, (schema, table))
+        """, (schema, tname))
         cols = cur.fetchall()
-        col_defs = ", ".join(f"{c} {t}" for c, t in cols)
-        parts.append(f"CREATE TABLE {schema}.{table}({col_defs}); ")
 
-        # Cắt sớm nếu quá dài
-        if sum(len(p) for p in parts) > max_chars:
+        # GHÉP "ColName DATA_TYPE" (GIỮ NGUYÊN ColName & DATA_TYPE như DB)
+        col_defs = ", ".join(f"{c} {t.upper()}" for c, t in cols)
+        line = f"CREATE TABLE {tname} ({col_defs});"
+
+        parts.append(line)
+        total += len(line) + 1
+        if total > max_chars:
             break
 
     cur.close()
     conn.close()
-    return "".join(parts)
+    return "\n".join(parts)
+
 
 def execute_query(sql: str):
     conn = get_connection()
