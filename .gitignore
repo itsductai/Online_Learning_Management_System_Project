@@ -374,3 +374,5 @@ API/AI/API/AI/data/
 API/AI/use-my-text-to-sql/.env
 API/AI/use-my-text-to-sql/sql_t5_finetuned_v3/
 API/AI/use-my-text-to-sql/sql_t5_finetuned/
+API/AI/use-my-text-to-sql/sql_t5_finetuned_v4/
+API/AI/use-my-text-to-sql/sql_t5_finetuned_v5/

@@ -4,7 +4,7 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 from mssql_operations import get_schema, validate_sql
 
 # ========= 1) MODEL =========
-MODEL_REPO = os.getenv("HF_MODEL_ID", "itsductai02/text-to-sql-v3")
+MODEL_REPO = os.getenv("HF_MODEL_ID", "itsductai02/text-to-sql-v4")
 HF_TOKEN   = os.getenv("HF_TOKEN", None)
 
 print(f"[Model] Loading from: {MODEL_REPO}")
