@@ -74,7 +74,8 @@ public class ConversationsController : ControllerBase
     public async Task<IActionResult> MembersMini(Guid conversationId)
     {
         var me = User.RequireUserId();
-        var res = await _service.GetMembersMiniAsync(conversationId, me);
+        // var res = await _service.GetMembersMiniAsync(conversationId, me);
+        var res = 0;
         return res == null ? Forbid() : Ok(res);
     }
 

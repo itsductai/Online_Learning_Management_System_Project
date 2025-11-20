@@ -14,6 +14,6 @@ public interface IConversationService
     Task<bool> AddMembersAsync(Guid conversationId, int userId, IEnumerable<int> memberIds);
     Task<bool> RemoveMemberAsync(Guid conversationId, int requesterId, int targetUserId);
     Task MarkReadAsync(Guid conversationId, int userId);
-    Task<GroupMembersMiniResult?> GetMembersMiniAsync(Guid conversationId, int userId);
+    // Task<GroupMembersMiniResult?> GetMembersMiniAsync(Guid conversationId, int userId);
     Task<string?> GetMyGroupRoleAsync(Guid conversationId, int userId);
 }
