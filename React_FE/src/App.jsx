@@ -25,6 +25,8 @@ import InstructorStudentManagement from "./pages/instructor/StudentManagement.js
 import ChatPage from "./pages/chat/ChatPage.jsx";
 import UserProfilePage from "./pages/UserProfilePage.jsx"
 import { UnreadProvider, useUnread } from "./context/UnreadContext.jsx";
+import AIManager from "./pages/admin/AIManager";
+
 
 const DefaultRoute = () => {
   const { user } = useAuth();
@@ -66,6 +68,8 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute roles={["Admin"]}><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute roles={["Admin"]}><CoursesManagement /></ProtectedRoute>}/>
           <Route path="/admin/courses/:courseId/lessons" element={<ProtectedRoute roles={["Admin"]}> <LessonManagement /> </ProtectedRoute>}/>
+          <Route path="/admin/ai-manager" element={<ProtectedRoute roles={["Admin"]}> <AIManager /> </ProtectedRoute>} />
+
           {/* Thêm route mới cho quản lý giảng viên và học viên */}
           <Route path="/admin/instructors" element={<ProtectedRoute roles={["Admin"]}><InstructorManagement /></ProtectedRoute>}/>
           <Route path="/admin/students" element={<ProtectedRoute roles={["Admin"]}><StudentManagement /></ProtectedRoute>}/>

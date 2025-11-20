@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaBook, FaUsers, FaComments, FaChartLine, FaCog, FaSignOutAlt, FaBars, FaCreditCard, FaTag } from "react-icons/fa";
+import { FaHome, FaBook, FaUsers, FaComments, FaChartLine, FaCog, FaSignOutAlt, FaBars, FaCreditCard, FaTag, FaRobot } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import logo from "../../logo/logo_white_v2.png";
@@ -27,6 +27,9 @@ export default function Sidebar() {
     { path: "/admin/community", icon: <FaComments size={20} />, label: "Chat cộng đồng" },
     { path: "/admin/analytics", icon: <FaChartLine size={20} />, label: "Thống kê" },
     { path: "/admin/settings", icon: <FaCog size={20} />, label: "Cài đặt" },
+
+    { path: "/admin/ai-manager", icon: <FaRobot size={20} />, label: "AI Text-to-SQL" },
+
   ];
 
   return (
