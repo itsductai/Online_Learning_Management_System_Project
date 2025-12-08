@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import {
   runTextToSql,
+  runTextToSqlWithGpt,
   getTextToSqlStats,
   getTextToSqlSuggest,
 } from "../../services/text2sqlAPI";
@@ -37,8 +38,13 @@ export default function AIManager() {
   const [result, setResult] = useState(null);
   const [stats, setStats] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [originalSql, setOriginalSql] = useState(""); 
+
   const [error, setError] = useState("");
   const [showFullError, setShowFullError] = useState(false);
+
+  // Toggle GPT Assist
+  const [useGpt, setUseGpt] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -60,9 +66,13 @@ export default function AIManager() {
     setShowFullError(false);
 
     try {
-      const data = await runTextToSql(query);
+      // OFF → /search, ON → /search_gpt
+      const data = useGpt
+        ? await runTextToSqlWithGpt(query)
+        : await runTextToSql(query);
+
       setResult(data);
-      await fetchStats();
+      setOriginalSql(data.original_sql || "");
     } catch (err) {
       console.error(err);
       setError("Không thể kết nối tới Text-to-SQL API.");
@@ -162,7 +172,7 @@ export default function AIManager() {
           )}
         </div>
 
-        {/* Input + Suggest */}
+        {/* Input + Suggest + GPT toggle */}
         <div className="relative">
           <label className="block text-sm font-medium mb-1">
             Natural language query (English)
@@ -175,7 +185,7 @@ export default function AIManager() {
             onKeyDown={handleKeyDown}
             placeholder={`Ví dụ: Show 5 courses where title like '%N%'`}
           />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-4">
             <button
               onClick={handleSearch}
               disabled={loading}
@@ -183,9 +193,29 @@ export default function AIManager() {
             >
               {loading ? "Running..." : "Run Text-to-SQL (Enter)"}
             </button>
+
             <span className="text-xs text-gray-500">
               Nhấn <b>Enter</b> để gửi • <b>Shift+Enter</b> để xuống dòng
             </span>
+
+            {/* 🔀 Toggle GPT Assist */}
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <span className="font-medium">GPT Assist</span>
+              <div
+                onClick={() => setUseGpt((v) => !v)}
+                className={
+                  "w-10 h-5 rounded-full flex items-center px-1 transition " +
+                  (useGpt ? "bg-green-500" : "bg-gray-400")
+                }
+              >
+                <div
+                  className={
+                    "w-4 h-4 rounded-full bg-white shadow transform transition " +
+                    (useGpt ? "translate-x-4" : "translate-x-0")
+                  }
+                />
+              </div>
+            </label>
           </div>
 
           {/* Suggest dropdown */}
@@ -212,12 +242,11 @@ export default function AIManager() {
           </div>
         )}
 
-        {/* Kết quả */}
+        {/* Kết quả từ API */}
         {result && (
           <div className="space-y-4">
-            {/* Trên: status + SQL + error */}
+            {/* Trên: status + chips + GPT meta + SQL + error */}
             <div className="space-y-3">
-              {/* status row */}
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <StatusBadge ok={result.ok} />
                 {typeof result.rows_count === "number" && (
@@ -228,6 +257,16 @@ export default function AIManager() {
                     label="Time"
                     value={`${result.duration_ms.toFixed(1)} ms`}
                   />
+                )}
+
+                {result.reviewed_by_gpt && (
+                  <>
+                    <StatChip label="Reviewed" value="GPT" />
+                    <StatChip
+                      label="SQL source"
+                      value={result.sql_source || "unknown"}
+                    />
+                  </>
                 )}
               </div>
 
@@ -240,6 +279,16 @@ export default function AIManager() {
 {result.sql}
                 </pre>
               </div>
+
+              {/* ORIGINAL SQL FROM T5 */}
+              {originalSql && originalSql.trim() !== "" && originalSql !== result.sql && (
+                <div className="mt-3">
+                  <div className="text-xs text-gray-500 mb-1">Original SQL (T5)</div>
+                  <pre className="bg-gray-800 text-yellow-200 text-xs rounded-xl p-3 overflow-auto max-h-72">
+                    {originalSql}
+                  </pre>
+                </div>
+              )}
 
               {/* Error (nếu có) */}
               {!result.ok && result.error && (
@@ -266,6 +315,14 @@ export default function AIManager() {
                       {showFullError ? "Thu gọn" : "Xem thêm"}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Nếu có gpt_message thì show thêm */}
+              {result.gpt_message && (
+                <div className="text-xs text-gray-600 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
+                  <span className="font-semibold mr-1">GPT note:</span>
+                  {result.gpt_message}
                 </div>
               )}
             </div>
@@ -326,7 +383,7 @@ export default function AIManager() {
               </div>
             )}
 
-            {/* Raw JSON để đảm bảo không thiếu data nào */}
+            {/* Raw JSON để chắc chắn không mất field nào */}
             <details className="text-xs text-gray-500">
               <summary className="cursor-pointer select-none">
                 Raw API response (debug)
@@ -363,9 +420,9 @@ export default function AIManager() {
                       >
                         <td
                           className="px-3 py-2 max-w-xs truncate"
-                          title={q.nl_query}
+                          title={q.nl_query || ""}
                         >
-                          {q.nl_query}
+                          {q.nl_query || "-"}
                         </td>
                         <td className="px-3 py-2">
                           <span
@@ -376,7 +433,7 @@ export default function AIManager() {
                             {q.ok ? "OK" : "Fail"}
                           </span>
                         </td>
-                        <td className="px-3 py-2">{q.rows_count}</td>
+                        <td className="px-3 py-2">{q.rows_count ?? 0}</td>
                         <td className="px-3 py-2">
                           {q.duration_ms != null
                             ? q.duration_ms.toFixed(1)

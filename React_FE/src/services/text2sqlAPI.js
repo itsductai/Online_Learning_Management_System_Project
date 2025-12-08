@@ -9,6 +9,11 @@ export async function runTextToSql(query) {
   return res.data;
 }
 
+export async function runTextToSqlWithGpt(query) {
+  const res = await axios.post(`${BASE_URL}/search_gpt`, { query });
+  return res.data;
+}
+
 export async function getTextToSqlStats() {
   const res = await axios.get(`${BASE_URL}/stats`);
   return res.data;
