@@ -43,6 +43,15 @@ async def search(req: QueryRequest):
     sql = generate_sql(q)
     log.info("GEN_SQL: %s", sql)
 
+    # SQL Safety Check: chỉ cho phép SELECT
+    if not sql or not sql.lstrip().lower().startswith("select"):
+        log.warning("SQL_BLOCKED_NON_SELECT: %s", sql)
+        return {
+            "ok": False,
+            "sql": sql,
+            "error": "SQL Safety Check failed: only SELECT statements are allowed."
+        }
+
     # 2) thử thực thi (nếu lỗi: trả về ok=false + error + sql)
     try:
         cols, rows = execute_query(sql)
@@ -124,6 +133,21 @@ async def search_with_gpt(req: QueryRequest):
 
     log.info("GEN_SQL_T5: %s", sql_t5)
 
+    # -------- SQL SAFETY CHECK (T5) : chỉ cho phép SELECT --------
+    if not sql_t5 or not sql_t5.lstrip().lower().startswith("select"):
+        log.warning("SQL_BLOCKED_NON_SELECT_T5: %s", sql_t5)
+        return {
+            "ok": False,
+            "sql": sql_t5,
+            "original_sql": sql_t5,
+            "columns": [],
+            "rows": [],
+            "error": "Câu lệnh SQL không hợp lệ. Hệ thống chỉ cho phép truy vấn dữ liệu bằng SELECT.",
+            "gpt_message": "Câu hỏi yêu cầu thao tác thay đổi dữ liệu (DELETE/UPDATE/INSERT), điều này không được phép.",
+            "sql_source": "blocked_non_select_t5",
+        }
+
+
     t5_ok = False
     t5_columns, t5_rows = [], []
     t5_error = ""
@@ -192,6 +216,20 @@ async def search_with_gpt(req: QueryRequest):
             "error": "" if t5_ok else t5_error,
             "gpt_message": gpt_message,
             "sql_source": "t5",
+        }
+
+    # -------- SQL SAFETY CHECK (GPT) : chỉ cho phép SELECT --------
+    if not fixed_sql or not fixed_sql.lstrip().lower().startswith("select"):
+        log.warning("SQL_BLOCKED_NON_SELECT_GPT: %s", fixed_sql)
+        return {
+            "ok": False,
+            "sql": fixed_sql,
+            "original_sql": sql_t5,
+            "columns": [],
+            "rows": [],
+            "error": "SQL do GPT đề xuất không hợp lệ. Hệ thống chỉ cho phép truy vấn dữ liệu bằng SELECT.",
+            "gpt_message": gpt_message,
+            "sql_source": "blocked_non_select_gpt",
         }
 
     # -------- 5) GPT đề xuất fixed_sql → chạy lại trên DB --------
